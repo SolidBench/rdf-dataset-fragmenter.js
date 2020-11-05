@@ -1,2 +1,9 @@
+export * from './lib/io/IQuadSink';
+export * from './lib/io/IQuadSource';
+export * from './lib/io/ParallelFileWriter';
+export * from './lib/io/QuadSinkFile';
+export * from './lib/io/QuadSourceFile';
+export * from './lib/strategy/FragmentationStrategyAdapter';
+export * from './lib/strategy/FragmentationStrategySubject';
+export * from './lib/strategy/IFragmentationStrategy';
 export * from './lib/Fragmenter';
-
