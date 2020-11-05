@@ -6,7 +6,7 @@ import type * as RDF from 'rdf-js';
 export interface IQuadSink {
   /**
    * Push a quad into the given document IRI.
-   * @param iri The IRI of the document to push to.
+   * @param iri The IRI of the document to push to. Hash fragments will be removed.
    * @param quad An RDF quad.
    */
   push: (iri: string, quad: RDF.Quad) => Promise<void>;

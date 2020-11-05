@@ -40,6 +40,12 @@ export class QuadSinkFile implements IQuadSink {
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
+    // Remove hash fragment
+    const posHash = iri.indexOf('#');
+    if (posHash >= 0) {
+      iri = iri.slice(0, posHash);
+    }
+
     const path = this.getFilePath(iri);
     const os = await this.getFileStream(path);
     os.write(quad);

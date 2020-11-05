@@ -41,6 +41,12 @@ describe('QuadSinkFile', () => {
       await expect(sink.push('http://example.org/3/file.ttl', quad)).rejects
         .toThrow(new Error('No IRI mapping found for http://example.org/3/file.ttl'));
     });
+
+    it('should remove the hash from the IRI', async() => {
+      await sink.push('http://example.org/1/file.ttl#me', quad);
+      expect(fileWriter.getWriteStream).toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
+      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
+    });
   });
 
   describe('close', () => {
