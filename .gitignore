@@ -18,3 +18,5 @@ coverage
 documentation
 .eslintcache
 output
+components
+config

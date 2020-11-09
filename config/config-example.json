@@ -1,0 +1,22 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter/^1.0.0/components/context.jsonld",
+  "@id": "urn:rdf-dataset-fragmenter:default",
+  "@type": "Fragmenter",
+  "Fragmenter:_options_quadSource": {
+    "@type": "QuadSourceFile",
+    "QuadSourceFile:_options_filePath": "path/to/dataset.ttl"
+  },
+  "Fragmenter:_options_fragmentationStrategy": {
+    "@type": "FragmentationStrategySubject"
+  },
+  "Fragmenter:_options_quadSink": {
+    "@type": "QuadSinkFile",
+    "QuadSinkFile:_options_outputFormat": "application/n-quads",
+    "QuadSinkFile:_options_iriToPath": [
+      {
+        "QuadSinkFile:_options_iriToPath_key": "http://example.org/base/",
+        "QuadSinkFile:_options_iriToPath_value": "output/"
+      }
+    ]
+  }
+}
