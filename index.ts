@@ -4,6 +4,7 @@ export * from './lib/io/ParallelFileWriter';
 export * from './lib/io/QuadSinkFile';
 export * from './lib/io/QuadSourceFile';
 export * from './lib/strategy/FragmentationBlankNodeBuffer';
+export * from './lib/strategy/FragmentationStrategyObject';
 export * from './lib/strategy/FragmentationStrategyStreamAdapter';
 export * from './lib/strategy/FragmentationStrategySubject';
 export * from './lib/strategy/IFragmentationStrategy';
