@@ -6,8 +6,6 @@
 
 TODO
 
-**Warning: This project is not ready yet to be used, as it depends on unreleased versions of Components.js and Components-Generator.js**
-
 ## License
 This software is written by [Ruben Taelman](http://rubensworks.net/).
 

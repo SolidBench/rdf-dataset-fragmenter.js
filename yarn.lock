@@ -1557,10 +1557,10 @@ component-emitter@^1.2.1:
   resolved "https://registry.yarnpkg.com/component-emitter/-/component-emitter-1.3.0.tgz#16e4070fba8ae29b679f2215853ee181ab2eabc0"
   integrity sha512-Rd3se6QB+sO1TwqZjscQrurpEPIfO0/yYnSin6Q/rD3mOutHvUrCAhJub3r90uNb+SESBuE0QYoB90YdfatsRg==
 
-componentsjs-generator@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/componentsjs-generator/-/componentsjs-generator-1.4.0.tgz#950b550dc6b216dba19968ef167bdfa0a6c1e368"
-  integrity sha512-ELy0jDNNNVSBTjtgvUfcJ9FGgqZf2h3TZeYnoeATwnznpQFnJ2Sw2hgugf5Tr5A81+pXxiNdlfDpzZe0/0Wt8w==
+componentsjs-generator@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/componentsjs-generator/-/componentsjs-generator-1.4.1.tgz#ad10f22502b4703e3cd37d895b465a062ff1c5ea"
+  integrity sha512-PXP7EFdPmJgvTJH6HT6zTn5IHmVSmTbxIngeLqWV0lRR4Fj3YRb7VvPauzWSUWl+RQsSHWi2xu/+ILYrRYGrWQ==
   dependencies:
     "@types/lru-cache" "^5.1.0"
     "@typescript-eslint/typescript-estree" "^4.6.1"

@@ -1,5 +1,5 @@
 import type { ReadStream, WriteStream } from 'tty';
-import type { ILoaderProperties } from 'componentsjs';
+import type { LoaderProperties } from 'componentsjs';
 import { Loader } from 'componentsjs';
 import type { Fragmenter } from './Fragmenter';
 
@@ -16,7 +16,7 @@ export const runCustom = function(
   stdin: ReadStream,
   stdout: WriteStream,
   stderr: WriteStream,
-  properties: ILoaderProperties,
+  properties: LoaderProperties,
 ): void {
   (async(): Promise<void> => {
     if (args.length !== 1) {
