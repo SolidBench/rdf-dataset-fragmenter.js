@@ -7,7 +7,7 @@ import type { IFragmentationStrategy } from './IFragmentationStrategy';
 /**
  * An abstract implementation of a fragmentation strategy.
  */
-export abstract class FragmentationStrategyAdapter implements IFragmentationStrategy {
+export abstract class FragmentationStrategyStreamAdapter implements IFragmentationStrategy {
   public async fragment(quadStream: RDF.Stream & Readable, quadSink: IQuadSink): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
     const self = this;
