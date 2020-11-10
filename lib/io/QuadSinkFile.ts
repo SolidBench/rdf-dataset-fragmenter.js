@@ -1,3 +1,4 @@
+import * as readline from 'readline';
 import type { Writable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { IQuadSink } from './IQuadSink';
@@ -10,12 +11,29 @@ export class QuadSinkFile implements IQuadSink {
   private readonly outputFormat: string;
   private readonly iriToPath: Record<string, string>;
   private readonly fileWriter: ParallelFileWriter;
+  private readonly log: boolean;
+
+  private counter = 0;
 
   public constructor(options: IQuadSinkFileOptions) {
     this.outputFormat = options.outputFormat;
     this.iriToPath = options.iriToPath;
+    this.log = Boolean(options.log);
 
     this.fileWriter = new ParallelFileWriter({ streams: 128 });
+
+    this.attemptLog();
+  }
+
+  protected attemptLog(newLine = false): void {
+    if (this.log && (this.counter % 1_000 === 0 || newLine)) {
+      readline.clearLine(process.stdout, 0);
+      readline.cursorTo(process.stdout, 0);
+      process.stdout.write(`\rHandled quads: ${this.counter / 1_000}K`);
+      if (newLine) {
+        process.stdout.write(`\n`);
+      }
+    }
   }
 
   protected getFilePath(iri: string): string {
@@ -40,6 +58,9 @@ export class QuadSinkFile implements IQuadSink {
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
+    this.counter++;
+    this.attemptLog();
+
     // Remove hash fragment
     const posHash = iri.indexOf('#');
     if (posHash >= 0) {
@@ -53,10 +74,12 @@ export class QuadSinkFile implements IQuadSink {
 
   public async close(): Promise<void> {
     await this.fileWriter.close();
+    this.attemptLog(true);
   }
 }
 
 export interface IQuadSinkFileOptions {
   outputFormat: string;
   iriToPath: Record<string, string>;
+  log?: boolean;
 }
