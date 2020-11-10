@@ -36,7 +36,11 @@ Usage:
     return await fragmenter.fragment();
   })().then((): void => {
     // Done
-  }).catch(error => process.stderr.write(`${error.stack}\n`));
+  }).catch(error => {
+    process.stderr.write(`${error.stack}\n`);
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(1);
+  });
 };
 
 /**
