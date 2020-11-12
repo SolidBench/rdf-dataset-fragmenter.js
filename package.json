@@ -43,8 +43,8 @@
     "componentsjs": "^3.6.0",
     "lru-cache": "^6.0.0",
     "mkdirp": "^1.0.4",
-    "rdf-parse": "^1.5.0",
-    "rdf-serialize": "^1.0.0",
+    "rdf-parse": "^1.6.1",
+    "rdf-serialize": "^1.0.1",
     "rdf-string": "^1.5.0",
     "rdf-terms": "^1.6.2"
   },
