@@ -12,6 +12,7 @@ export class QuadSinkFile implements IQuadSink {
   private readonly iriToPath: Record<string, string>;
   private readonly fileWriter: ParallelFileWriter;
   private readonly log: boolean;
+  private readonly fileExtension?: string;
 
   private counter = 0;
 
@@ -19,6 +20,7 @@ export class QuadSinkFile implements IQuadSink {
     this.outputFormat = options.outputFormat;
     this.iriToPath = options.iriToPath;
     this.log = Boolean(options.log);
+    this.fileExtension = options.fileExtension;
 
     this.fileWriter = new ParallelFileWriter({ streams: 128 });
 
@@ -50,6 +52,12 @@ export class QuadSinkFile implements IQuadSink {
     if (!path) {
       throw new Error(`No IRI mapping found for ${iri}`);
     }
+
+    // Add file extension if we don't have one yet
+    if (this.fileExtension && !/\.[a-z]$/iu.exec(this.fileExtension)) {
+      path = `${path}${this.fileExtension}`;
+    }
+
     return path;
   }
 
@@ -82,4 +90,5 @@ export interface IQuadSinkFileOptions {
   outputFormat: string;
   iriToPath: Record<string, string>;
   log?: boolean;
+  fileExtension?: string;
 }

@@ -52,6 +52,30 @@ describe('QuadSinkFile', () => {
         expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
       });
 
+      it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
+        await sink.push('http://example.org/1/file', quad);
+        expect(fileWriter.getWriteStream)
+          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
+        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
+      });
+
+      it('should write a quad to an IRI available in the mapping without extension with fileExtension', async() => {
+        sink = new QuadSinkFile({
+          outputFormat: 'application/n-quads',
+          iriToPath: {
+            'http://example.org/1/': '/path/to/folder1/',
+            'http://example.org/2/': '/path/to/folder2/',
+          },
+          fileExtension: '$.nq',
+        });
+        (<any> sink).fileWriter = fileWriter;
+
+        await sink.push('http://example.org/1/file', quad);
+        expect(fileWriter.getWriteStream)
+          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file$.nq', 'application/n-quads');
+        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
+      });
+
       it('should error on an IRI not available in the mapping', async() => {
         await expect(sink.push('http://example.org/3/file.ttl', quad)).rejects
           .toThrow(new Error('No IRI mapping found for http://example.org/3/file.ttl'));
