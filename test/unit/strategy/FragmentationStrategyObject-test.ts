@@ -132,8 +132,8 @@ describe('FragmentationStrategyObject', () => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodes ]), sink);
       expect(sink.push).toHaveBeenCalledTimes(4);
       expect(sink.push).toHaveBeenNthCalledWith(1, 'ex:o1', quadsOwnedBnodes[0]);
-      expect(sink.push).toHaveBeenNthCalledWith(2, 'ex:o2', quadsOwnedBnodes[2]);
-      expect(sink.push).toHaveBeenNthCalledWith(3, 'ex:o1', quadsOwnedBnodes[1]);
+      expect(sink.push).toHaveBeenNthCalledWith(2, 'ex:o1', quadsOwnedBnodes[1]);
+      expect(sink.push).toHaveBeenNthCalledWith(3, 'ex:o2', quadsOwnedBnodes[2]);
       expect(sink.push).toHaveBeenNthCalledWith(4, 'ex:o2', quadsOwnedBnodes[3]);
     });
 

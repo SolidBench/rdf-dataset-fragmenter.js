@@ -8,7 +8,12 @@ import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStrea
  * A fragmentation strategy that places quads into their subject's document.
  */
 export class FragmentationStrategySubject extends FragmentationStrategyStreamAdapter {
-  private readonly blankNodeBuffer = new FragmentationBlankNodeBuffer('subject', 'object');
+  private readonly blankNodeBuffer: FragmentationBlankNodeBuffer<'subject', 'object'>;
+
+  public constructor(eagerFlushing = true) {
+    super();
+    this.blankNodeBuffer = new FragmentationBlankNodeBuffer('subject', 'object', eagerFlushing);
+  }
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     // Only accept IRI subjects.
@@ -17,10 +22,10 @@ export class FragmentationStrategySubject extends FragmentationStrategyStreamAda
       await quadSink.push(quad.subject.value, quad);
 
       // Save the subject in our blank node buffer, as it may be needed to identify documents for other quads.
-      this.blankNodeBuffer.materializeValueForNamedKey(quad.object, quad.subject);
+      await this.blankNodeBuffer.materializeValueForNamedKey(quad.object, quad.subject, quadSink);
     }
 
-    this.blankNodeBuffer.push(quad);
+    await this.blankNodeBuffer.push(quad, quadSink);
   }
 
   protected async flush(quadSink: IQuadSink): Promise<void> {
