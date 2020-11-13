@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { dirname } from 'path';
 import type { Writable } from 'stream';
 import { PassThrough } from 'stream';
+import AsyncLock = require('async-lock');
 import LRUCache = require('lru-cache');
 import mkdirp = require('mkdirp');
 import type * as RDF from 'rdf-js';
@@ -16,6 +17,7 @@ import rdfSerializer from 'rdf-serialize';
  */
 export class ParallelFileWriter {
   private readonly cache: LRUCache<string, IWriteEntry>;
+  private readonly lock: AsyncLock;
   private fileClosingPromises: Promise<void>[];
 
   public constructor(options: IParallelFileWriterOptions) {
@@ -24,6 +26,7 @@ export class ParallelFileWriter {
       dispose: (key, value) => this.closeWriteEntry(key, value),
       noDisposeOnSet: true,
     });
+    this.lock = new AsyncLock();
     this.fileClosingPromises = [];
   }
 
@@ -41,6 +44,10 @@ export class ParallelFileWriter {
    *                    Note that this only should be content types that enable appending
    */
   public async getWriteStream(path: string, contentType: string): Promise<RDF.Stream & Writable> {
+    return this.lock.acquire('getWriteStream', () => this.getWriteStreamUnsafe(path, contentType));
+  }
+
+  protected async getWriteStreamUnsafe(path: string, contentType: string): Promise<RDF.Stream & Writable> {
     // Try to get the stream from cache, or open a new one if not yet open.
     let writeEntry = this.cache.get(path);
     if (!writeEntry) {

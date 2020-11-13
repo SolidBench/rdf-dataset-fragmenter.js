@@ -37,9 +37,11 @@
     "components"
   ],
   "dependencies": {
+    "@types/async-lock": "^1.1.2",
     "@types/lru-cache": "^5.1.0",
     "@types/mkdirp": "^1.0.1",
     "@types/rdf-js": "*",
+    "async-lock": "^1.2.4",
     "componentsjs": "^3.6.0",
     "lru-cache": "^6.0.0",
     "mkdirp": "^1.0.4",
