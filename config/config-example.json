@@ -11,6 +11,7 @@
   },
   "Fragmenter:_options_quadSink": {
     "@type": "QuadSinkFile",
+    "QuadSinkFile:_options_log": true,
     "QuadSinkFile:_options_outputFormat": "application/n-quads",
     "QuadSinkFile:_options_iriToPath": [
       {
