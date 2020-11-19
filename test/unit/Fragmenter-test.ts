@@ -1,13 +1,20 @@
+import { Readable } from 'stream';
 import { Fragmenter } from '../../lib/Fragmenter';
+import type { IQuadTransformer } from '../../lib/transform/IQuadTransformer';
+import { QuadTransformerClone } from '../../lib/transform/QuadTransformerClone';
+import { QuadTransformerIdentity } from '../../lib/transform/QuadTransformerIdentity';
+const arrayifyStream = require('arrayify-stream');
+const streamifyArray = require('streamify-array');
 
 describe('Fragmenter', () => {
   let quadSource: any;
   let fragmentationStrategy: any;
   let quadSink: any;
   let fragmenter: Fragmenter;
+  let transformers: IQuadTransformer[];
   beforeEach(() => {
     quadSource = {
-      getQuads: jest.fn(() => 'QUADS'),
+      getQuads: jest.fn(() => streamifyArray([])),
     };
     fragmentationStrategy = {
       fragment: jest.fn(),
@@ -16,6 +23,54 @@ describe('Fragmenter', () => {
       close: jest.fn(),
     };
     fragmenter = new Fragmenter({ quadSource, fragmentationStrategy, quadSink });
+    transformers = [
+      new QuadTransformerIdentity(),
+      new QuadTransformerIdentity(),
+    ];
+  });
+
+  describe('getTransformedQuadStream', () => {
+    it('should handle an empty stream without transformers', async() => {
+      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, [])))
+        .toEqual([]);
+    });
+
+    it('should handle an empty stream with transformers', async() => {
+      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+        .toEqual([]);
+    });
+
+    it('should handle a non-empty stream with transformers', async() => {
+      quadSource = {
+        getQuads: jest.fn(() => streamifyArray([ 'a', 'b' ])),
+      };
+      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+        .toEqual([ 'a', 'b' ]);
+    });
+
+    it('should forward errors', async() => {
+      const stream: any = new Readable();
+      stream._read = () => {
+        stream.emit('error', new Error('Error in stream'));
+      };
+      quadSource = {
+        getQuads: jest.fn(() => stream),
+      };
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+        .rejects.toThrow(new Error('Error in stream'));
+    });
+
+    it('should handle a non-empty stream with chained multi-output transformers', async() => {
+      transformers = [
+        new QuadTransformerClone(),
+        new QuadTransformerClone(),
+      ];
+      quadSource = {
+        getQuads: jest.fn(() => streamifyArray([ 'a', 'b' ])),
+      };
+      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+        .toEqual([ 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b' ]);
+    });
   });
 
   describe('fragment', () => {
@@ -23,7 +78,7 @@ describe('Fragmenter', () => {
       await fragmenter.fragment();
       expect(quadSource.getQuads).toHaveBeenCalledTimes(1);
       expect(fragmentationStrategy.fragment).toHaveBeenCalledTimes(1);
-      expect(fragmentationStrategy.fragment).toHaveBeenCalledWith('QUADS', quadSink);
+      expect(fragmentationStrategy.fragment).toHaveBeenCalledWith(expect.anything(), quadSink);
       expect(quadSink.close).toHaveBeenCalledTimes(1);
     });
   });
