@@ -10,14 +10,16 @@ const DF = new DataFactory();
  */
 export class QuadTransformerSetIriExtension extends QuadTransformerTerms {
   private readonly extension: string;
+  private readonly iriPattern?: RegExp;
 
-  public constructor(extension: string) {
+  public constructor(extension: string, iriPattern?: string) {
     super();
     this.extension = extension;
+    this.iriPattern = iriPattern ? new RegExp(iriPattern, 'u') : undefined;
   }
 
   protected transformTerm(term: RDF.Term): RDF.Term {
-    if (term.termType === 'NamedNode') {
+    if (term.termType === 'NamedNode' && (!this.iriPattern || this.iriPattern.exec(term.value))) {
       let value = term.value;
       const extensionMatch = /\.[a-z]*$/iu.exec(value);
       if (extensionMatch) {
