@@ -70,6 +70,7 @@ The important parts in this config file are:
 * `"Fragmenter:_options_quadSource"`: The source from which RDF triples/quads should be read from.
 * `"Fragmenter:_options_fragmentationStrategy"`: The strategy that will be employed for fragmentation.
 * `"Fragmenter:_options_quadSink"`: The target into which fragmented RDF triples/quads will be written from.
+* `"Fragmenter:_options_quadSource"`: Optional transformations over the quad stream.
 
 In this example, the config file will read from the `"path/to/dataset.ttl"` file,
 employ subject-based fragmentation, and will write into files in the `"output/"` directory.
@@ -203,6 +204,32 @@ Options:
 * `"QuadSinkFile:_options_outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
 * `"QuadSinkFile:_options_fileExtension"`: An optional extension to add to resulting files.
 * `"QuadSinkFile:_options_iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
+
+### Quad Transformers
+
+__Optional__
+
+A quad transformer can transform a stream of quads into another stream of quads.
+
+#### Set IRI Extension Quad Transformer
+
+A quad transformer that enforces the configured extension on all named nodes.
+
+```json
+{
+  "Fragmenter:_options_transformers": [
+    {
+      "@type": "QuadTransformerSetIriExtension",
+      "QuadTransformerSetIriExtension:_extension": "nq",
+      "QuadTransformerSetIriExtension:_iriPattern": "^http://dbpedia.org"
+    }
+  ]
+}
+```
+
+Options:
+* `"QuadTransformerSetIriExtension:_extension"`: The extension to set, excluding `.`.
+* `"QuadTransformerSetIriExtension:_iriPattern"`: An optional regex that to indicate what IRIs this transformer should be applied to. If undefined, all IRIs will be matched.
 
 ## Extend
 
