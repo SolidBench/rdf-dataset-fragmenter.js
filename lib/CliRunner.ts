@@ -1,6 +1,6 @@
 import type { ReadStream, WriteStream } from 'tty';
-import type { LoaderProperties } from 'componentsjs';
-import { Loader } from 'componentsjs';
+import type { IComponentsManagerBuilderOptions } from 'componentsjs';
+import { ComponentsManager } from 'componentsjs';
 import type { Fragmenter } from './Fragmenter';
 
 /**
@@ -16,7 +16,7 @@ export const runCustom = function(
   stdin: ReadStream,
   stdout: WriteStream,
   stderr: WriteStream,
-  properties: LoaderProperties,
+  properties: IComponentsManagerBuilderOptions<Fragmenter>,
 ): void {
   (async(): Promise<void> => {
     if (args.length !== 1) {
@@ -29,10 +29,9 @@ Usage:
     const configPath = args[0];
 
     // Setup from config file
-    const loader = new Loader(properties);
-    await loader.registerAvailableModuleResources();
-    const fragmenter: Fragmenter = <Fragmenter> await loader
-      .instantiateFromUrl('urn:rdf-dataset-fragmenter:default', configPath);
+    const manager = await ComponentsManager.build(properties);
+    await manager.configRegistry.register(configPath);
+    const fragmenter: Fragmenter = await manager.instantiate('urn:rdf-dataset-fragmenter:default');
     return await fragmenter.fragment();
   })().then((): void => {
     // Done
