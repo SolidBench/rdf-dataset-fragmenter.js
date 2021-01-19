@@ -12,6 +12,7 @@ export * from './lib/strategy/FragmentationStrategySubject';
 export * from './lib/strategy/IFragmentationStrategy';
 export * from './lib/transform/IQuadTransformer';
 export * from './lib/transform/QuadTransformerIdentity';
+export * from './lib/transform/QuadTransformerReplaceIri';
 export * from './lib/transform/QuadTransformerClone';
 export * from './lib/transform/QuadTransformerSetIriExtension';
 export * from './lib/transform/QuadTransformerTerms';

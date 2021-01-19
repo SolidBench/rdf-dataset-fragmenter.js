@@ -231,6 +231,26 @@ Options:
 * `"QuadTransformerSetIriExtension:_extension"`: The extension to set, excluding `.`.
 * `"QuadTransformerSetIriExtension:_iriPattern"`: An optional regex that to indicate what IRIs this transformer should be applied to. If undefined, all IRIs will be matched.
 
+#### Replace IRI Quad Transformer
+
+A quad transformer that that replaces (parts of) IRIs.
+
+```json
+{
+  "Fragmenter:_options_transformers": [
+    {
+      "@type": "QuadTransformerReplaceIri",
+      "QuadTransformerReplaceIri:_searchRegex": "^http://www.ldbc.eu",
+      "QuadTransformerReplaceIri:_replacementString": "http://localhost:3000/www.ldbc.eu"
+    }
+  ]
+}
+```
+
+Options:
+* `"QuadTransformerReplaceIri:_searchRegex"`: The regex to search for.
+* `"QuadTransformerReplaceIri:_replacementString"`: The string to replace.
+
 ## Extend
 
 This tool has been created with extensibility in mind.
