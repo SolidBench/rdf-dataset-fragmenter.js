@@ -1,10 +1,14 @@
 import { Readable } from 'stream';
+import { DataFactory } from 'rdf-data-factory';
 import { Fragmenter } from '../../lib/Fragmenter';
 import type { IQuadTransformer } from '../../lib/transform/IQuadTransformer';
 import { QuadTransformerClone } from '../../lib/transform/QuadTransformerClone';
 import { QuadTransformerIdentity } from '../../lib/transform/QuadTransformerIdentity';
+import { QuadTransformerReplaceIri } from '../../lib/transform/QuadTransformerReplaceIri';
+
 const arrayifyStream = require('arrayify-stream');
 const streamifyArray = require('streamify-array');
+const DF = new DataFactory();
 
 describe('Fragmenter', () => {
   let quadSource: any;
@@ -70,6 +74,24 @@ describe('Fragmenter', () => {
       };
       expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
         .toEqual([ 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b' ]);
+    });
+
+    it('should handle a non-empty stream with chained modifying transformers', async() => {
+      transformers = [
+        new QuadTransformerReplaceIri('a', 'b'),
+        new QuadTransformerReplaceIri('b', 'c'),
+      ];
+      quadSource = {
+        getQuads: jest.fn(() => streamifyArray([
+          DF.quad(DF.namedNode('a'), DF.namedNode('a'), DF.namedNode('a')),
+          DF.quad(DF.namedNode('b'), DF.namedNode('b'), DF.namedNode('b')),
+        ])),
+      };
+      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+        .toEqual([
+          DF.quad(DF.namedNode('c'), DF.namedNode('c'), DF.namedNode('c')),
+          DF.quad(DF.namedNode('c'), DF.namedNode('c'), DF.namedNode('c')),
+        ]);
     });
   });
 

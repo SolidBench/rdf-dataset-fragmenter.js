@@ -19,7 +19,7 @@ export class QuadTransformStream extends Transform {
     for (const transformer of this.transformers) {
       const newQuads: RDF.Quad[] = [];
       for (const quadIn of quads) {
-        for (const quadOut of transformer.transform(quad)) {
+        for (const quadOut of transformer.transform(quadIn)) {
           newQuads.push(quadOut);
         }
       }
