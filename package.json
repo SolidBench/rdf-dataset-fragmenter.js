@@ -18,15 +18,7 @@
   },
   "homepage": "https://github.com/rubensworks/rdf-dataset-fragmenter.js#readme",
   "license": "MIT",
-  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter",
-  "lsd:components": "components/components.jsonld",
-  "lsd:contexts": {
-    "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter/^1.0.0/components/context.jsonld": "components/context.jsonld"
-  },
-  "lsd:importPaths": {
-    "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter/^1.0.0/components/": "components/",
-    "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter/^1.0.0/config/": "config/"
-  },
+  "lsd:module": true,
   "files": [
     "bin/**/*.d.ts",
     "bin/**/*.js",
