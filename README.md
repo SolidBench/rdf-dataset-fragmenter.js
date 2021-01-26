@@ -251,6 +251,40 @@ Options:
 * `"QuadTransformerReplaceIri:_searchRegex"`: The regex to search for.
 * `"QuadTransformerReplaceIri:_replacementString"`: The string to replace.
 
+#### Replace IRI Quad Transformer
+
+A quad transformer that matches all resources of the given type,
+and rewrites its (subject) IRI (across all triples) so that it becomes part of the targeted resource.
+
+For example, a transformer matching on type `Post` for identifier predicate `hasId` and target predicate `hasCreator`
+will modify all post IRIs to become a hash-based IRI inside the object IRI of `hasCreator`.
+Concretely, `<ex:post1> a <Post>. <ex:post1> <hasId> '1'. <ex:post1> <hasCreator> <urn:person1>`
+will become
+`<urn:person1#Post1> a <Post>. <urn:person1#Post1> <hasId> '1'. <urn:person1#post1> <hasCreator> <urn:person1>`.
+
+**WARNING:** This transformer assumes that all the applicable resources
+have `rdf:type` occurring as first triple with the resource IRI as subject.
+
+```json
+{
+  "Fragmenter:_options_transformers": [
+    {
+      "@type": "QuadTransformerResourceTypeToPredicateTargetHash",
+      "QuadTransformerResourceTypeToPredicateTargetHash:_hashPrefix": "Post",
+      "QuadTransformerResourceTypeToPredicateTargetHash:_typeRegex": "vocabulary/Post$",
+      "QuadTransformerResourceTypeToPredicateTargetHash:_identifierPredicateRegex": "vocabulary/id$",
+      "QuadTransformerResourceTypeToPredicateTargetHash:_targetPredicateRegex": "vocabulary/hasCreator$"
+    }
+  ]
+}
+```
+
+Options:
+* `"QuadTransformerResourceTypeToPredicateTargetHash:_hashPrefix"`: Prefix to use right after the hash character when minting a new resource IRI.
+* `"QuadTransformerResourceTypeToPredicateTargetHash:_typeRegex"`: The RDF type that should be used to capture resources.
+* `"QuadTransformerResourceTypeToPredicateTargetHash:_identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
+* `"QuadTransformerResourceTypeToPredicateTargetHash:_targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
+
 ## Extend
 
 This tool has been created with extensibility in mind.
