@@ -37,6 +37,11 @@ export class QuadTransformStream extends Transform {
   }
 
   public _flush(callback: TransformCallback): void {
+    for (const transformer of this.transformers) {
+      if (transformer.end) {
+        transformer.end();
+      }
+    }
     callback();
   }
 }

@@ -264,6 +264,10 @@ describe('QuadTransformerResourceTypeToPredicateTargetHash', () => {
           'ex:s': DF.namedNode('ex:c#me_Post123'),
         });
       });
+
+      it('should throw on end', async() => {
+        expect(() => transformer.end()).toThrowError(`Detected non-finalized resources in the buffer: ex:s`);
+      });
     });
 
     describe('for defined subject mapping', () => {
@@ -314,6 +318,10 @@ describe('QuadTransformerResourceTypeToPredicateTargetHash', () => {
           ),
         ]);
         expect(transformer.buffer).toEqual({});
+      });
+
+      it('should not throw on end', async() => {
+        expect(() => transformer.end()).not.toThrow();
       });
     });
 

@@ -5,6 +5,9 @@ import type { IQuadTransformer } from '../../lib/transform/IQuadTransformer';
 import { QuadTransformerClone } from '../../lib/transform/QuadTransformerClone';
 import { QuadTransformerIdentity } from '../../lib/transform/QuadTransformerIdentity';
 import { QuadTransformerReplaceIri } from '../../lib/transform/QuadTransformerReplaceIri';
+import {
+  QuadTransformerResourceTypeToPredicateTargetHash,
+} from '../../lib/transform/QuadTransformerResourceTypeToPredicateTargetHash';
 
 const arrayifyStream = require('arrayify-stream');
 const streamifyArray = require('streamify-array');
@@ -91,6 +94,54 @@ describe('Fragmenter', () => {
         .toEqual([
           DF.quad(DF.namedNode('c'), DF.namedNode('c'), DF.namedNode('c')),
           DF.quad(DF.namedNode('c'), DF.namedNode('c'), DF.namedNode('c')),
+        ]);
+    });
+
+    it('should handle a non-empty stream with a transformer with end callback', async() => {
+      transformers = [
+        new QuadTransformerResourceTypeToPredicateTargetHash(
+          'Post',
+          'vocabulary/Post$',
+          'vocabulary/id$',
+          'vocabulary/hasCreator$',
+        ),
+      ];
+      quadSource = {
+        getQuads: jest.fn(() => streamifyArray([
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('ex:c'),
+          ),
+        ])),
+      };
+      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+        .toEqual([
+          DF.quad(
+            DF.namedNode('ex:c#Post123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:c#Post123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:c#Post123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('ex:c'),
+          ),
         ]);
     });
   });

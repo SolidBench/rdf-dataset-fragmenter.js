@@ -110,7 +110,12 @@ export class QuadTransformerResourceTypeToPredicateTargetHash implements IQuadTr
     return [ quad ];
   }
 
-  // TODO: after processing is done, check if buffer is clear
+  public end(): void {
+    // After processing is done, check if buffer is clear
+    if (Object.keys(this.buffer).length > 0) {
+      throw new Error(`Detected non-finalized resources in the buffer: ${Object.keys(this.buffer)}`);
+    }
+  }
 }
 
 export interface IResource {

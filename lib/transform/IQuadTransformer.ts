@@ -9,4 +9,9 @@ export interface IQuadTransformer {
    * @param quad An RDF quad.
    */
   transform: (quad: RDF.Quad) => RDF.Quad[];
+
+  /**
+   * Called once all quads have been transformed.
+   */
+  end?: () => void;
 }
