@@ -4,10 +4,10 @@ import { Fragmenter } from '../../lib/Fragmenter';
 import type { IQuadTransformer } from '../../lib/transform/IQuadTransformer';
 import { QuadTransformerClone } from '../../lib/transform/QuadTransformerClone';
 import { QuadTransformerIdentity } from '../../lib/transform/QuadTransformerIdentity';
-import { QuadTransformerReplaceIri } from '../../lib/transform/QuadTransformerReplaceIri';
 import {
-  QuadTransformerResourceTypeToPredicateTargetHash,
-} from '../../lib/transform/QuadTransformerResourceTypeToPredicateTargetHash';
+  QuadTransformerRemapResourceIdentifier,
+} from '../../lib/transform/QuadTransformerRemapResourceIdentifier';
+import { QuadTransformerReplaceIri } from '../../lib/transform/QuadTransformerReplaceIri';
 
 const arrayifyStream = require('arrayify-stream');
 const streamifyArray = require('streamify-array');
@@ -99,8 +99,8 @@ describe('Fragmenter', () => {
 
     it('should handle a non-empty stream with a transformer with end callback', async() => {
       transformers = [
-        new QuadTransformerResourceTypeToPredicateTargetHash(
-          'Post',
+        new QuadTransformerRemapResourceIdentifier(
+          '#Post',
           'vocabulary/Post$',
           'vocabulary/id$',
           'vocabulary/hasCreator$',

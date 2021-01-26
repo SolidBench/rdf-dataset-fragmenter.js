@@ -1,16 +1,16 @@
 import { DataFactory } from 'rdf-data-factory';
 import {
-  QuadTransformerResourceTypeToPredicateTargetHash,
-} from '../../../lib/transform/QuadTransformerResourceTypeToPredicateTargetHash';
+  QuadTransformerRemapResourceIdentifier,
+} from '../../../lib/transform/QuadTransformerRemapResourceIdentifier';
 
 const DF = new DataFactory();
 
-describe('QuadTransformerResourceTypeToPredicateTargetHash', () => {
-  let transformer: QuadTransformerResourceTypeToPredicateTargetHash;
+describe('QuadTransformerRemapResourceIdentifier', () => {
+  let transformer: QuadTransformerRemapResourceIdentifier;
 
   beforeEach(() => {
-    transformer = new QuadTransformerResourceTypeToPredicateTargetHash(
-      'Post',
+    transformer = new QuadTransformerRemapResourceIdentifier(
+      '#Post',
       'vocabulary/Post$',
       'vocabulary/id$',
       'vocabulary/hasCreator$',
@@ -228,40 +228,6 @@ describe('QuadTransformerResourceTypeToPredicateTargetHash', () => {
         expect(transformer.buffer).toEqual({});
         expect(transformer.subjectMapping).toEqual({
           'ex:s': DF.namedNode('ex:c#Post123'),
-        });
-      });
-
-      it('should emit once id and creator are set with creator already having hash in IRI', async() => {
-        expect(transformer.transform(DF.quad(
-          DF.namedNode('ex:s'),
-          DF.namedNode('ex:vocabulary/id'),
-          DF.literal('123'),
-        ))).toEqual([]);
-        expect(transformer.transform(DF.quad(
-          DF.namedNode('ex:s'),
-          DF.namedNode('ex:vocabulary/hasCreator'),
-          DF.namedNode('ex:c#me'),
-        ))).toEqual([
-          DF.quad(
-            DF.namedNode('ex:c#me_Post123'),
-            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-            DF.namedNode('ex:vocabulary/Post'),
-          ),
-          DF.quad(
-            DF.namedNode('ex:c#me_Post123'),
-            DF.namedNode('ex:vocabulary/id'),
-            DF.literal('123'),
-          ),
-          DF.quad(
-            DF.namedNode('ex:c#me_Post123'),
-            DF.namedNode('ex:vocabulary/hasCreator'),
-            DF.namedNode('ex:c#me'),
-          ),
-        ]);
-
-        expect(transformer.buffer).toEqual({});
-        expect(transformer.subjectMapping).toEqual({
-          'ex:s': DF.namedNode('ex:c#me_Post123'),
         });
       });
 

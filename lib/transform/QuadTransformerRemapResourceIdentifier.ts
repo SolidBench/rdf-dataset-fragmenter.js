@@ -18,8 +18,8 @@ const DF = new DataFactory();
  * WARNING: This transformer assumes that all the applicable resources
  * have `rdf:type` occurring as first triple with the resource IRI as subject.
  */
-export class QuadTransformerResourceTypeToPredicateTargetHash implements IQuadTransformer {
-  private readonly hashPrefix: string;
+export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer {
+  private readonly newIdentifierSeparator: string;
   private readonly type: RegExp;
   private readonly identifierPredicate: RegExp;
   private readonly targetPredicate: RegExp;
@@ -28,12 +28,12 @@ export class QuadTransformerResourceTypeToPredicateTargetHash implements IQuadTr
   public readonly subjectMapping: Record<string, RDF.NamedNode>;
 
   public constructor(
-    hashPrefix: string,
+    newIdentifierSeparator: string,
     typeRegex: string,
     identifierPredicateRegex: string,
     targetPredicateRegex: string,
   ) {
-    this.hashPrefix = hashPrefix;
+    this.newIdentifierSeparator = newIdentifierSeparator;
     this.type = new RegExp(typeRegex, 'u');
     this.identifierPredicate = new RegExp(identifierPredicateRegex, 'u');
     this.targetPredicate = new RegExp(targetPredicateRegex, 'u');
@@ -90,9 +90,7 @@ export class QuadTransformerResourceTypeToPredicateTargetHash implements IQuadTr
       // Check if resource is complete
       if (resource.id && resource.creator) {
         // Determine new resource IRI
-        const hashPos = resource.creator.value.indexOf('#');
-        const separator = hashPos < 0 ? '#' : '_';
-        const resourceIri = DF.namedNode(resource.creator.value + separator + this.hashPrefix + resource.id);
+        const resourceIri = DF.namedNode(resource.creator.value + this.newIdentifierSeparator + resource.id);
 
         // Clear the buffer, and set rewriting rule
         delete this.buffer[quad.subject.value];

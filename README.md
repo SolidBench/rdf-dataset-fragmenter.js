@@ -251,7 +251,7 @@ Options:
 * `"QuadTransformerReplaceIri:_searchRegex"`: The regex to search for.
 * `"QuadTransformerReplaceIri:_replacementString"`: The string to replace.
 
-#### Replace IRI Quad Transformer
+#### Remap Resource Identifier Transformer
 
 A quad transformer that matches all resources of the given type,
 and rewrites its (subject) IRI (across all triples) so that it becomes part of the targeted resource.
@@ -269,21 +269,21 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 {
   "Fragmenter:_options_transformers": [
     {
-      "@type": "QuadTransformerResourceTypeToPredicateTargetHash",
-      "QuadTransformerResourceTypeToPredicateTargetHash:_hashPrefix": "Post",
-      "QuadTransformerResourceTypeToPredicateTargetHash:_typeRegex": "vocabulary/Post$",
-      "QuadTransformerResourceTypeToPredicateTargetHash:_identifierPredicateRegex": "vocabulary/id$",
-      "QuadTransformerResourceTypeToPredicateTargetHash:_targetPredicateRegex": "vocabulary/hasCreator$"
+      "@type": "QuadTransformerRemapResourceIdentifier",
+      "QuadTransformerRemapResourceIdentifier:_newIdentifierSeparator": "#Post",
+      "QuadTransformerRemapResourceIdentifier:_typeRegex": "vocabulary/Post$",
+      "QuadTransformerRemapResourceIdentifier:_identifierPredicateRegex": "vocabulary/id$",
+      "QuadTransformerRemapResourceIdentifier:_targetPredicateRegex": "vocabulary/hasCreator$"
     }
   ]
 }
 ```
 
 Options:
-* `"QuadTransformerResourceTypeToPredicateTargetHash:_hashPrefix"`: Prefix to use right after the hash character when minting a new resource IRI.
-* `"QuadTransformerResourceTypeToPredicateTargetHash:_typeRegex"`: The RDF type that should be used to capture resources.
-* `"QuadTransformerResourceTypeToPredicateTargetHash:_identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
-* `"QuadTransformerResourceTypeToPredicateTargetHash:_targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
+* `"QuadTransformerRemapResourceIdentifier:_newIdentifierSeparator"`: Separator string to use inbetween the target IRI and the identifier value when minting a new resource IRI.
+* `"QuadTransformerRemapResourceIdentifier:_typeRegex"`: The RDF type that should be used to capture resources.
+* `"QuadTransformerRemapResourceIdentifier:_identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
+* `"QuadTransformerRemapResourceIdentifier:_targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
 
 ## Extend
 
