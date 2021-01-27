@@ -285,6 +285,58 @@ Options:
 * `"QuadTransformerRemapResourceIdentifier:_identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
 * `"QuadTransformerRemapResourceIdentifier:_targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
 
+#### Append Resource Link Transformer
+
+A quad transformer that matches all resources of the given type, and appends a link.
+
+```json
+{
+  "Fragmenter:_options_transformers": [
+    {
+      "@type": "QuadTransformerAppendResourceLink",
+      "QuadTransformerAppendResourceLink:_typeRegex": "vocabulary/Person$",
+      "QuadTransformerAppendResourceLink:_predicate": "http://example.org/postsIndex",
+      "QuadTransformerAppendResourceLink:_link": "/posts"
+    }
+  ]
+}
+```
+
+Options:
+* `"QuadTransformerAppendResourceLink:_typeRegex"`: The RDF type that should be used to capture resources.
+* `"QuadTransformerAppendResourceLink:_predicate"`: Predicate IRI to define the link.
+* `"QuadTransformerAppendResourceLink:_link"`: The relative link from the resource identifier.
+
+#### Append Resource SCL Transformer
+
+A quad transformer that matches all resources of the given type,
+and appends an ACL policy using the `scl:appliesTo` and `scl:scope` predicates.
+
+Example output:
+```turtle
+<http://example.org/person> a <http://example.org/vocabulary/Person>.
+<http://example.org/person#policy-posts> scl:appliesTo <http://example.org/person>;
+                                         scl:scope "---MY POLICY---".
+```
+
+```json
+{
+  "Fragmenter:_options_transformers": [
+    {
+      "@type": "QuadTransformerAppendResourceScl",
+      "QuadTransformerAppendResourceScl:_typeRegex": "vocabulary/Person$",
+      "QuadTransformerAppendResourceScl:_identifierSuffix": "#policy-posts",
+      "QuadTransformerAppendResourceScl:_sclPolicy": "FOLLOW ?posts { <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#seeAlso> ?posts }"
+    }
+  ]
+}
+```
+
+Options:
+* `"QuadTransformerAppendResourceScl:_typeRegex"`: The RDF type that should be used to capture resources.
+* `"QuadTransformerAppendResourceScl:_identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
+* `"QuadTransformerAppendResourceScl:_sclPolicy"`: The SCL policy to append.
+
 ## Extend
 
 This tool has been created with extensibility in mind.
