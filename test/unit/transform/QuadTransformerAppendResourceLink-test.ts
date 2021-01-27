@@ -8,7 +8,7 @@ describe('QuadTransformerAppendResourceLink', () => {
   let transformer: IQuadTransformer;
 
   beforeEach(() => {
-    transformer = new QuadTransformerAppendResourceLink('vocabulary/Person$', 'ex:myp', '/posts');
+    transformer = new QuadTransformerAppendResourceLink('vocabulary/Person$', 'ex:myp', 'posts');
   });
 
   describe('transform', () => {
@@ -31,6 +31,25 @@ describe('QuadTransformerAppendResourceLink', () => {
       ]);
     });
 
+    it('should modify applicable terms when baseIRI ends with /', async() => {
+      expect(transformer.transform(DF.quad(
+        DF.namedNode('http://www.ldbc.eu/a/'),
+        DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        DF.namedNode('http://example.org/vocabulary/Person'),
+      ))).toEqual([
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a/'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('http://example.org/vocabulary/Person'),
+        ),
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a/'),
+          DF.namedNode('ex:myp'),
+          DF.namedNode('http://www.ldbc.eu/a/posts'),
+        ),
+      ]);
+    });
+
     it('should not modify non-applicable terms', async() => {
       expect(transformer.transform(DF.quad(
         DF.namedNode('http://www.ldbc.eu/a'),
@@ -41,6 +60,76 @@ describe('QuadTransformerAppendResourceLink', () => {
           DF.namedNode('http://www.ldbc.eu/a'),
           DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
           DF.namedNode('http://example.org/vocabulary/Person2'),
+        ),
+      ]);
+    });
+
+    it('should emit link types', async() => {
+      transformer = new QuadTransformerAppendResourceLink('vocabulary/Person$', 'ex:myp', 'posts', 'ex:Type');
+      expect(transformer.transform(DF.quad(
+        DF.namedNode('http://www.ldbc.eu/a'),
+        DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        DF.namedNode('http://example.org/vocabulary/Person'),
+      ))).toEqual([
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('http://example.org/vocabulary/Person'),
+        ),
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a'),
+          DF.namedNode('ex:myp'),
+          DF.namedNode('http://www.ldbc.eu/a/posts'),
+        ),
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a/posts'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:Type'),
+        ),
+      ]);
+    });
+
+    it('should handle reverse links', async() => {
+      transformer = new QuadTransformerAppendResourceLink('vocabulary/Person$', 'ex:myp', 'posts', undefined, true);
+      expect(transformer.transform(DF.quad(
+        DF.namedNode('http://www.ldbc.eu/a'),
+        DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        DF.namedNode('http://example.org/vocabulary/Person'),
+      ))).toEqual([
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('http://example.org/vocabulary/Person'),
+        ),
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a/posts'),
+          DF.namedNode('ex:myp'),
+          DF.namedNode('http://www.ldbc.eu/a'),
+        ),
+      ]);
+    });
+
+    it('should remove trailing slashes from the target', async() => {
+      transformer = new QuadTransformerAppendResourceLink('vocabulary/Person$',
+        'ex:myp',
+        '..',
+        undefined,
+        undefined,
+        true);
+      expect(transformer.transform(DF.quad(
+        DF.namedNode('http://www.ldbc.eu/a/b'),
+        DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+        DF.namedNode('http://example.org/vocabulary/Person'),
+      ))).toEqual([
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a/b'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('http://example.org/vocabulary/Person'),
+        ),
+        DF.quad(
+          DF.namedNode('http://www.ldbc.eu/a/b'),
+          DF.namedNode('ex:myp'),
+          DF.namedNode('http://www.ldbc.eu/a'),
         ),
       ]);
     });

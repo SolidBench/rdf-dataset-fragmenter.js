@@ -1621,10 +1621,29 @@ componentsjs-generator@^2.0.0:
     minimist "^1.2.5"
     semver "^7.3.2"
 
-componentsjs@^4.0.0, componentsjs@^4.0.4:
+componentsjs@^4.0.0:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/componentsjs/-/componentsjs-4.0.4.tgz#6a9a7106eaac08726c69b4193cbb329104ef1ab3"
   integrity sha512-ShaiHDcUPmiBbfRQwiV6b5oiooAkzzW7l//gZaE+rTwhRBWGbMU7Ll3NKsf+T77pn297VDzgvj7xw631Op95HA==
+  dependencies:
+    "@types/minimist" "^1.2.0"
+    "@types/node" "^14.14.7"
+    "@types/rdf-js" "*"
+    "@types/semver" "^7.3.4"
+    jsonld-context-parser "^2.1.1"
+    minimist "^1.2.0"
+    rdf-data-factory "^1.0.4"
+    rdf-object "^1.8.0"
+    rdf-parse "^1.7.0"
+    rdf-quad "^1.5.0"
+    rdf-terms "^1.6.2"
+    semver "^7.3.2"
+    winston "^3.3.3"
+
+componentsjs@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/componentsjs/-/componentsjs-4.0.6.tgz#c1a60fd141a5cadec552587dc550a89616582249"
+  integrity sha512-MPvKSLVo4SX3PafGMqKPzV+i8JdivYXuaJb2CsEF86TUgniXX3i661D0MDBwMWnd0LXWbI1sNq0kKJBKrL/wBw==
   dependencies:
     "@types/minimist" "^1.2.0"
     "@types/node" "^14.14.7"
@@ -5078,7 +5097,7 @@ regexpp@^3.0.0, regexpp@^3.1.0:
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-3.1.0.tgz#206d0ad0a5648cffbdb8ae46438f3dc51c9f78e2"
   integrity sha512-ZOIzd8yVsQQA7j8GCSlPGXwg5PfmA1mrq0JP4nGhh54LaKN3xdai/vHUDu74pKwV8OxseMS65u2NImosQcSD0Q==
 
-relative-to-absolute-iri@^1.0.0, relative-to-absolute-iri@^1.0.2, relative-to-absolute-iri@^1.0.5:
+relative-to-absolute-iri@^1.0.0, relative-to-absolute-iri@^1.0.2, relative-to-absolute-iri@^1.0.5, relative-to-absolute-iri@^1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/relative-to-absolute-iri/-/relative-to-absolute-iri-1.0.6.tgz#7111dac5730587e3fbca3e0f48585fbc88c147a7"
   integrity sha512-Xw5/Zx6iWSCMJUXwXVOjySjH8Xli4hVFL9QQFvkl1qEmFBG94J+QUI9emnoctOCD3285f1jNV+QWV9eDYwIdfQ==

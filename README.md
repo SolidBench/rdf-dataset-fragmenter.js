@@ -306,6 +306,9 @@ Options:
 * `"QuadTransformerAppendResourceLink:_typeRegex"`: The RDF type that should be used to capture resources.
 * `"QuadTransformerAppendResourceLink:_predicate"`: Predicate IRI to define the link.
 * `"QuadTransformerAppendResourceLink:_link"`: The relative link from the resource identifier.
+* `"QuadTransformerAppendResourceLink:_linkType"`: Optional: `rdf:type` IRI that should be assigned to the link IRI as an extra triple.
+* `"QuadTransformerAppendResourceLink:_reverse"`: Optional: If the subject and object of the link triple should be revered.
+* `"QuadTransformerAppendResourceLink:_linkRemoveTrailingSlash"`: Optional: If trailing slashes should be forcefully removed from the link IRI.
 
 #### Append Resource SCL Transformer
 

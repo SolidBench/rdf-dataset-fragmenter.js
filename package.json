@@ -34,13 +34,14 @@
     "@types/mkdirp": "^1.0.1",
     "@types/rdf-js": "*",
     "async-lock": "^1.2.4",
-    "componentsjs": "^4.0.4",
+    "componentsjs": "^4.0.6",
     "lru-cache": "^6.0.0",
     "mkdirp": "^1.0.4",
     "rdf-parse": "^1.7.0",
     "rdf-serialize": "^1.1.0",
     "rdf-string": "^1.5.0",
-    "rdf-terms": "^1.6.2"
+    "rdf-terms": "^1.6.2",
+    "relative-to-absolute-iri": "^1.0.6"
   },
   "pre-commit": [
     "build",
