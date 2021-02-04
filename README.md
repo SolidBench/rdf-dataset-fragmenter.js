@@ -170,6 +170,48 @@ This means that all the given strategies will be executed in parallel.
 }
 ```
 
+#### Exception Fragmentation Strategy
+
+A fragmentation strategy that delegates quads to a base strategy,
+but allows defining exceptions that should be delegated to other strategies.
+These exceptions are defined in terms of a matcher (e.g. match by quad predicate).
+
+The following config uses the subject-based strategy for everything,
+except for predicate1 and predicate2 that will be delegated to the object-based strategy.
+
+```json
+{
+  "Fragmenter:_options_fragmentationStrategy": {
+    "@type": "FragmentationStrategyException",
+    "FragmentationStrategyException:_strategy": {
+      "@type": "FragmentationStrategySubject"
+    },
+    "FragmentationStrategyException:_exceptions": [
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "FragmentationStrategyExceptionEntry:_matcher": {
+          "@type": "QuadMatcherPredicate",
+          "QuadMatcherPredicate:_predicateRegex": "vocabulary/predicate1"
+        },
+        "FragmentationStrategyExceptionEntry:_strategy": {
+          "@type": "FragmentationStrategyObject"
+        }
+      },
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "FragmentationStrategyExceptionEntry:_matcher": {
+          "@type": "QuadMatcherPredicate",
+          "QuadMatcherPredicate:_predicateRegex": "vocabulary/predicate2"
+        },
+        "FragmentationStrategyExceptionEntry:_strategy": {
+          "@type": "FragmentationStrategyObject"
+        }
+      }
+    ]
+  }
+}
+```
+
 ### Quad Sinks
 
 A quad sink is able to direct a stream of quads as output from the fragmentation process.
