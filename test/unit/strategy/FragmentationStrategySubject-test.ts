@@ -11,6 +11,7 @@ describe('FragmentationStrategySubject', () => {
   let strategy: FragmentationStrategySubject;
   let quadsEmpty: RDF.Quad[];
   let quadsNoBnodes: RDF.Quad[];
+  let quadsNoBnodesTrailingSlash: RDF.Quad[];
   let quadsVariables: RDF.Quad[];
   let quadsOwnedBnode: RDF.Quad[];
   let quadsOwnedBnodeReverse: RDF.Quad[];
@@ -30,6 +31,11 @@ describe('FragmentationStrategySubject', () => {
       DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
       DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
       DF.quad(DF.namedNode('ex:s2'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
+    ];
+    quadsNoBnodesTrailingSlash = [
+      DF.quad(DF.namedNode('ex:s1/'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
+      DF.quad(DF.namedNode('ex:s1/'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
+      DF.quad(DF.namedNode('ex:s2/'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
     ];
     quadsVariables = [
       DF.quad(DF.variable('ex:s1'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
@@ -271,6 +277,28 @@ describe('FragmentationStrategySubject', () => {
         expect(sink.push).toHaveBeenNthCalledWith(4, 'ex:s2', quadsOwnedBnodeMultipleDiffDoc[2]);
         expect((<any> strategy).blankNodeBuffer.pendingBlankKeyQuads).toEqual({});
       });
+    });
+  });
+
+  describe('with relative path', () => {
+    beforeEach(() => {
+      strategy = new FragmentationStrategySubject(false, 'interests');
+    });
+
+    it('should handle a stream without blank nodes', async() => {
+      await strategy.fragment(streamifyArray([ ...quadsNoBnodes ]), sink);
+      expect(sink.push).toHaveBeenCalledTimes(3);
+      expect(sink.push).toHaveBeenNthCalledWith(1, 'ex:s1/interests', quadsNoBnodes[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(2, 'ex:s1/interests', quadsNoBnodes[1]);
+      expect(sink.push).toHaveBeenNthCalledWith(3, 'ex:s2/interests', quadsNoBnodes[2]);
+    });
+
+    it('should handle a stream without blank nodes with trailing slash', async() => {
+      await strategy.fragment(streamifyArray([ ...quadsNoBnodesTrailingSlash ]), sink);
+      expect(sink.push).toHaveBeenCalledTimes(3);
+      expect(sink.push).toHaveBeenNthCalledWith(1, 'ex:s1/interests', quadsNoBnodesTrailingSlash[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(2, 'ex:s1/interests', quadsNoBnodesTrailingSlash[1]);
+      expect(sink.push).toHaveBeenNthCalledWith(3, 'ex:s2/interests', quadsNoBnodesTrailingSlash[2]);
     });
   });
 });

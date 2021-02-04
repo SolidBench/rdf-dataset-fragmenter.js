@@ -141,6 +141,10 @@ A fragmentation strategy that places quads into their subject's document.
 }
 ```
 
+Optionally, the `FragmentationStrategySubject:_relativePath` property can be used
+to define a relative IRI that should be applied to the subject IRI before determining its document.
+This will not change the quad, only the document IRI.
+
 #### Object Fragmentation Strategy
 
 A fragmentation strategy that places quads into their object's document.
