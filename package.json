@@ -17,6 +17,9 @@
     "url": "https://github.com/rubensworks/rdf-dataset-fragmenter.js/issues"
   },
   "homepage": "https://github.com/rubensworks/rdf-dataset-fragmenter.js#readme",
+  "bin": {
+    "rdf-dataset-fragmenter": "./bin/runner.js"
+  },
   "license": "MIT",
   "lsd:module": true,
   "files": [
