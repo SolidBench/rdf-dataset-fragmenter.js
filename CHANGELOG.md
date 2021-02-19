@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.1"></a>
+## [v1.1.1](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.0.0...v1.1.1) - 2021-02-19
+
+### Fixed
+* [Fix directory illegal characters on Windows](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/6d6ee5498fc47d0b51075de668c3abdc25620b76)
+
 <a name="v1.1.0"></a>
 ## [v1.1.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.0.0...v1.1.0) - 2021-02-18
 
