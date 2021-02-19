@@ -52,6 +52,13 @@ describe('QuadSinkFile', () => {
         expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
       });
 
+      it('should escape illegal directory names', async() => {
+        await sink.push('http://example.org/1/file:3000.ttl', quad);
+        expect(fileWriter.getWriteStream)
+          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
+        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
+      });
+
       it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
         await sink.push('http://example.org/1/file', quad);
         expect(fileWriter.getWriteStream)

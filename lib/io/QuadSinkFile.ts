@@ -53,6 +53,9 @@ export class QuadSinkFile implements IQuadSink {
       throw new Error(`No IRI mapping found for ${iri}`);
     }
 
+    // Escape illegal directory names
+    path = path.replace(/[*|"<>?:]/ug, '_');
+
     // Add file extension if we don't have one yet
     if (this.fileExtension && !/\.[a-z]$/iu.exec(this.fileExtension)) {
       path = `${path}${this.fileExtension}`;
