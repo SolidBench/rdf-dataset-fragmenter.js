@@ -17,11 +17,17 @@ export class QuadSourceComposite implements IQuadSource {
 
   public getQuads(): RDF.Stream & Readable {
     const concat = new PassThrough({ objectMode: true });
-    for (let i = 0; i < this.sources.length; i++) {
-      const source = this.sources[i];
+    let endedStreams = 0;
+    for (const source of this.sources) {
       const stream = source.getQuads();
-      stream.pipe(concat, { end: i === this.sources.length - 1 });
+      stream.pipe(concat, { end: false });
       stream.on('error', error => concat.emit('error', error));
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      stream.on('end', () => {
+        if (++endedStreams === this.sources.length) {
+          concat.push(null);
+        }
+      });
     }
 
     // Special case when we have no sources
