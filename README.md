@@ -174,6 +174,22 @@ This means that all the given strategies will be executed in parallel.
 }
 ```
 
+#### Resource Object Fragmentation Strategy
+
+A fragmentation strategy that groups triples by (subject) resources,
+and places quads into the document identified by the given predicate value.
+
+Blank nodes are not supported.
+
+```json
+{
+  "Fragmenter:_options_fragmentationStrategy": {
+    "@type": "FragmentationStrategyResourceObject",
+    "FragmentationStrategyResourceObject:_targetPredicateRegex": "vocabulary/hasMaliciousCreator$"
+  }
+}
+```
+
 #### Exception Fragmentation Strategy
 
 A fragmentation strategy that delegates quads to a base strategy,
@@ -385,6 +401,71 @@ Options:
 * `"QuadTransformerAppendResourceScl:_typeRegex"`: The RDF type that should be used to capture resources.
 * `"QuadTransformerAppendResourceScl:_identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
 * `"QuadTransformerAppendResourceScl:_sclPolicy"`: The SCL policy to append.
+
+### Quad Matchers
+
+Different strategies for matching quads.
+These matchers are mainly used for a `FragmentationStrategyExceptionEntry`.
+
+#### Predicate Matcher
+
+Matches a quad by the given predicate regex.
+
+```json
+{
+  "Fragmenter:_options_fragmentationStrategy": {
+    "@type": "FragmentationStrategyException",
+    "FragmentationStrategyException:_strategy": {
+      "@type": "FragmentationStrategySubject"
+    },
+    "FragmentationStrategyException:_exceptions": [
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "FragmentationStrategyExceptionEntry:_matcher": {
+          "@type": "QuadMatcherPredicate",
+          "QuadMatcherPredicate:_predicateRegex": "vocabulary/predicate1"
+        },
+        "FragmentationStrategyExceptionEntry:_strategy": {
+          "@type": "FragmentationStrategyObject"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Resource Type Matcher
+
+A quad matcher that matches all resources of the given type.
+
+Blank nodes are not supported.
+
+**WARNING:** This matcher assumes that all the applicable resources
+have `rdf:type` occurring as first triple with the resource IRI as subject.
+
+```json
+{
+  "Fragmenter:_options_fragmentationStrategy": {
+    "@type": "FragmentationStrategyException",
+    "FragmentationStrategyException:_strategy": {
+      "@type": "FragmentationStrategySubject"
+    },
+    "FragmentationStrategyException:_exceptions": [
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "FragmentationStrategyExceptionEntry:_matcher": {
+          "@type": "QuadMatcherResourceType",
+          "QuadMatcherResourceType:_typeRegex": "vocabulary/Person$"
+        },
+        "FragmentationStrategyExceptionEntry:_strategy": {
+          "@type": "FragmentationStrategyResourceObject",
+          "FragmentationStrategyResourceObject:_targetPredicateRegex": "vocabulary/hasMaliciousCreator$"
+        }
+      }
+    ]
+  }
+}
+```
 
 ## Extend
 
