@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.2.0"></a>
+## [v1.2.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.1.1...v1.2.0) - 2021-04-01
+
+### Added
+* [Support resource object fragmentation](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/4a61af10b011152371cfd5c52a28f17d8d40c66a)
+
+### Fixed
+* [Fix race condition in composite source causing early termination](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/05b72d3725093cec15cad02986f8b6b9a0ac06d2)
+
 <a name="v1.1.1"></a>
 ## [v1.1.1](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.0.0...v1.1.1) - 2021-02-19
 
