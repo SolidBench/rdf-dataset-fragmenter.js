@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.3.0"></a>
+## [v1.3.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.2.0...v1.3.0) - 2021-04-27
+
+### Added
+* [Expose runConfig function](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/419d6a7c3d3ac36b3166d465882a4ef9a513aab4)
+
 <a name="v1.2.0"></a>
 ## [v1.2.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.1.1...v1.2.0) - 2021-04-01
 
