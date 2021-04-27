@@ -25,4 +25,5 @@ export * from './lib/transform/QuadTransformerRemapResourceIdentifier';
 export * from './lib/transform/QuadTransformerReplaceIri';
 export * from './lib/transform/QuadTransformerSetIriExtension';
 export * from './lib/transform/QuadTransformerTerms';
+export * from './lib/CliRunner';
 export * from './lib/Fragmenter';

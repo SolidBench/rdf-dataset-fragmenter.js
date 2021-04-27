@@ -4,6 +4,21 @@ import { ComponentsManager } from 'componentsjs';
 import type { Fragmenter } from './Fragmenter';
 
 /**
+ * Run function for starting the fragmenter for a given config.
+ * @param configPath - Path to a config.
+ * @param properties - Components loader properties.
+ */
+export const runConfig = async function(
+  configPath: string,
+  properties: IComponentsManagerBuilderOptions<Fragmenter>,
+): Promise<void> {
+  const manager = await ComponentsManager.build(properties);
+  await manager.configRegistry.register(configPath);
+  const fragmenter: Fragmenter = await manager.instantiate('urn:rdf-dataset-fragmenter:default');
+  return await fragmenter.fragment();
+};
+
+/**
  * Generic run function for starting the fragmenter from a given config
  * @param args - Command line arguments.
  * @param stdin - Standard input stream.
@@ -29,10 +44,7 @@ Usage:
     const configPath = args[0];
 
     // Setup from config file
-    const manager = await ComponentsManager.build(properties);
-    await manager.configRegistry.register(configPath);
-    const fragmenter: Fragmenter = await manager.instantiate('urn:rdf-dataset-fragmenter:default');
-    return await fragmenter.fragment();
+    return await runConfig(configPath, properties);
   })().then((): void => {
     // Done
   }).catch(error => {
