@@ -1,6 +1,6 @@
 # RDF Dataset Fragmenter
 
-[![Build Status](https://travis-ci.com/rubensworks/rdf-dataset-fragmenter.js.svg?branch=master)](https://travis-ci.com/rubensworks/rdf-dataset-fragmenter.js)
+[![Build status](https://github.com/rubensworks/rdf-dataset-fragmenter.js/workflows/CI/badge.svg)](https://github.com/rubensworks/rdf-dataset-fragmenter.js/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/rubensworks/rdf-dataset-fragmenter.js/badge.svg?branch=master)](https://coveralls.io/github/rubensworks/rdf-dataset-fragmenter.js?branch=master)
 [![npm version](https://badge.fury.io/js/rdf-dataset-fragmenter.svg)](https://www.npmjs.com/package/rdf-dataset-fragmenter)
 
