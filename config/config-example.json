@@ -6,6 +6,18 @@
     "@type": "QuadSourceFile",
     "QuadSourceFile:_options_filePath": "path/to/dataset.ttl"
   },
+  "options_transformers": [
+    {
+      "@type": "QuadTransformerReplaceIri",
+      "QuadTransformerReplaceIri:_searchRegex": "^http://dbpedia.org",
+      "QuadTransformerReplaceIri:_replacementString": "http://localhost:3000/dbpedia.org"
+    },
+    {
+      "@type": "QuadTransformerReplaceIri",
+      "QuadTransformerReplaceIri:_searchRegex": "^http://dbpedia.org",
+      "QuadTransformerReplaceIri:_replacementString": "http://localhost:3000/dbpedia.org"
+    }
+  ],
   "Fragmenter:_options_fragmentationStrategy": {
     "@type": "FragmentationStrategySubject"
   },
