@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.4.0"></a>
+## [v1.4.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.3.0...v1.4.0) - 2021-08-30
+
+### Changed
+* [Migrate to @rdfjs/types](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/809ead1101f800299a3cde497425c0469b7fdc66)
+
 <a name="v1.3.0"></a>
 ## [v1.3.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.2.0...v1.3.0) - 2021-04-27
 
