@@ -1,4 +1,4 @@
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import type { QuadTermName } from 'rdf-terms';
 import { mapTerms } from 'rdf-terms';
 import type { IQuadTransformer } from './IQuadTransformer';

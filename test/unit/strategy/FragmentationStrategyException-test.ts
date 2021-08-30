@@ -1,6 +1,6 @@
 import { Readable } from 'stream';
+import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import type * as RDF from 'rdf-js';
 import {
   FragmentationStrategyException,
   FragmentationStrategyExceptionEntry,
@@ -29,7 +29,7 @@ describe('FragmentationStrategyException', () => {
     };
     strategySub1 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           stream.on('error', (error: any) => {
             error1 = error;
             resolve();
@@ -41,7 +41,7 @@ describe('FragmentationStrategyException', () => {
     };
     strategySub2 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           stream.on('error', (error: any) => {
             error2 = error;
             resolve();
@@ -53,7 +53,7 @@ describe('FragmentationStrategyException', () => {
     };
     strategySub3 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           stream.on('error', (error: any) => {
             error3 = error;
             resolve();

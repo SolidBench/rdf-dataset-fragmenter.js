@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import { dirname } from 'path';
 import type { Writable } from 'stream';
 import { PassThrough } from 'stream';
+import type * as RDF from '@rdfjs/types';
 import AsyncLock = require('async-lock');
 import LRUCache = require('lru-cache');
 import mkdirp = require('mkdirp');
-import type * as RDF from 'rdf-js';
 import rdfSerializer from 'rdf-serialize';
 
 /**

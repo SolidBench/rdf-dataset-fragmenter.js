@@ -1,6 +1,6 @@
 import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
 import type { IFragmentationStrategy } from './IFragmentationStrategy';
 

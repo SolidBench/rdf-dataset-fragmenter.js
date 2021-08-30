@@ -1,6 +1,6 @@
 import type { TransformCallback } from 'stream';
 import { Transform } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import type { IQuadTransformer } from './IQuadTransformer';
 
 /**

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import type { Readable } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import rdfParser from 'rdf-parse';
 import type { IQuadSource } from './IQuadSource';
 

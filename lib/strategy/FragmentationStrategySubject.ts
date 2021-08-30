@@ -1,4 +1,4 @@
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import { resolve } from 'relative-to-absolute-iri';
 import type { IQuadSink } from '../io/IQuadSink';
 import { FragmentationBlankNodeBuffer } from './FragmentationBlankNodeBuffer';

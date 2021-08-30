@@ -25,7 +25,7 @@ describe('FragmentationStrategyComposite', () => {
     };
     strategySub1 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           stream.on('error', (error: any) => {
             error1 = error;
             resolve();
@@ -37,7 +37,7 @@ describe('FragmentationStrategyComposite', () => {
     };
     strategySub2 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           stream.on('error', (error: any) => {
             error2 = error;
             resolve();
@@ -49,7 +49,7 @@ describe('FragmentationStrategyComposite', () => {
     };
     strategySub3 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
           stream.on('error', (error: any) => {
             error3 = error;
             resolve();

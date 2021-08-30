@@ -1,4 +1,4 @@
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
 

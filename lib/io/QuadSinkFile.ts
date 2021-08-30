@@ -1,6 +1,6 @@
 import * as readline from 'readline';
 import type { Writable } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from './IQuadSink';
 import { ParallelFileWriter } from './ParallelFileWriter';
 

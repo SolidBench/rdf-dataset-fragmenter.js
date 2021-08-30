@@ -1,6 +1,6 @@
 import type { Readable } from 'stream';
 import { PassThrough } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
 import type { IQuadMatcher } from '../quadmatcher/IQuadMatcher';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';

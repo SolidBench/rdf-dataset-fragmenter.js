@@ -1,5 +1,5 @@
+import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import type * as RDF from 'rdf-js';
 import { QuadTransformerTerms } from './QuadTransformerTerms';
 
 const DF = new DataFactory();

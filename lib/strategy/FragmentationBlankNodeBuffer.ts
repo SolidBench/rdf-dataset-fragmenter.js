@@ -1,4 +1,4 @@
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import { quadToStringQuad } from 'rdf-string';
 import type { QuadTermName } from 'rdf-terms';
 import type { IQuadSink } from '../io/IQuadSink';

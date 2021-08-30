@@ -1,5 +1,5 @@
 import type { Readable } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 
 /**
  * A quad source is able to provide a stream of quads.
