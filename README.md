@@ -297,6 +297,22 @@ A quad transformer that that replaces (parts of) IRIs.
 }
 ```
 
+This also supports group-based replacements,
+where a group can be identified via `()` in the search regex,
+and a reference to the group can be made via `$...`.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerReplaceIri",
+      "searchRegex": "^http://www.ldbc.eu/data/pers([0-9]*)$",
+      "replacementString": "http://www.ldbc.eu/pods/$1/profile/card#me"
+    }
+  ]
+}
+```
+
 Options:
 * `"searchRegex"`: The regex to search for.
 * `"replacementString"`: The string to replace.
