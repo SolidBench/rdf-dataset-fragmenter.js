@@ -44,9 +44,18 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
   }
 
   public transform(quad: RDF.Quad): RDF.Quad[] {
-    // If this subject has been remapped (resource has been fully defined before)
+    // If a subject or object in the quad has been remapped (resource has been fully defined before)
+    let modified = false;
     if (quad.subject.termType === 'NamedNode' && this.subjectMapping[quad.subject.value]) {
-      return [ DF.quad(this.subjectMapping[quad.subject.value], quad.predicate, quad.object, quad.graph) ];
+      quad = DF.quad(this.subjectMapping[quad.subject.value], quad.predicate, quad.object, quad.graph);
+      modified = true;
+    }
+    if (quad.object.termType === 'NamedNode' && this.subjectMapping[quad.object.value]) {
+      quad = DF.quad(quad.subject, quad.predicate, this.subjectMapping[quad.object.value], quad.graph);
+      modified = true;
+    }
+    if (modified) {
+      return [ quad ];
     }
 
     // Add buffer entry on applicable resource type

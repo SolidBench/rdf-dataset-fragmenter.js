@@ -272,6 +272,36 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
           expect(transformer.buffer).toEqual({});
         });
 
+        it('should modify applicable objects', async() => {
+          expect(transformer.transform(DF.quad(
+            DF.namedNode('ex:s_other'),
+            DF.namedNode('ex:p'),
+            DF.namedNode('ex:s'),
+          ))).toEqual([
+            DF.quad(
+              DF.namedNode('ex:s_other'),
+              DF.namedNode('ex:p'),
+              DF.namedNode('ex:c#Post123'),
+            ),
+          ]);
+          expect(transformer.buffer).toEqual({});
+        });
+
+        it('should modify applicable subjects and objects', async() => {
+          expect(transformer.transform(DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:p'),
+            DF.namedNode('ex:s'),
+          ))).toEqual([
+            DF.quad(
+              DF.namedNode('ex:c#Post123'),
+              DF.namedNode('ex:p'),
+              DF.namedNode('ex:c#Post123'),
+            ),
+          ]);
+          expect(transformer.buffer).toEqual({});
+        });
+
         it('should modify applicable subjects even if it would match the type', async() => {
           expect(transformer.transform(DF.quad(
             DF.namedNode('ex:s'),
