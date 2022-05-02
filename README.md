@@ -41,36 +41,30 @@ The config file that should be passed to the command line tool has the following
   "@context": "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter/^1.0.0/components/context.jsonld",
   "@id": "urn:rdf-dataset-fragmenter:default",
   "@type": "Fragmenter",
-  "Fragmenter:_options_quadSource": {
+  "quadSource": {
     "@type": "QuadSourceFile",
-    "QuadSourceFile:_options_filePath": "path/to/dataset.ttl"
+    "filePath": "path/to/dataset.ttl"
   },
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategySubject"
   },
-  "Fragmenter:_options_quadSink": {
+  "quadSink": {
     "@type": "QuadSinkFile",
-    "QuadSinkFile:_options_log": true,
-    "QuadSinkFile:_options_outputFormat": "application/n-quads",
-    "QuadSinkFile:_options_iriToPath": [
-      {
-        "QuadSinkFile:_options_iriToPath_key": "http://example.org/base/",
-        "QuadSinkFile:_options_iriToPath_value": "output/base/"
-      },
-      {
-        "QuadSinkFile:_options_iriToPath_key": "http://example.org/other/",
-        "QuadSinkFile:_options_iriToPath_value": "output/other/"
-      }
-    ]
+    "log": true,
+    "outputFormat": "application/n-quads",
+    "iriToPath": {
+      "http://example.org/base/": "output/base/",
+      "http://example.org/other/": "output/other/"
+    }
   }
 }
 ```
 
 The important parts in this config file are:
-* `"Fragmenter:_options_quadSource"`: The source from which RDF triples/quads should be read from.
-* `"Fragmenter:_options_fragmentationStrategy"`: The strategy that will be employed for fragmentation.
-* `"Fragmenter:_options_quadSink"`: The target into which fragmented RDF triples/quads will be written from.
-* `"Fragmenter:_options_quadSource"`: Optional transformations over the quad stream.
+* `"quadSource"`: The source from which RDF triples/quads should be read from.
+* `"fragmentationStrategy"`: The strategy that will be employed for fragmentation.
+* `"quadSink"`: The target into which fragmented RDF triples/quads will be written from.
+* `"quadSource"`: Optional transformations over the quad stream.
 
 In this example, the config file will read from the `"path/to/dataset.ttl"` file,
 employ subject-based fragmentation, and will write into files in the `"output/"` directory.
@@ -91,9 +85,9 @@ A file quad source takes as parameter the path to a local RDF file.
 
 ```json
 {
-  "Fragmenter:_options_quadSource": {
+  "quadSource": {
     "@type": "QuadSourceFile",
-    "QuadSourceFile:_options_filePath": "path/to/dataset.ttl"
+    "filePath": "path/to/dataset.ttl"
   }
 }
 ```
@@ -104,20 +98,20 @@ A composite quad source allows you to read from multiple quad sources in paralle
 
 ```json
 {
-  "Fragmenter:_options_quadSource": {
+  "quadSource": {
     "@type": "QuadSourceComposite",
-    "QuadSourceComposite:_sources": [
+    "sources": [
       {
         "@type": "QuadSourceFile",
-        "QuadSourceFile:_options_filePath": "path/to/dataset1.ttl"
+        "filePath": "path/to/dataset1.ttl"
       },
       {
         "@type": "QuadSourceFile",
-        "QuadSourceFile:_options_filePath": "path/to/dataset2.ttl"
+        "filePath": "path/to/dataset2.ttl"
       },
       {
         "@type": "QuadSourceFile",
-        "QuadSourceFile:_options_filePath": "path/to/dataset3.ttl"
+        "filePath": "path/to/dataset3.ttl"
       }
     ]
   }
@@ -135,13 +129,13 @@ A fragmentation strategy that places quads into their subject's document.
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategySubject"
   }
 }
 ```
 
-Optionally, the `FragmentationStrategySubject:_relativePath` property can be used
+Optionally, the `relativePath` property can be used
 to define a relative IRI that should be applied to the subject IRI before determining its document.
 This will not change the quad, only the document IRI.
 
@@ -151,7 +145,7 @@ A fragmentation strategy that places quads into their object's document.
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategyObject"
   }
 }
@@ -164,9 +158,9 @@ This means that all the given strategies will be executed in parallel.
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategyComposite",
-    "FragmentationStrategyComposite:_strategies": [
+    "strategies": [
       { "@type": "FragmentationStrategySubject" },
       { "@type": "FragmentationStrategyObject" }
     ]
@@ -183,9 +177,9 @@ Blank nodes are not supported.
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategyResourceObject",
-    "FragmentationStrategyResourceObject:_targetPredicateRegex": "vocabulary/hasMaliciousCreator$"
+    "targetPredicateRegex": "vocabulary/hasMaliciousCreator$"
   }
 }
 ```
@@ -201,29 +195,29 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategyException",
-    "FragmentationStrategyException:_strategy": {
+    "strategy": {
       "@type": "FragmentationStrategySubject"
     },
-    "FragmentationStrategyException:_exceptions": [
+    "exceptions": [
       {
         "@type": "FragmentationStrategyExceptionEntry",
-        "FragmentationStrategyExceptionEntry:_matcher": {
+        "matcher": {
           "@type": "QuadMatcherPredicate",
-          "QuadMatcherPredicate:_predicateRegex": "vocabulary/predicate1"
+          "predicateRegex": "vocabulary/predicate1"
         },
-        "FragmentationStrategyExceptionEntry:_strategy": {
+        "strategy": {
           "@type": "FragmentationStrategyObject"
         }
       },
       {
         "@type": "FragmentationStrategyExceptionEntry",
-        "FragmentationStrategyExceptionEntry:_matcher": {
+        "matcher": {
           "@type": "QuadMatcherPredicate",
-          "QuadMatcherPredicate:_predicateRegex": "vocabulary/predicate2"
+          "predicateRegex": "vocabulary/predicate2"
         },
-        "FragmentationStrategyExceptionEntry:_strategy": {
+        "strategy": {
           "@type": "FragmentationStrategyObject"
         }
       }
@@ -242,30 +236,24 @@ A quad sink that writes to files using an IRI to local file system path mapping.
 
 ```json
 {
-  "Fragmenter:_options_quadSink": {
+  "quadSink": {
     "@type": "QuadSinkFile",
-    "QuadSinkFile:_options_log": true,
-    "QuadSinkFile:_options_outputFormat": "application/n-quads",
-    "QuadSinkFile:_options_fileExtension": "$.nq",
-    "QuadSinkFile:_options_iriToPath": [
-      {
-        "QuadSinkFile:_options_iriToPath_key": "http://example.org/base/",
-        "QuadSinkFile:_options_iriToPath_value": "output/base/"
-      },
-      {
-        "QuadSinkFile:_options_iriToPath_key": "http://example.org/other/",
-        "QuadSinkFile:_options_iriToPath_value": "output/other/"
-      }
-    ]
+    "log": true,
+    "outputFormat": "application/n-quads",
+    "fileExtension": "$.nq",
+    "iriToPath": {
+      "http://example.org/base/": "output/base/",
+      "http://example.org/other/": "output/other/"
+    }
   }
 }
 ```
 
 Options:
-* `"QuadSinkFile:_options_log"`: If a quad counter should be shown to show the current progress.
-* `"QuadSinkFile:_options_outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
-* `"QuadSinkFile:_options_fileExtension"`: An optional extension to add to resulting files.
-* `"QuadSinkFile:_options_iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
+* `"log"`: If a quad counter should be shown to show the current progress.
+* `"outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
+* `"fileExtension"`: An optional extension to add to resulting files.
+* `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
 
 ### Quad Transformers
 
@@ -279,19 +267,19 @@ A quad transformer that enforces the configured extension on all named nodes.
 
 ```json
 {
-  "Fragmenter:_options_transformers": [
+  "transformers": [
     {
       "@type": "QuadTransformerSetIriExtension",
-      "QuadTransformerSetIriExtension:_extension": "nq",
-      "QuadTransformerSetIriExtension:_iriPattern": "^http://dbpedia.org"
+      "extension": "nq",
+      "iriPattern": "^http://dbpedia.org"
     }
   ]
 }
 ```
 
 Options:
-* `"QuadTransformerSetIriExtension:_extension"`: The extension to set, excluding `.`.
-* `"QuadTransformerSetIriExtension:_iriPattern"`: An optional regex that to indicate what IRIs this transformer should be applied to. If undefined, all IRIs will be matched.
+* `"extension"`: The extension to set, excluding `.`.
+* `"iriPattern"`: An optional regex that to indicate what IRIs this transformer should be applied to. If undefined, all IRIs will be matched.
 
 #### Replace IRI Quad Transformer
 
@@ -299,19 +287,19 @@ A quad transformer that that replaces (parts of) IRIs.
 
 ```json
 {
-  "Fragmenter:_options_transformers": [
+  "transformers": [
     {
       "@type": "QuadTransformerReplaceIri",
-      "QuadTransformerReplaceIri:_searchRegex": "^http://www.ldbc.eu",
-      "QuadTransformerReplaceIri:_replacementString": "http://localhost:3000/www.ldbc.eu"
+      "searchRegex": "^http://www.ldbc.eu",
+      "replacementString": "http://localhost:3000/www.ldbc.eu"
     }
   ]
 }
 ```
 
 Options:
-* `"QuadTransformerReplaceIri:_searchRegex"`: The regex to search for.
-* `"QuadTransformerReplaceIri:_replacementString"`: The string to replace.
+* `"searchRegex"`: The regex to search for.
+* `"replacementString"`: The string to replace.
 
 #### Remap Resource Identifier Transformer
 
@@ -329,23 +317,23 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 
 ```json
 {
-  "Fragmenter:_options_transformers": [
+  "transformers": [
     {
       "@type": "QuadTransformerRemapResourceIdentifier",
-      "QuadTransformerRemapResourceIdentifier:_newIdentifierSeparator": "#Post",
-      "QuadTransformerRemapResourceIdentifier:_typeRegex": "vocabulary/Post$",
-      "QuadTransformerRemapResourceIdentifier:_identifierPredicateRegex": "vocabulary/id$",
-      "QuadTransformerRemapResourceIdentifier:_targetPredicateRegex": "vocabulary/hasCreator$"
+      "newIdentifierSeparator": "#Post",
+      "typeRegex": "vocabulary/Post$",
+      "identifierPredicateRegex": "vocabulary/id$",
+      "targetPredicateRegex": "vocabulary/hasCreator$"
     }
   ]
 }
 ```
 
 Options:
-* `"QuadTransformerRemapResourceIdentifier:_newIdentifierSeparator"`: Separator string to use inbetween the target IRI and the identifier value when minting a new resource IRI.
-* `"QuadTransformerRemapResourceIdentifier:_typeRegex"`: The RDF type that should be used to capture resources.
-* `"QuadTransformerRemapResourceIdentifier:_identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
-* `"QuadTransformerRemapResourceIdentifier:_targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
+* `"newIdentifierSeparator"`: Separator string to use inbetween the target IRI and the identifier value when minting a new resource IRI.
+* `"typeRegex"`: The RDF type that should be used to capture resources.
+* `"identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
+* `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
 
 #### Append Resource Link Transformer
 
@@ -353,24 +341,24 @@ A quad transformer that matches all resources of the given type, and appends a l
 
 ```json
 {
-  "Fragmenter:_options_transformers": [
+  "transformers": [
     {
       "@type": "QuadTransformerAppendResourceLink",
-      "QuadTransformerAppendResourceLink:_typeRegex": "vocabulary/Person$",
-      "QuadTransformerAppendResourceLink:_predicate": "http://example.org/postsIndex",
-      "QuadTransformerAppendResourceLink:_link": "/posts"
+      "typeRegex": "vocabulary/Person$",
+      "predicate": "http://example.org/postsIndex",
+      "link": "/posts"
     }
   ]
 }
 ```
 
 Options:
-* `"QuadTransformerAppendResourceLink:_typeRegex"`: The RDF type that should be used to capture resources.
-* `"QuadTransformerAppendResourceLink:_predicate"`: Predicate IRI to define the link.
-* `"QuadTransformerAppendResourceLink:_link"`: The relative link from the resource identifier.
-* `"QuadTransformerAppendResourceLink:_linkType"`: Optional: `rdf:type` IRI that should be assigned to the link IRI as an extra triple.
-* `"QuadTransformerAppendResourceLink:_reverse"`: Optional: If the subject and object of the link triple should be revered.
-* `"QuadTransformerAppendResourceLink:_linkRemoveTrailingSlash"`: Optional: If trailing slashes should be forcefully removed from the link IRI.
+* `"typeRegex"`: The RDF type that should be used to capture resources.
+* `"predicate"`: Predicate IRI to define the link.
+* `"link"`: The relative link from the resource identifier.
+* `"linkType"`: Optional: `rdf:type` IRI that should be assigned to the link IRI as an extra triple.
+* `"reverse"`: Optional: If the subject and object of the link triple should be revered.
+* `"linkRemoveTrailingSlash"`: Optional: If trailing slashes should be forcefully removed from the link IRI.
 
 #### Append Resource SCL Transformer
 
@@ -386,21 +374,21 @@ Example output:
 
 ```json
 {
-  "Fragmenter:_options_transformers": [
+  "transformers": [
     {
       "@type": "QuadTransformerAppendResourceScl",
-      "QuadTransformerAppendResourceScl:_typeRegex": "vocabulary/Person$",
-      "QuadTransformerAppendResourceScl:_identifierSuffix": "#policy-posts",
-      "QuadTransformerAppendResourceScl:_sclPolicy": "FOLLOW ?posts { <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#seeAlso> ?posts }"
+      "typeRegex": "vocabulary/Person$",
+      "identifierSuffix": "#policy-posts",
+      "sclPolicy": "FOLLOW ?posts { <> <http://www.w3.org/1999/02/22-rdf-syntax-ns#seeAlso> ?posts }"
     }
   ]
 }
 ```
 
 Options:
-* `"QuadTransformerAppendResourceScl:_typeRegex"`: The RDF type that should be used to capture resources.
-* `"QuadTransformerAppendResourceScl:_identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
-* `"QuadTransformerAppendResourceScl:_sclPolicy"`: The SCL policy to append.
+* `"typeRegex"`: The RDF type that should be used to capture resources.
+* `"identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
+* `"sclPolicy"`: The SCL policy to append.
 
 ### Quad Matchers
 
@@ -413,19 +401,19 @@ Matches a quad by the given predicate regex.
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategyException",
-    "FragmentationStrategyException:_strategy": {
+    "strategy": {
       "@type": "FragmentationStrategySubject"
     },
-    "FragmentationStrategyException:_exceptions": [
+    "exceptions": [
       {
         "@type": "FragmentationStrategyExceptionEntry",
-        "FragmentationStrategyExceptionEntry:_matcher": {
+        "matcher": {
           "@type": "QuadMatcherPredicate",
-          "QuadMatcherPredicate:_predicateRegex": "vocabulary/predicate1"
+          "predicateRegex": "vocabulary/predicate1"
         },
-        "FragmentationStrategyExceptionEntry:_strategy": {
+        "strategy": {
           "@type": "FragmentationStrategyObject"
         }
       }
@@ -445,21 +433,21 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 
 ```json
 {
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategyException",
-    "FragmentationStrategyException:_strategy": {
+    "strategy": {
       "@type": "FragmentationStrategySubject"
     },
-    "FragmentationStrategyException:_exceptions": [
+    "exceptions": [
       {
         "@type": "FragmentationStrategyExceptionEntry",
-        "FragmentationStrategyExceptionEntry:_matcher": {
+        "matcher": {
           "@type": "QuadMatcherResourceType",
-          "QuadMatcherResourceType:_typeRegex": "vocabulary/Person$"
+          "typeRegex": "vocabulary/Person$"
         },
-        "FragmentationStrategyExceptionEntry:_strategy": {
+        "strategy": {
           "@type": "FragmentationStrategyResourceObject",
-          "FragmentationStrategyResourceObject:_targetPredicateRegex": "vocabulary/hasMaliciousCreator$"
+          "targetPredicateRegex": "vocabulary/hasMaliciousCreator$"
         }
       }
     ]

@@ -91,6 +91,9 @@ export class QuadSinkFile implements IQuadSink {
 
 export interface IQuadSinkFileOptions {
   outputFormat: string;
+  /**
+   * @range {json}
+   */
   iriToPath: Record<string, string>;
   log?: boolean;
   fileExtension?: string;

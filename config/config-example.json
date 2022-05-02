@@ -2,34 +2,31 @@
   "@context": "https://linkedsoftwaredependencies.org/bundles/npm/rdf-dataset-fragmenter/^1.0.0/components/context.jsonld",
   "@id": "urn:rdf-dataset-fragmenter:default",
   "@type": "Fragmenter",
-  "Fragmenter:_options_quadSource": {
+  "quadSource": {
     "@type": "QuadSourceFile",
-    "QuadSourceFile:_options_filePath": "path/to/dataset.ttl"
+    "filePath": "path/to/dataset.ttl"
   },
-  "options_transformers": [
+  "transformers": [
     {
       "@type": "QuadTransformerReplaceIri",
-      "QuadTransformerReplaceIri:_searchRegex": "^http://dbpedia.org",
-      "QuadTransformerReplaceIri:_replacementString": "http://localhost:3000/dbpedia.org"
+      "searchRegex": "^http://dbpedia.org",
+      "replacementString": "http://localhost:3000/dbpedia.org"
     },
     {
       "@type": "QuadTransformerReplaceIri",
-      "QuadTransformerReplaceIri:_searchRegex": "^http://dbpedia.org",
-      "QuadTransformerReplaceIri:_replacementString": "http://localhost:3000/dbpedia.org"
+      "searchRegex": "^http://dbpedia.org",
+      "replacementString": "http://localhost:3000/dbpedia.org"
     }
   ],
-  "Fragmenter:_options_fragmentationStrategy": {
+  "fragmentationStrategy": {
     "@type": "FragmentationStrategySubject"
   },
-  "Fragmenter:_options_quadSink": {
+  "quadSink": {
     "@type": "QuadSinkFile",
-    "QuadSinkFile:_options_log": true,
-    "QuadSinkFile:_options_outputFormat": "application/n-quads",
-    "QuadSinkFile:_options_iriToPath": [
-      {
-        "QuadSinkFile:_options_iriToPath_key": "http://example.org/base/",
-        "QuadSinkFile:_options_iriToPath_value": "output/"
-      }
-    ]
+    "log": true,
+    "outputFormat": "application/n-quads",
+    "iriToPath": {
+      "http://example.org/base/": "output/"
+    }
   }
 }
