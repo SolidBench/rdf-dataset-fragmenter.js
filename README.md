@@ -346,7 +346,7 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 ```
 
 Options:
-* `"newIdentifierSeparator"`: Separator string to use inbetween the target IRI and the identifier value when minting a new resource IRI.
+* `"newIdentifierSeparator"`: Separator string to use inbetween the target IRI and the identifier value when minting a new resource IRI. This may also be a relative IRI.
 * `"typeRegex"`: The RDF type that should be used to capture resources.
 * `"identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
 * `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.

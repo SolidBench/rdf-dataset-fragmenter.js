@@ -1,6 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 
+import { resolve } from 'relative-to-absolute-iri';
 import type { IQuadTransformer } from './IQuadTransformer';
 
 const DF = new DataFactory();
@@ -90,7 +91,7 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
       // Check if resource is complete
       if (resource.id && resource.creator) {
         // Determine new resource IRI
-        const resourceIri = DF.namedNode(resource.creator.value + this.newIdentifierSeparator + resource.id);
+        const resourceIri = DF.namedNode(resolve(this.newIdentifierSeparator + resource.id, resource.creator.value));
 
         // Clear the buffer, and set rewriting rule
         delete this.buffer[quad.subject.value];
