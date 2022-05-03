@@ -34,11 +34,11 @@
   "dependencies": {
     "@rdfjs/types": "*",
     "@types/async-lock": "^1.1.2",
-    "@types/lru-cache": "^5.1.0",
+    "@types/lru-cache": "^7.0.0",
     "@types/mkdirp": "^1.0.1",
     "async-lock": "^1.2.4",
     "componentsjs": "^5.0.1",
-    "lru-cache": "^6.0.0",
+    "lru-cache": "^7.0.0",
     "mkdirp": "^1.0.4",
     "rdf-parse": "^2.0.0",
     "rdf-serialize": "^2.0.0",
