@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.0.0"></a>
+## [v2.0.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.4.0...v2.0.0) - 2022-05-04
+
+### Added
+* [Allow newIdentifierSeparator to be a relative IRI](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/669acf877336d26457cfcdb57b95bb9b691d2696)
+
+### Changed
+* [Update to Components.js 5](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/62ff0837b7aa7205dd06a2eb74fafaab79b8fcff)
+
+### Fixed
+* [Fix remapped resource identifiers not being applied when they occur as objects](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/0af64bd2e59a8f9b0e76571a77edbc8bd707719f)
+
 <a name="v1.4.0"></a>
 ## [v1.4.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v1.3.0...v1.4.0) - 2021-08-30
 
