@@ -406,6 +406,50 @@ Options:
 * `"identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
 * `"sclPolicy"`: The SCL policy to append.
 
+#### Composite Varying Resource Transformer
+
+A quad transformer that wraps over other quad transformers,
+and varies between based based on the configured resource type.
+
+Concretely, it will match all resources of the given type,
+and evenly distribute these resources to the different quad transformers.
+It will make sure that different triples from a given resources will remain coupled.
+
+**WARNING:** This transformer assumes that all the applicable resources
+have `rdf:type` occurring as first triple with the resource IRI as subject.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerCompositeVaryingResource",
+      "typeRegex": "vocabulary/Post$",
+      "targetPredicateRegex": "vocabulary/hasCreator$",
+      "transformers": [
+        {
+          "@type": "QuadTransformerRemapResourceIdentifier",
+          "newIdentifierSeparator": "../posts/",
+          "typeRegex": "vocabulary/Post$",
+          "identifierPredicateRegex": "vocabulary/id$",
+          "targetPredicateRegex": "vocabulary/hasCreator$"
+        },
+        {
+          "@type": "QuadTransformerRemapResourceIdentifier",
+          "newIdentifierSeparator": "../posts#",
+          "typeRegex": "vocabulary/Post$",
+          "identifierPredicateRegex": "vocabulary/id$",
+          "targetPredicateRegex": "vocabulary/hasCreator$"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Options:
+* `"typeRegex"`: The RDF type that should be used to capture resources.
+* `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
+
 ### Quad Matchers
 
 Different strategies for matching quads.

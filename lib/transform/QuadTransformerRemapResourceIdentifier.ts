@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-
 import { resolve } from 'relative-to-absolute-iri';
+import { ResourceIdentifier } from './identifier/ResourceIdentifier';
 import type { IQuadTransformer } from './IQuadTransformer';
 
 const DF = new DataFactory();
@@ -21,12 +21,8 @@ const DF = new DataFactory();
  */
 export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer {
   private readonly newIdentifierSeparator: string;
-  private readonly type: RegExp;
   private readonly identifierPredicate: RegExp;
-  private readonly targetPredicate: RegExp;
-
-  public readonly buffer: Record<string, IResource>;
-  public readonly subjectMapping: Record<string, RDF.NamedNode>;
+  public readonly resourceIdentifier: ResourceIdentifier<RDF.NamedNode>;
 
   public constructor(
     newIdentifierSeparator: string,
@@ -35,42 +31,32 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
     targetPredicateRegex: string,
   ) {
     this.newIdentifierSeparator = newIdentifierSeparator;
-    this.type = new RegExp(typeRegex, 'u');
     this.identifierPredicate = new RegExp(identifierPredicateRegex, 'u');
-    this.targetPredicate = new RegExp(targetPredicateRegex, 'u');
-
-    this.buffer = {};
-    this.subjectMapping = {};
+    this.resourceIdentifier = new ResourceIdentifier<RDF.NamedNode>(typeRegex, targetPredicateRegex);
   }
 
   public transform(quad: RDF.Quad): RDF.Quad[] {
     // If a subject or object in the quad has been remapped (resource has been fully defined before)
-    let modified = false;
-    if (quad.subject.termType === 'NamedNode' && this.subjectMapping[quad.subject.value]) {
-      quad = DF.quad(this.subjectMapping[quad.subject.value], quad.predicate, quad.object, quad.graph);
-      modified = true;
-    }
-    if (quad.object.termType === 'NamedNode' && this.subjectMapping[quad.object.value]) {
-      quad = DF.quad(quad.subject, quad.predicate, this.subjectMapping[quad.object.value], quad.graph);
-      modified = true;
-    }
+    const modified = this.resourceIdentifier.forEachMappedResource(quad, (mapping, component) => {
+      if (component === 'subject') {
+        quad = DF.quad(mapping, quad.predicate, quad.object, quad.graph);
+      } else {
+        quad = DF.quad(quad.subject, quad.predicate, mapping, quad.graph);
+      }
+    });
     if (modified) {
       return [ quad ];
     }
 
     // Add buffer entry on applicable resource type
-    if (quad.subject.termType === 'NamedNode' &&
-      quad.predicate.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' &&
-      quad.object.termType === 'NamedNode' && this.type.exec(quad.object.value)) {
-      this.buffer[quad.subject.value] = { quads: [ quad ]};
-
+    if (this.resourceIdentifier.tryInitializingBuffer(quad)) {
       // We will emit the quad later
       return [];
     }
 
     // If this resource is buffered
-    if (quad.subject.termType === 'NamedNode' && this.buffer[quad.subject.value]) {
-      const resource = this.buffer[quad.subject.value];
+    if (this.resourceIdentifier.isQuadBuffered(quad)) {
+      const resource = this.resourceIdentifier.getBufferResource(quad);
 
       // Try to set the id
       if (this.identifierPredicate.exec(quad.predicate.value)) {
@@ -83,28 +69,16 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
         resource.id = quad.object.value;
       }
 
-      // Try to set the creator
-      if (this.targetPredicate.exec(quad.predicate.value)) {
-        if (quad.object.termType !== 'NamedNode') {
-          throw new Error(`Expected target value of type NamedNode on resource '${quad.subject.value}'`);
-        }
-        if (resource.creator) {
-          throw new Error(`Illegal overwrite of target value on resource '${quad.subject.value}'`);
-        }
-        resource.creator = quad.object;
-      }
-
-      // Append the full quad
-      resource.quads.push(quad);
+      // Try to set the target
+      this.resourceIdentifier.tryStoringTarget(resource, quad);
 
       // Check if resource is complete
-      if (resource.id && resource.creator) {
+      if (resource.id && resource.target) {
         // Determine new resource IRI
-        const resourceIri = DF.namedNode(resolve(this.newIdentifierSeparator + resource.id, resource.creator.value));
+        const resourceIri = DF.namedNode(resolve(this.newIdentifierSeparator + resource.id, resource.target.value));
 
         // Clear the buffer, and set rewriting rule
-        delete this.buffer[quad.subject.value];
-        this.subjectMapping[quad.subject.value] = resourceIri;
+        this.resourceIdentifier.applyMapping(quad, resourceIri);
 
         // Flush buffered quads
         return resource.quads
@@ -119,15 +93,6 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
   }
 
   public end(): void {
-    // After processing is done, check if buffer is clear
-    if (Object.keys(this.buffer).length > 0) {
-      throw new Error(`Detected non-finalized resources in the buffer: ${Object.keys(this.buffer)}`);
-    }
+    this.resourceIdentifier.onEnd();
   }
-}
-
-export interface IResource {
-  id?: string;
-  creator?: RDF.NamedNode;
-  quads: RDF.Quad[];
 }

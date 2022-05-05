@@ -39,7 +39,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
           DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
           DF.namedNode('ex:vocabulary/Post'),
         ))).toEqual([]);
-        expect(transformer.buffer).toEqual({
+        expect(transformer.resourceIdentifier.buffer).toEqual({
           'ex:s': {
             quads: [
               DF.quad(
@@ -54,7 +54,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
 
       describe('for buffer entry initialized', () => {
         beforeEach(() => {
-          transformer.buffer['ex:s'] = {
+          transformer.resourceIdentifier.buffer['ex:s'] = {
             quads: [
               DF.quad(
                 DF.namedNode('ex:s'),
@@ -86,7 +86,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             DF.literal('123'),
           ))).toEqual([]);
 
-          expect(transformer.buffer).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({
             'ex:s': {
               id: '123',
               quads: [
@@ -133,9 +133,9 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             DF.namedNode('ex:c'),
           ))).toEqual([]);
 
-          expect(transformer.buffer).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({
             'ex:s': {
-              creator: DF.namedNode('ex:c'),
+              target: DF.namedNode('ex:c'),
               quads: [
                 DF.quad(
                   DF.namedNode('ex:s'),
@@ -180,7 +180,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             DF.namedNode('ex:c'),
           ))).toEqual([]);
 
-          expect(transformer.buffer).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({
             'ex:s': {
               quads: [
                 DF.quad(
@@ -226,8 +226,8 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             ),
           ]);
 
-          expect(transformer.buffer).toEqual({});
-          expect(transformer.subjectMapping).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.resourceMapping).toEqual({
             'ex:s': DF.namedNode('ex:c#Post123'),
           });
         });
@@ -239,7 +239,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
 
       describe('for defined subject mapping', () => {
         beforeEach(() => {
-          transformer.subjectMapping['ex:s'] = DF.namedNode('ex:c#Post123');
+          transformer.resourceIdentifier.resourceMapping['ex:s'] = DF.namedNode('ex:c#Post123');
         });
 
         it('should not modify non-applicable terms', async() => {
@@ -254,7 +254,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
               DF.literal('o'),
             ),
           ]);
-          expect(transformer.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
         });
 
         it('should modify applicable subjects', async() => {
@@ -269,7 +269,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
               DF.literal('o'),
             ),
           ]);
-          expect(transformer.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
         });
 
         it('should modify applicable objects', async() => {
@@ -284,7 +284,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
               DF.namedNode('ex:c#Post123'),
             ),
           ]);
-          expect(transformer.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
         });
 
         it('should modify applicable subjects and objects', async() => {
@@ -299,7 +299,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
               DF.namedNode('ex:c#Post123'),
             ),
           ]);
-          expect(transformer.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
         });
 
         it('should modify applicable subjects even if it would match the type', async() => {
@@ -314,7 +314,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
               DF.namedNode('ex:vocabulary/Post'),
             ),
           ]);
-          expect(transformer.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
         });
 
         it('should not throw on end', async() => {
@@ -356,8 +356,8 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             ),
           ]);
 
-          expect(transformer.buffer).toEqual({});
-          expect(transformer.subjectMapping).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.resourceMapping).toEqual({
             'ex:s': DF.namedNode('ex:c#Post123'),
           });
         });
@@ -405,8 +405,8 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             ),
           ]);
 
-          expect(transformer.buffer).toEqual({});
-          expect(transformer.subjectMapping).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.resourceMapping).toEqual({
             'ex:s': DF.namedNode('ex:c#Post123'),
           });
         });
@@ -455,8 +455,8 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             ),
           ]);
 
-          expect(transformer.buffer).toEqual({});
-          expect(transformer.subjectMapping).toEqual({
+          expect(transformer.resourceIdentifier.buffer).toEqual({});
+          expect(transformer.resourceIdentifier.resourceMapping).toEqual({
             'ex:s': DF.namedNode('ex:c#Post123'),
           });
         });
