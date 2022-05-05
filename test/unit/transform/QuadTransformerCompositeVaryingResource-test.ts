@@ -261,7 +261,7 @@ describe('QuadTransformerCompositeVaryingResource', () => {
           expect(transformer.transform(DF.quad(
             DF.namedNode('ex:t'),
             DF.namedNode('ex:vocabulary/hasCreator'),
-            DF.namedNode('ex:c'),
+            DF.namedNode('ex:c3'),
           ))).toEqual([
             DF.quad(
               DF.namedNode('ex:t'),
@@ -276,7 +276,7 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             DF.quad(
               DF.namedNode('ex:t'),
               DF.namedNode('ex:vocabulary/hasCreator'),
-              DF.namedNode('ex:c'),
+              DF.namedNode('ex:c3'),
             ),
           ]);
 
