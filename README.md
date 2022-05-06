@@ -261,6 +261,28 @@ __Optional__
 
 A quad transformer can transform a stream of quads into another stream of quads.
 
+#### Distinct Quad Transformer
+
+A quad transformer that wraps over another quad transformer and removes duplicates.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerDistinct",
+      "transformer": {
+        "@type": "QuadTransformerSetIriExtension",
+        "extension": "nq",
+        "iriPattern": "^http://dbpedia.org"
+      }
+    }
+  ]
+}
+```
+
+Options:
+* `"transformer"`: The quad transformer to wrap over.
+
 #### Set IRI Extension Quad Transformer
 
 A quad transformer that enforces the configured extension on all named nodes.
