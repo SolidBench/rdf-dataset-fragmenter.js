@@ -18,6 +18,7 @@ export * from './lib/strategy/IFragmentationStrategy';
 export * from './lib/transform/value/IValueModifier';
 export * from './lib/transform/value/ValueModifierRegexReplaceGroup';
 export * from './lib/transform/IQuadTransformer';
+export * from './lib/transform/QuadTransformerAppendQuadLink';
 export * from './lib/transform/QuadTransformerAppendResourceAdapter';
 export * from './lib/transform/QuadTransformerAppendResourceLink';
 export * from './lib/transform/QuadTransformerAppendResourceScl';

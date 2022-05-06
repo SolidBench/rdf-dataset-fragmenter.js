@@ -373,6 +373,34 @@ Options:
 * `"identifierValueModifier""`: An optional value modifier that will be applied on matched identifier values. _(defaults to `undefined`)_
 * `"keepSubjectFragment"`: If the fragment of the original subject should be inherited onto the new identifier IRI. _(defaults to `false`)_
 
+#### Append Quad Link Transformer
+
+A quad transformer that appends a link to matching quads (e.g. match by quad predicate).
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerAppendQuadLink",
+      "matcher": {
+        "@type": "QuadMatcherPredicate",
+        "predicateRegex": "vocabulary/hasCreator$"
+      },
+      "predicate": "http://example.org/postsIndex",
+      "link": "/posts"
+    }
+  ]
+}
+```
+
+Options:
+* `"matcher"`: A quad matcher.
+* `"predicate"`: Predicate IRI to define the link.
+* `"link"`: The relative link from the resource identifier.
+* `"linkType"`: Optional: `rdf:type` IRI that should be assigned to the link IRI as an extra triple.
+* `"reverse"`: Optional: If the subject and object of the link triple should be revered.
+* `"linkRemoveTrailingSlash"`: Optional: If trailing slashes should be forcefully removed from the link IRI.
+
 #### Append Resource Link Transformer
 
 A quad transformer that matches all resources of the given type, and appends a link.
@@ -509,7 +537,7 @@ Options:
 ### Quad Matchers
 
 Different strategies for matching quads.
-These matchers are mainly used for a `FragmentationStrategyExceptionEntry`.
+These matchers can for example be used for `QuadTransformerAppendQuadLink` or `FragmentationStrategyExceptionEntry`.
 
 #### Predicate Matcher
 
