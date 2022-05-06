@@ -3,6 +3,7 @@ import { DataFactory } from 'rdf-data-factory';
 import { resolve } from 'relative-to-absolute-iri';
 import { ResourceIdentifier } from './identifier/ResourceIdentifier';
 import type { IQuadTransformer } from './IQuadTransformer';
+import type { IValueModifier } from './value/IValueModifier';
 
 const DF = new DataFactory();
 
@@ -22,6 +23,7 @@ const DF = new DataFactory();
 export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer {
   private readonly newIdentifierSeparator: string;
   private readonly identifierPredicate: RegExp;
+  private readonly identifierValueModifier: IValueModifier | undefined;
   public readonly resourceIdentifier: ResourceIdentifier<RDF.NamedNode>;
 
   public constructor(
@@ -29,10 +31,15 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
     typeRegex: string,
     identifierPredicateRegex: string,
     targetPredicateRegex: string,
+    identifierValueModifier: IValueModifier | undefined,
   ) {
     this.newIdentifierSeparator = newIdentifierSeparator;
     this.identifierPredicate = new RegExp(identifierPredicateRegex, 'u');
-    this.resourceIdentifier = new ResourceIdentifier<RDF.NamedNode>(typeRegex, targetPredicateRegex);
+    this.resourceIdentifier = new ResourceIdentifier<RDF.NamedNode>(
+      typeRegex,
+      targetPredicateRegex,
+    );
+    this.identifierValueModifier = identifierValueModifier;
   }
 
   public transform(quad: RDF.Quad): RDF.Quad[] {
@@ -60,13 +67,15 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
 
       // Try to set the id
       if (this.identifierPredicate.exec(quad.predicate.value)) {
-        if (quad.object.termType !== 'Literal') {
-          throw new Error(`Expected identifier value of type Literal on resource '${quad.subject.value}'`);
-        }
         if (resource.id) {
           throw new Error(`Illegal overwrite of identifier value on resource '${quad.subject.value}'`);
         }
-        resource.id = quad.object.value;
+        resource.id = quad.object;
+
+        // Modify the value if needed
+        if (this.identifierValueModifier) {
+          resource.id = this.identifierValueModifier.apply(resource.id);
+        }
       }
 
       // Try to set the target
@@ -75,7 +84,9 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
       // Check if resource is complete
       if (resource.id && resource.target) {
         // Determine new resource IRI
-        const resourceIri = DF.namedNode(resolve(this.newIdentifierSeparator + resource.id, resource.target.value));
+        const resourceIri = DF.namedNode(
+          resolve(this.newIdentifierSeparator + resource.id.value, resource.target.value),
+        );
 
         // Clear the buffer, and set rewriting rule
         this.resourceIdentifier.applyMapping(quad, resourceIri);

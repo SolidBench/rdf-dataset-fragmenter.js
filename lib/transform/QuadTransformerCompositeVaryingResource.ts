@@ -23,7 +23,10 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
     transformers: IQuadTransformer[],
   ) {
     this.transformers = transformers;
-    this.resourceIdentifier = new ResourceIdentifier<IQuadTransformer>(typeRegex, targetPredicateRegex);
+    this.resourceIdentifier = new ResourceIdentifier<IQuadTransformer>(
+      typeRegex,
+      targetPredicateRegex,
+    );
   }
 
   public transform(quad: RDF.Quad): RDF.Quad[] {

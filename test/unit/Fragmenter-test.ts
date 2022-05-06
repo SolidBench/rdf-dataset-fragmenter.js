@@ -104,6 +104,7 @@ describe('Fragmenter', () => {
           'vocabulary/Post$',
           'vocabulary/id$',
           'vocabulary/hasCreator$',
+          undefined,
         ),
       ];
       quadSource = {

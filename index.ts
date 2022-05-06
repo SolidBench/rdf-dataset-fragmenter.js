@@ -15,6 +15,8 @@ export * from './lib/strategy/FragmentationStrategyResourceObject';
 export * from './lib/strategy/FragmentationStrategyStreamAdapter';
 export * from './lib/strategy/FragmentationStrategySubject';
 export * from './lib/strategy/IFragmentationStrategy';
+export * from './lib/transform/value/IValueModifier';
+export * from './lib/transform/value/ValueModifierRegexReplaceGroup';
 export * from './lib/transform/IQuadTransformer';
 export * from './lib/transform/QuadTransformerAppendResourceAdapter';
 export * from './lib/transform/QuadTransformerAppendResourceLink';

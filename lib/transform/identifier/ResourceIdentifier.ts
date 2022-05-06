@@ -65,7 +65,7 @@ export class ResourceIdentifier<T> {
     // Append the full quad
     resource.quads.push(quad);
 
-    // Try to set the creator
+    // Try to set the target
     if (this.targetPredicate.exec(quad.predicate.value)) {
       if (quad.object.termType !== 'NamedNode') {
         throw new Error(`Expected target value of type NamedNode on resource '${quad.subject.value}'`);
@@ -74,6 +74,7 @@ export class ResourceIdentifier<T> {
         throw new Error(`Illegal overwrite of target value on resource '${quad.subject.value}'`);
       }
       resource.target = quad.object;
+
       return true;
     }
 
@@ -126,7 +127,7 @@ export class ResourceIdentifier<T> {
 }
 
 export interface IResource {
-  id?: string;
+  id?: RDF.Term;
   target?: RDF.NamedNode;
   quads: RDF.Quad[];
 }

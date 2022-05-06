@@ -15,6 +15,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
         'vocabulary/Post$',
         'vocabulary/id$',
         'vocabulary/hasCreator$',
+        undefined,
       );
     });
 
@@ -88,7 +89,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
 
           expect(transformer.resourceIdentifier.buffer).toEqual({
             'ex:s': {
-              id: '123',
+              id: DF.literal('123'),
               quads: [
                 DF.quad(
                   DF.namedNode('ex:s'),
@@ -105,12 +106,47 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
           });
         });
 
-        it('should throw on non-literal id', async() => {
-          expect(() => transformer.transform(DF.quad(
+        it('should buffer the id with a value transformer', async() => {
+          transformer = new QuadTransformerRemapResourceIdentifier(
+            '#Post',
+            'vocabulary/Post$',
+            'vocabulary/id$',
+            'vocabulary/hasCreator$',
+            () => DF.literal('TRANSFORMED'),
+          );
+          transformer.resourceIdentifier.buffer['ex:s'] = {
+            quads: [
+              DF.quad(
+                DF.namedNode('ex:s'),
+                DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                DF.namedNode('ex:vocabulary/Post'),
+              ),
+            ],
+          };
+
+          expect(transformer.transform(DF.quad(
             DF.namedNode('ex:s'),
             DF.namedNode('ex:vocabulary/id'),
-            DF.namedNode('123'),
-          ))).toThrowError(`Expected identifier value of type Literal on resource 'ex:s'`);
+            DF.literal('123'),
+          ))).toEqual([]);
+
+          expect(transformer.resourceIdentifier.buffer).toEqual({
+            'ex:s': {
+              id: DF.literal('TRANSFORMED'),
+              quads: [
+                DF.quad(
+                  DF.namedNode('ex:s'),
+                  DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+                  DF.namedNode('ex:vocabulary/Post'),
+                ),
+                DF.quad(
+                  DF.namedNode('ex:s'),
+                  DF.namedNode('ex:vocabulary/id'),
+                  DF.literal('123'),
+                ),
+              ],
+            },
+          });
         });
 
         it('should throw on duplicate ids', async() => {
@@ -471,6 +507,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
         'vocabulary/Post$',
         'vocabulary/id$',
         'vocabulary/hasCreator$',
+        undefined,
       );
     });
 

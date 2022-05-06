@@ -345,11 +345,32 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 }
 ```
 
+Optionally, the discovered identifier values can be modified using _value modifiers_:
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerRemapResourceIdentifier",
+      "newIdentifierSeparator": "#Post",
+      "typeRegex": "vocabulary/Post$",
+      "identifierPredicateRegex": "vocabulary/id$",
+      "targetPredicateRegex": "vocabulary/hasCreator$",
+      "identifierValueModifier": {
+        "@type": "ValueModifierRegexReplaceGroup",
+        "regex": "^.*/([^/]*)$"
+      }
+    }
+  ]
+}
+```
+
 Options:
 * `"newIdentifierSeparator"`: Separator string to use inbetween the target IRI and the identifier value when minting a new resource IRI. This may also be a relative IRI.
 * `"typeRegex"`: The RDF type that should be used to capture resources.
 * `"identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
 * `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
+* `"identifierValueModifier""`: An optional value modifier that will be applied on matched identifier values.
 
 #### Append Resource Link Transformer
 
@@ -546,6 +567,22 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
       }
     ]
   }
+}
+```
+
+### Value modifiers
+
+Different strategies for modifying RDF term values.
+These modifiers could for example be used in `QuadTransformerRemapResourceIdentifier`.
+
+#### Regex Replace Group Value Modifier
+
+A value modifier that applies the given regex on the value and replaces it with the first group match.
+
+```json
+{
+  "@type": "ValueModifierRegexReplaceGroup",
+  "regex": "^.*/([^/]*)$"
 }
 ```
 
