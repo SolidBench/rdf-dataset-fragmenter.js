@@ -43,6 +43,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
         ))).toEqual([]);
         expect(transformer.resourceIdentifier.buffer).toEqual({
           'ex:s': {
+            type: DF.namedNode('ex:vocabulary/Post'),
             quads: [
               DF.quad(
                 DF.namedNode('ex:s'),
@@ -57,6 +58,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
       describe('for buffer entry initialized', () => {
         beforeEach(() => {
           transformer.resourceIdentifier.buffer['ex:s'] = {
+            type: <any> undefined,
             quads: [
               DF.quad(
                 DF.namedNode('ex:s'),
@@ -117,6 +119,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             false,
           );
           transformer.resourceIdentifier.buffer['ex:s'] = {
+            type: <any> undefined,
             quads: [
               DF.quad(
                 DF.namedNode('ex:s'),

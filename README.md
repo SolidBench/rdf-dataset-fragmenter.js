@@ -478,6 +478,55 @@ Options:
 * `"identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
 * `"sclPolicy"`: The SCL policy to append.
 
+#### Append Resource Solid Type Index
+
+A quad transformer that matches all resources of the given type,
+and adds an entry for it to the [Solid type index](https://github.com/solid/solid/blob/main/proposals/data-discovery.md).
+This also includes quads required for the creation of this type index, and its link to the user's profile.
+
+If multiple entries of the same type can be matched, it is recommended to wrap this transformer using `QuadTransformerDistinct`,
+since duplicate quads can be produced.
+
+Example output:
+
+_Profile:_
+```turtle
+<http://example.org/profile/card#me> solid:publicTypeIndex <http://example.org/settings/publicTypeIndex> .
+```
+
+_Type index:_
+```turtle
+<http://example.org/settings/publicTypeIndex> a solid:TypeIndex> .
+<http://example.org/settings/publicTypeIndex> a solid:ListedDocument> .
+<http://example.org/settings/publicTypeIndex#comments> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> solid:TypeRegistration> .
+<http://example.org/settings/publicTypeIndex#comments> solid:forClass <http://example.org/vocabulary/Comment> .
+<http://example.org/settings/publicTypeIndex#comments> solid:instanceContainer <http://example.org/comments/> .
+```
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerAppendResourceSolidTypeIndex",
+      "typeRegex": "vocabulary/Comment$",
+      "profilePredicateRegex": "vocabulary/hasCreator$",
+      "typeIndex": "../settings/publicTypeIndex",
+      "entrySuffix": "#comments",
+      "entryReference": "../comments/",
+      "entryContainer": "true"
+    }
+  ]
+}
+```
+
+Options:
+* `"typeRegex"`: The RDF type that should be used to capture resources.
+* `"profilePredicateRegex"`: Predicate regex on the resource that contains a reference to the relevant Solid profile.
+* `"typeIndex"` URL relative to the Solid profile URL for the type index.
+* `"entrySuffix"`: String to append to the type index entry.
+* `"entryReference"`: URL relative to the Solid profile URL for the type index instances reference.
+* `"entryContainer"` If the `entryReference` refers to a Solid container, otherwise it refers to a single index file.
+
 #### Composite Sequential Transformer
 
 Executes a collection of transformers in sequence.

@@ -48,7 +48,7 @@ export class ResourceIdentifier<T> {
     if (quad.subject.termType === 'NamedNode' &&
       quad.predicate.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' &&
       quad.object.termType === 'NamedNode' && this.type.exec(quad.object.value)) {
-      this.buffer[quad.subject.value] = { quads: [ quad ]};
+      this.buffer[quad.subject.value] = { quads: [ quad ], type: quad.object };
 
       return true;
     }
@@ -130,4 +130,5 @@ export interface IResource {
   id?: RDF.Term;
   target?: RDF.NamedNode;
   quads: RDF.Quad[];
+  type: RDF.NamedNode;
 }
