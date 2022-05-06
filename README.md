@@ -406,6 +406,39 @@ Options:
 * `"identifierSuffix"`: String to append to the resource IRI to mint the policy IRI.
 * `"sclPolicy"`: The SCL policy to append.
 
+#### Composite Sequential Transformer
+
+Executes a collection of transformers in sequence.
+
+This is mainly useful in cases you want to group transformers together as group within another composite transformer.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerCompositeSequential",
+      "transformers": [
+        {
+          "@type": "QuadTransformerSetIriExtension",
+          "extension": "nq",
+          "iriPattern": "^http://dbpedia.org"
+        },
+        {
+          "@type": "QuadTransformerSetIriExtension",
+          "extension": "ttl",
+          "iriPattern": "^http://something.org"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Options:
+* `"transformers""`: A list of transformers to vary on.
+* `"typeRegex"`: The RDF type that should be used to capture resources.
+* `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
+
 #### Composite Varying Resource Transformer
 
 A quad transformer that wraps over other quad transformers,
@@ -447,6 +480,7 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 ```
 
 Options:
+* `"transformers""`: A list of transformers to vary on.
 * `"typeRegex"`: The RDF type that should be used to capture resources.
 * `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
 

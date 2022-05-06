@@ -20,6 +20,7 @@ export * from './lib/transform/QuadTransformerAppendResourceAdapter';
 export * from './lib/transform/QuadTransformerAppendResourceLink';
 export * from './lib/transform/QuadTransformerAppendResourceScl';
 export * from './lib/transform/QuadTransformerClone';
+export * from './lib/transform/QuadTransformerCompositeSequential';
 export * from './lib/transform/QuadTransformerCompositeVaryingResource';
 export * from './lib/transform/QuadTransformerIdentity';
 export * from './lib/transform/QuadTransformerRemapResourceIdentifier';
