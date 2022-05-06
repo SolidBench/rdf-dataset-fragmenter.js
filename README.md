@@ -370,7 +370,8 @@ Options:
 * `"typeRegex"`: The RDF type that should be used to capture resources.
 * `"identifierPredicateRegex"`: Predicate regex that contains a resource identifier.
 * `"targetPredicateRegex"`: Predicate regex that contains an IRI onto which the resource identifier should be remapped.
-* `"identifierValueModifier""`: An optional value modifier that will be applied on matched identifier values.
+* `"identifierValueModifier""`: An optional value modifier that will be applied on matched identifier values. _(defaults to `undefined`)_
+* `"keepSubjectFragment"`: If the fragment of the original subject should be inherited onto the new identifier IRI. _(defaults to `false`)_
 
 #### Append Resource Link Transformer
 

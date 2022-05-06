@@ -16,6 +16,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
         'vocabulary/id$',
         'vocabulary/hasCreator$',
         undefined,
+        false,
       );
     });
 
@@ -113,6 +114,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             'vocabulary/id$',
             'vocabulary/hasCreator$',
             () => DF.literal('TRANSFORMED'),
+            false,
           );
           transformer.resourceIdentifier.buffer['ex:s'] = {
             quads: [
@@ -508,6 +510,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
         'vocabulary/id$',
         'vocabulary/hasCreator$',
         undefined,
+        false,
       );
     });
 
@@ -540,6 +543,55 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
           ),
           DF.quad(
             DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+        ]);
+      });
+    });
+  });
+
+  describe('that keeps subject fragments', () => {
+    beforeEach(() => {
+      transformer = new QuadTransformerRemapResourceIdentifier(
+        '../posts/',
+        'vocabulary/Post$',
+        'vocabulary/id$',
+        'vocabulary/hasCreator$',
+        undefined,
+        true,
+      );
+    });
+
+    describe('transform', () => {
+      it('should handle applicable resources', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123#abc'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123#abc'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123#abc'),
             DF.namedNode('ex:vocabulary/hasCreator'),
             DF.namedNode('http://example.org/pods/bob/profile/card#me'),
           ),

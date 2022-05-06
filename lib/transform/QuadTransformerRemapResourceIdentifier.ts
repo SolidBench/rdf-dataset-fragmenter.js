@@ -24,14 +24,26 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
   private readonly newIdentifierSeparator: string;
   private readonly identifierPredicate: RegExp;
   private readonly identifierValueModifier: IValueModifier | undefined;
+  private readonly keepSubjectFragment: boolean;
   public readonly resourceIdentifier: ResourceIdentifier<RDF.NamedNode>;
 
+  /**
+   * @param newIdentifierSeparator Separator string to use inbetween the target IRI and the identifier value
+   *                               when minting a new resource IRI. This may also be a relative IRI.
+   * @param typeRegex The RDF type that should be used to capture resources.
+   * @param identifierPredicateRegex Predicate regex that contains a resource identifier.
+   * @param targetPredicateRegex Predicate regex that contains an IRI onto which the resource identifier should be
+   *                             remapped.
+   * @param identifierValueModifier An optional value modifier that will be applied on matched identifier values.
+   * @param keepSubjectFragment If the fragment of the original subject should be inherited onto the new identifier IRI.
+   */
   public constructor(
     newIdentifierSeparator: string,
     typeRegex: string,
     identifierPredicateRegex: string,
     targetPredicateRegex: string,
     identifierValueModifier: IValueModifier | undefined,
+    keepSubjectFragment: boolean | undefined,
   ) {
     this.newIdentifierSeparator = newIdentifierSeparator;
     this.identifierPredicate = new RegExp(identifierPredicateRegex, 'u');
@@ -40,6 +52,7 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
       targetPredicateRegex,
     );
     this.identifierValueModifier = identifierValueModifier;
+    this.keepSubjectFragment = Boolean(keepSubjectFragment);
   }
 
   public transform(quad: RDF.Quad): RDF.Quad[] {
@@ -84,9 +97,18 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
       // Check if resource is complete
       if (resource.id && resource.target) {
         // Determine new resource IRI
-        const resourceIri = DF.namedNode(
+        let resourceIri = DF.namedNode(
           resolve(this.newIdentifierSeparator + resource.id.value, resource.target.value),
         );
+
+        // Inherit fragment if needed
+        if (this.keepSubjectFragment) {
+          const fragmentPos = quad.subject.value.indexOf('#');
+          if (fragmentPos >= 0) {
+            const fragment = quad.subject.value.slice(fragmentPos);
+            resourceIri = DF.namedNode(resourceIri.value + fragment);
+          }
+        }
 
         // Clear the buffer, and set rewriting rule
         this.resourceIdentifier.applyMapping(quad, resourceIri);
