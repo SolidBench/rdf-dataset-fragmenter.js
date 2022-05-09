@@ -1,6 +1,21 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.1.0"></a>
+## [v2.1.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.0.1...v2.1.0) - 2022-05-09
+
+### Added
+* [Add Solid type index appender](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/fe358073f379e94fc1fd737c895caf9bd1f11c49)
+* [Add distinct quad transformer](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/be759727de946e09b364106b3a6183333eb68873)
+* [Add append quad link transformer](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/252c2a8d1940f0bfc644eccb40f240ecae41f491)
+* [Allow remapped resource identifiers to inherit fragments](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/3254906899b472cbab390470cba39569b599c488)
+* [Allow remapped resource identifiers to be modified](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/c46a7a2f0351fb60a135e6afe419b5256376c3b7)
+* [Add Composite Sequential Transformer](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/04e078d2c9492820b8702af44ba523e541fe4e27)
+* [Add Composite Varying Resource Transformer](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/2b33312fe852bb693bd1bf28ac13a5f867a9f254)
+
+### Fixed
+* [Fix variance happening on wrong term](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/014eb9b1b9a1f32278de5531bc7cbe645a45cc32)
+
 <a name="v2.0.1"></a>
 ## [v2.0.1](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.0.0...v2.0.1) - 2022-05-04
 
