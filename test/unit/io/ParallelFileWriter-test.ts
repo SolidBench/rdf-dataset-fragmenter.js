@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import { PassThrough } from 'stream';
 import mkdirp = require('mkdirp');
 import { DataFactory } from 'rdf-data-factory';
-import { mocked } from 'ts-jest/utils';
 import { ParallelFileWriter } from '../../../lib/io/ParallelFileWriter';
+import mocked = jest.mocked;
 const DF = new DataFactory();
 const stringifyStream = require('stream-to-string');
 
