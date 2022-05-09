@@ -1,4 +1,5 @@
 import { Readable } from 'stream';
+import arrayifyStream from 'arrayify-stream';
 import { DataFactory } from 'rdf-data-factory';
 import { Fragmenter } from '../../lib/Fragmenter';
 import type { IQuadTransformer } from '../../lib/transform/IQuadTransformer';
@@ -9,7 +10,6 @@ import {
 } from '../../lib/transform/QuadTransformerRemapResourceIdentifier';
 import { QuadTransformerReplaceIri } from '../../lib/transform/QuadTransformerReplaceIri';
 
-const arrayifyStream = require('arrayify-stream');
 const streamifyArray = require('streamify-array');
 const DF = new DataFactory();
 

@@ -56,7 +56,7 @@
     "@types/jest": "^27.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "arrayify-stream": "^1.0.0",
+    "arrayify-stream": "^2.0.0",
     "componentsjs-generator": "^3.0.3",
     "eslint": "^7.9.0",
     "eslint-config-es": "3.23.0",

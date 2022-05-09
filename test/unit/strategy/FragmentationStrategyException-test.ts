@@ -1,11 +1,11 @@
 import { Readable } from 'stream';
 import type * as RDF from '@rdfjs/types';
+import arrayifyStream from 'arrayify-stream';
 import { DataFactory } from 'rdf-data-factory';
 import {
   FragmentationStrategyException,
   FragmentationStrategyExceptionEntry,
 } from '../../../lib/strategy/FragmentationStrategyException';
-const arrayifyStream = require('arrayify-stream');
 const streamifyArray = require('streamify-array');
 const DF = new DataFactory();
 
