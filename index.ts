@@ -1,6 +1,7 @@
 export * from './lib/io/IQuadSink';
 export * from './lib/io/IQuadSource';
 export * from './lib/io/ParallelFileWriter';
+export * from './lib/io/QuadSinkComposite';
 export * from './lib/io/QuadSinkFile';
 export * from './lib/io/QuadSourceComposite';
 export * from './lib/io/QuadSourceFile';

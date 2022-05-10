@@ -255,6 +255,43 @@ Options:
 * `"fileExtension"`: An optional extension to add to resulting files.
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
 
+#### Composite Quad Sink
+
+A quad sink that combines multiple quad sinks.
+
+```json
+{
+  "quadSink": {
+    "@type": "QuadSinkComposite",
+    "sinks": [
+      {
+        "@type": "QuadSinkFile",
+        "log": true,
+        "outputFormat": "application/n-quads",
+        "fileExtension": "$.nq",
+        "iriToPath": {
+          "http://example.org/base/": "output/base/",
+          "http://example.org/other/": "output/other/"
+        }
+      },
+      {
+        "@type": "QuadSinkFile",
+        "log": true,
+        "outputFormat": "application/n-quads",
+        "fileExtension": "$.nq2",
+        "iriToPath": {
+          "http://example.org/base/": "output-2/base/",
+          "http://example.org/other/": "output-2/other/"
+        }
+      }
+    ]
+  }
+}
+```
+
+Options:
+* `"sinks"`: The quad sinks to delegate to.
+
 ### Quad Transformers
 
 __Optional__
