@@ -292,6 +292,39 @@ A quad sink that combines multiple quad sinks.
 Options:
 * `"sinks"`: The quad sinks to delegate to.
 
+#### Filtered Quad Sink
+
+A quad sink that wraps over another quad sink and only passes the quads through that match the given filter.
+
+```json
+{
+  "quadSink": {
+    "@type": "QuadSinkFiltered",
+    "filter": {
+      "@type": "QuadMatcherResourceType",
+      "typeRegex": "vocabulary/Person$",
+      "matchFullResource": false
+    },
+    "sink": [
+      {
+        "@type": "QuadSinkFile",
+        "log": true,
+        "outputFormat": "application/n-quads",
+        "fileExtension": "$.nq",
+        "iriToPath": {
+          "http://example.org/base/": "output/base/",
+          "http://example.org/other/": "output/other/"
+        }
+      }
+    ]
+  }
+}
+```
+
+Options:
+* `"sink"`: The sink to filter on.
+* `"filter"`: The filter to apply on quads.
+
 ### Quad Transformers
 
 __Optional__
