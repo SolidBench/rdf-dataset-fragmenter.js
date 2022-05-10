@@ -12,11 +12,18 @@ import type { IQuadMatcher } from './IQuadMatcher';
  */
 export class QuadMatcherResourceType implements IQuadMatcher {
   private readonly type: RegExp;
+  private readonly matchFullResource: boolean;
 
   public readonly matchingSubjects: Record<string, boolean>;
 
-  public constructor(typeRegex: string) {
+  /**
+   * @param typeRegex Regular expression for type IRIs that need to be matched.
+   * @param matchFullResource If not only the quad containing the type must be matched,
+   *                          but also all other quads sharing the same subject of that quad.
+   */
+  public constructor(typeRegex: string, matchFullResource: boolean) {
     this.type = new RegExp(typeRegex, 'u');
+    this.matchFullResource = matchFullResource;
 
     this.matchingSubjects = {};
   }
@@ -26,10 +33,13 @@ export class QuadMatcherResourceType implements IQuadMatcher {
     if (quad.subject.termType === 'NamedNode' &&
       quad.predicate.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' &&
       quad.object.termType === 'NamedNode' && this.type.exec(quad.object.value)) {
-      this.matchingSubjects[quad.subject.value] = true;
+      if (this.matchFullResource) {
+        this.matchingSubjects[quad.subject.value] = true;
+      }
       return true;
     }
 
-    return quad.subject.termType === 'NamedNode' && quad.subject.value in this.matchingSubjects;
+    return this.matchFullResource &&
+      quad.subject.termType === 'NamedNode' && quad.subject.value in this.matchingSubjects;
   }
 }

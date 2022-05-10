@@ -670,6 +670,10 @@ have `rdf:type` occurring as first triple with the resource IRI as subject.
 }
 ```
 
+Options:
+* `"type""`: Regular expression for type IRIs that need to be matched.
+* `"matchFullResource""`: If not only the quad containing the type must be matched, but also all other quads sharing the same subject of that quad.
+
 ### Value modifiers
 
 Different strategies for modifying RDF term values.
