@@ -325,6 +325,26 @@ Options:
 * `"sink"`: The sink to filter on.
 * `"filter"`: The filter to apply on quads.
 
+#### CSV Quad Sink
+
+A quad sink that writes quads to a CSV file.
+
+```json
+{
+  "quadSink": {
+    "@type": "QuadSinkCsv",
+    "file": "../rdf-dataset-fragmenter-out/output-solid/aux/parameters-comments.csv",
+    "columns": [
+      "subject"
+    ]
+  }
+}
+```
+
+Options:
+* `"file"`: The file to write to.
+* `"columns"`: The quad term names that will be serialized as columns.
+
 ### Quad Transformers
 
 __Optional__
