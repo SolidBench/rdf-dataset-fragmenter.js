@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.2.0"></a>
+## [v2.2.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.1.0...v2.2.0) - 2022-05-11
+
+### Added
+* [Add CSV quad sink](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/ed8e0c814b864ad938df565d5f5e72736651b099)
+* [Add filtered quad sink](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/3ffb08a3a7dc48d6e0b4e88b62fcf122b8009974)
+* [Add composite quad sink](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/c29a3e5ee6b83d87e53090cb4496db1b7c24bb51)
+* [Add matchFullResource option to QuadMatcherResourceType](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/cd3ddb28c43ff949e00958a1315cddfd62636c5d)
+
 <a name="v2.1.0"></a>
 ## [v2.1.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.0.1...v2.1.0) - 2022-05-09
 
