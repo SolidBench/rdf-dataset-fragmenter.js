@@ -25,14 +25,14 @@ export class QuadSourceComposite implements IQuadSource {
       // eslint-disable-next-line @typescript-eslint/no-loop-func
       stream.on('end', () => {
         if (++endedStreams === this.sources.length) {
-          concat.push(null);
+          concat.end();
         }
       });
     }
 
     // Special case when we have no sources
     if (this.sources.length === 0) {
-      concat.push(null);
+      concat.end();
     }
 
     return concat;

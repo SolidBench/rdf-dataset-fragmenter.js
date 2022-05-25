@@ -48,9 +48,9 @@ export class FragmentationStrategyException extends FragmentationStrategyStreamA
     await super.fragment(quadStream, quadSink);
 
     // Close our streams
-    this.state.strategyStream.push(null);
+    this.state.strategyStream.end();
     for (const exceptionStream of this.state.exceptionStreams) {
-      exceptionStream.push(null);
+      exceptionStream.end();
     }
 
     // Wait on the fragmentation strategies to end
