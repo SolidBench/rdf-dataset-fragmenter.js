@@ -1,6 +1,6 @@
 {
   "name": "rdf-dataset-fragmenter",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Fragments an RDF dataset into multiple parts",
   "keywords": [
     "rdf",

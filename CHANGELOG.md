@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.2.1"></a>
+## [v2.2.1](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.2.0...v2.2.1) - 2022-05-25
+
+### Fixed
+* [Fix quads near the stream end sometimes being lost](https://github.com/rubensworks/rdf-dataset-fragmenter.js/commit/f16958ac2f5702ed3a0811cc6a7498c5822c4b68)
+
 <a name="v2.2.0"></a>
 ## [v2.2.0](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.1.0...v2.2.0) - 2022-05-11
 
