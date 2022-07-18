@@ -1,7 +1,7 @@
 # RDF Dataset Fragmenter
 
-[![Build status](https://github.com/rubensworks/rdf-dataset-fragmenter.js/workflows/CI/badge.svg)](https://github.com/rubensworks/rdf-dataset-fragmenter.js/actions?query=workflow%3ACI)
-[![Coverage Status](https://coveralls.io/repos/github/rubensworks/rdf-dataset-fragmenter.js/badge.svg?branch=master)](https://coveralls.io/github/rubensworks/rdf-dataset-fragmenter.js?branch=master)
+[![Build status](https://github.com/SolidBench/rdf-dataset-fragmenter.js/workflows/CI/badge.svg)](https://github.com/SolidBench/rdf-dataset-fragmenter.js/actions?query=workflow%3ACI)
+[![Coverage Status](https://coveralls.io/repos/github/SolidBench/rdf-dataset-fragmenter.js/badge.svg?branch=master)](https://coveralls.io/github/SolidBench/rdf-dataset-fragmenter.js?branch=master)
 [![npm version](https://badge.fury.io/js/rdf-dataset-fragmenter.svg)](https://www.npmjs.com/package/rdf-dataset-fragmenter)
 
 This tool takes one or more datasets as input,

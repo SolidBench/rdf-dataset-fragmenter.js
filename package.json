@@ -11,12 +11,12 @@
   ],
   "main": "index.js",
   "typings": "index",
-  "repository": "git@github.com:rubensworks/rdf-dataset-fragmenter.js.git",
+  "repository": "git@github.com:SolidBench/rdf-dataset-fragmenter.js.git",
   "author": "Ruben Taelman <rubensworks@gmail.com>",
   "bugs": {
-    "url": "https://github.com/rubensworks/rdf-dataset-fragmenter.js/issues"
+    "url": "https://github.com/SolidBench/rdf-dataset-fragmenter.js/issues"
   },
-  "homepage": "https://github.com/rubensworks/rdf-dataset-fragmenter.js#readme",
+  "homepage": "https://github.com/SolidBench/rdf-dataset-fragmenter.js#readme",
   "bin": {
     "rdf-dataset-fragmenter": "bin/runner.js"
   },
