@@ -485,6 +485,51 @@ Options:
 * `"identifierValueModifier""`: An optional value modifier that will be applied on matched identifier values. _(defaults to `undefined`)_
 * `"keepSubjectFragment"`: If the fragment of the original subject should be inherited onto the new identifier IRI. _(defaults to `false`)_
 
+#### Append Quad Transformer
+
+A quad transformer that appends a quad to matching quads (e.g. match by quad predicate).
+
+The example below will effectively add a reverse of quads with the `containerOf` predicate.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerAppendQuad",
+      "matcher": {
+        "@type": "QuadMatcherPredicate",
+        "predicateRegex": "vocabulary/containerOf$"
+      },
+      "subject": {
+        "@type": "TermTemplateQuadComponent",
+        "component": "object"
+      },
+      "predicate": {
+        "@type": "TermTemplateStaticNamedNode",
+        "value": "http:/example.org/vocabulary/containedIn"
+      },
+      "object": {
+        "@type": "TermTemplateQuadComponent",
+        "component": "subject"
+      },
+      "graph": {
+        "@type": "TermTemplateQuadComponent",
+        "component": "graph"
+      }
+    }
+  ]
+}
+```
+
+Options:
+* `"matcher"`: A quad matcher.
+* `"subject"`: A term template for the resulting quad's subject.
+* `"predicate"`: A term template for the resulting quad's predicate.
+* `"object"`: A term template for the resulting quad's object.
+* `"graph"`: A term template for the resulting quad's graph.
+
+More details on term templates can be found later in this README.
+
 #### Append Quad Link Transformer
 
 A quad transformer that appends a link to matching quads (e.g. match by quad predicate).
@@ -507,6 +552,7 @@ A quad transformer that appends a link to matching quads (e.g. match by quad pre
 
 Options:
 * `"matcher"`: A quad matcher.
+* `"identifier"`: The matched quad component that is considered the identifier (`subject`, `predicate`, `object`, or `graph`).
 * `"predicate"`: Predicate IRI to define the link.
 * `"link"`: The relative link from the resource identifier.
 * `"linkType"`: Optional: `rdf:type` IRI that should be assigned to the link IRI as an extra triple.
@@ -779,6 +825,41 @@ A value modifier that applies the given regex on the value and replaces it with 
   "regex": "^.*/([^/]*)$"
 }
 ```
+
+### Term templates
+
+Different templates for deriving a quad component from an incoming quad.
+Theses templates could for example be used in `QuadTransformerAppendQuad`.
+
+#### Quad Component
+
+A term template that returns a given quad's component.
+
+The example below refers to the object of a quad.
+
+```json
+{
+  "@type": "TermTemplateQuadComponent",
+  "component": "object"
+}
+```
+
+Options:
+* `"component"`: The quad component: `subject`, `predicate`, `object`, or `graph`.
+
+#### Static Named Node.
+
+A term template that always returns a Named Node with the given value.
+
+```json
+{
+  "@type": "TermTemplateStaticNamedNode",
+  "value": "http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/containedIn"
+}
+```
+
+Options:
+* `"value"`: The IRI value of the Named Node.
 
 ## Extend
 
