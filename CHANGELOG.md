@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.3.0"></a>
+## [v2.3.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.2.1...v2.3.0) - 2022-08-02
+
+### Added
+* [Add append quad transformer](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/80159eea751cb224b217bfb07b98ad3f3278b0b9)
+
 <a name="v2.2.1"></a>
 ## [v2.2.1](https://github.com/rubensworks/rdf-dataset-fragmenter.js/compare/v2.2.0...v2.2.1) - 2022-05-25
 
