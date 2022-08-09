@@ -55,27 +55,26 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
     this.keepSubjectFragment = Boolean(keepSubjectFragment);
   }
 
-  public transform(quad: RDF.Quad): RDF.Quad[] {
+  public transform(quad: RDF.Quad, allowedComponent?: 'subject' | 'object'): RDF.Quad[] {
     // If a subject or object in the quad has been remapped (resource has been fully defined before)
-    const modified = this.resourceIdentifier.forEachMappedResource(quad, (mapping, component) => {
-      if (component === 'subject') {
-        quad = DF.quad(mapping, quad.predicate, quad.object, quad.graph);
-      } else {
-        quad = DF.quad(quad.subject, quad.predicate, mapping, quad.graph);
+    // Only do this is no components in the quad are being buffered,
+    // otherwise we might lose remapping of quads that are remapped at multiple positions
+    const isBuffered = this.resourceIdentifier.isQuadBuffered(quad, allowedComponent);
+    if (!isBuffered) {
+      const [ modified, mappedQuad ] = this.mapQuad(quad, allowedComponent);
+      if (modified) {
+        return [ mappedQuad ];
       }
-    });
-    if (modified) {
-      return [ quad ];
     }
 
     // Add buffer entry on applicable resource type
-    if (this.resourceIdentifier.tryInitializingBuffer(quad)) {
+    if ((!allowedComponent || allowedComponent === 'subject') && this.resourceIdentifier.tryInitializingBuffer(quad)) {
       // We will emit the quad later
       return [];
     }
 
     // If this resource is buffered
-    if (this.resourceIdentifier.isQuadBuffered(quad)) {
+    if (isBuffered) {
       const resource = this.resourceIdentifier.getBufferResource(quad);
 
       // Try to set the id
@@ -114,17 +113,7 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
         this.resourceIdentifier.applyMapping(quad, resourceIri);
 
         // Flush buffered quads
-        return resource.quads
-          .map(subQuad => {
-            this.resourceIdentifier.forEachMappedResource(subQuad, (mapping, component) => {
-              if (component === 'subject') {
-                subQuad = DF.quad(mapping, subQuad.predicate, subQuad.object, subQuad.graph);
-              } else {
-                subQuad = DF.quad(subQuad.subject, subQuad.predicate, mapping, subQuad.graph);
-              }
-            });
-            return subQuad;
-          });
+        return resource.quads.map(subQuad => this.mapQuad(subQuad, allowedComponent)[1]);
       }
 
       // Don't emit anything if our buffer is incomplete
@@ -132,6 +121,17 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
     }
 
     return [ quad ];
+  }
+
+  protected mapQuad(quad: RDF.Quad, allowedComponent?: 'subject' | 'object'): [ boolean, RDF.Quad ] {
+    const modified = this.resourceIdentifier.forEachMappedResource(quad, (mapping, component) => {
+      if (component === 'subject' && (!allowedComponent || allowedComponent === 'subject')) {
+        quad = DF.quad(mapping, quad.predicate, quad.object, quad.graph);
+      } else if (!allowedComponent || allowedComponent === 'object') {
+        quad = DF.quad(quad.subject, quad.predicate, mapping, quad.graph);
+      }
+    });
+    return [ modified, quad ];
   }
 
   public end(): void {

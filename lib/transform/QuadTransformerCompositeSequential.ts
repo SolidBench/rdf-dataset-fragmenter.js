@@ -13,11 +13,11 @@ export class QuadTransformerCompositeSequential implements IQuadTransformer {
     this.transformers = transformers;
   }
 
-  public transform(quad: RDF.Quad): RDF.Quad[] {
+  public transform(quad: RDF.Quad, allowedComponent?: 'subject' | 'object'): RDF.Quad[] {
     // Pipe quad through all transformers
     let quads = [ quad ];
     for (const transformer of this.transformers) {
-      quads = quads.flatMap(subQuad => transformer.transform(subQuad));
+      quads = quads.flatMap(subQuad => transformer.transform(subQuad, allowedComponent));
     }
     return quads;
   }

@@ -26,10 +26,14 @@ export class ResourceIdentifier<T> {
   /**
    * Check if the subject of the given quad occurs within the buffer as a resource.
    * @param quad A quad
+   * @param allowedComponent The quad component on which transformation is allowed.
+   *                         If undefined, then all components must be considered.
    */
-  public isQuadBuffered(quad: RDF.Quad): boolean {
-    return Boolean((quad.subject.termType === 'NamedNode' && this.buffer[quad.subject.value]) ||
-      (quad.object.termType === 'NamedNode' && this.buffer[quad.object.value]));
+  public isQuadBuffered(quad: RDF.Quad, allowedComponent?: 'subject' | 'object'): boolean {
+    return Boolean(((!allowedComponent || allowedComponent === 'subject') &&
+        quad.subject.termType === 'NamedNode' && this.buffer[quad.subject.value]) ||
+      ((!allowedComponent || allowedComponent === 'object') &&
+        quad.object.termType === 'NamedNode' && this.buffer[quad.object.value]));
   }
 
   /**

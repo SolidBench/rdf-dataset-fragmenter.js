@@ -1,6 +1,9 @@
 import type * as RDF from '@rdfjs/types';
+import { DataFactory } from 'rdf-data-factory';
 import { ResourceIdentifier } from './identifier/ResourceIdentifier';
 import type { IQuadTransformer } from './IQuadTransformer';
+
+const DF = new DataFactory();
 
 /**
  * A quad transformer that wraps over other quad transformers,
@@ -31,12 +34,15 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
 
   public transform(quad: RDF.Quad): RDF.Quad[] {
     // If a subject or object in the quad has been remapped (resource has been fully defined before)
-    let quads = [ quad ];
-    const modified = this.resourceIdentifier.forEachMappedResource(quad, transformer => {
-      quads = quads.flatMap(subQuad => transformer.transform(subQuad));
-    });
-    if (modified) {
-      return quads;
+    const isBuffered = this.resourceIdentifier.isQuadBuffered(quad);
+    if (!isBuffered) {
+      let quads = [ quad ];
+      const modified = this.resourceIdentifier.forEachMappedResource(quad, (transformer, component) => {
+        quads = quads.flatMap(subQuad => transformer.transform(subQuad, component));
+      });
+      if (modified) {
+        return quads;
+      }
     }
 
     // Add buffer entry on applicable resource type
@@ -46,7 +52,7 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
     }
 
     // If this resource is buffered
-    if (this.resourceIdentifier.isQuadBuffered(quad)) {
+    if (isBuffered) {
       const resource = this.resourceIdentifier.getBufferResource(quad);
 
       // Try to set the target
@@ -68,7 +74,28 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
         this.resourceIdentifier.applyMapping(quad, transformer);
 
         // Flush buffered quads
-        return resource.quads.flatMap(subQuad => transformer.transform(subQuad));
+        return resource.quads.flatMap(subQuad => {
+          // Run through transformers in a loop until the quads don't change anymore
+          let subQuadsOut = [];
+          let subQuadsLoop = [ subQuad ];
+          while (subQuadsOut.length !== subQuadsLoop.length) {
+            subQuadsOut = subQuadsLoop;
+            for (const subQuadLoop of subQuadsOut) {
+              // eslint-disable-next-line @typescript-eslint/no-loop-func
+              this.resourceIdentifier.forEachMappedResource(subQuadLoop, (subTransformer, component) => {
+                // Pass the current quad component as allowed component to the transformer,
+                // so that no other components of that quad are considered by the transformer.
+                subQuadsLoop = subQuadsLoop
+                  .flatMap(subSubQuadLoop => subTransformer.transform(subSubQuadLoop, component));
+              });
+            }
+          }
+          subQuadsOut = subQuadsLoop;
+
+          return subQuadsOut;
+
+          // Return transformer.transform(subQuad));
+        });
       }
 
       // Don't emit anything if our buffer is incomplete
