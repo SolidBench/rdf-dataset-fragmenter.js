@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.3.4"></a>
+## [v2.3.4](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.3...v2.3.4) - 2022-08-09
+
+### Fixed
+* [Fix distinct transformer not considering allowedComponent](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/dd5825ec2bc5f54d1dd40675b9c218e2162af41f)
+
 <a name="v2.3.3"></a>
 ## [v2.3.3](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.2...v2.3.3) - 2022-08-09
 
