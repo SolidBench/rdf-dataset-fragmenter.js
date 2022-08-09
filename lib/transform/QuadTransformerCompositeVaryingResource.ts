@@ -37,8 +37,8 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
     const isBuffered = this.resourceIdentifier.isQuadBuffered(quad);
     if (!isBuffered) {
       let quads = [ quad ];
-      const modified = this.resourceIdentifier.forEachMappedResource(quad, (transformer, component) => {
-        quads = quads.flatMap(subQuad => transformer.transform(subQuad, component));
+      const modified = this.resourceIdentifier.forEachMappedResource(quad, transformer => {
+        quads = quads.flatMap(subQuad => transformer.transform(subQuad));
       });
       if (modified) {
         return quads;

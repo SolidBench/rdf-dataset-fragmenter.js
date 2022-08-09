@@ -1,9 +1,11 @@
 import { DataFactory } from 'rdf-data-factory';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
+import { QuadTransformerCompositeSequential } from '../../../lib/transform/QuadTransformerCompositeSequential';
 import {
   QuadTransformerCompositeVaryingResource,
 } from '../../../lib/transform/QuadTransformerCompositeVaryingResource';
 import { QuadTransformerRemapResourceIdentifier } from '../../../lib/transform/QuadTransformerRemapResourceIdentifier';
+import { ValueModifierRegexReplaceGroup } from '../../../lib/transform/value/ValueModifierRegexReplaceGroup';
 
 const DF = new DataFactory();
 
@@ -467,6 +469,245 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             DF.namedNode('http://example.org/pods/alice/posts/456'),
             DF.namedNode('ex:vocabulary/hasCreator'),
             DF.namedNode('http://example.org/pods/alice/profile/card#me'),
+          ),
+        ]);
+      });
+    });
+  });
+
+  describe('for one sequential transformer with two chained resource remappers', () => {
+    beforeEach(() => {
+      transformer = new QuadTransformerCompositeVaryingResource(
+        'vocabulary/Post$',
+        'vocabulary/hasCreator$',
+        [
+          new QuadTransformerCompositeSequential([
+            new QuadTransformerRemapResourceIdentifier(
+              '../posts_tmp#',
+              'vocabulary/Post$',
+              'vocabulary/id$',
+              'vocabulary/hasCreator$',
+              undefined,
+              undefined,
+            ),
+            new QuadTransformerRemapResourceIdentifier(
+              '../posts/',
+              'vocabulary/Post$',
+              'vocabulary/isLocatedIn$',
+              'vocabulary/hasCreator$',
+              new ValueModifierRegexReplaceGroup('^.*/([^/]*)$'),
+              true,
+            ),
+          ]),
+        ],
+      );
+    });
+
+    describe('transform', () => {
+      it('should handle a valid resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/isLocatedIn'),
+          DF.namedNode('http://dbpedia.org/resource/India'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/isLocatedIn'),
+            DF.namedNode('http://dbpedia.org/resource/India'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+        ]);
+      });
+
+      it('should handle a link after the resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/isLocatedIn'),
+          DF.namedNode('http://dbpedia.org/resource/India'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/isLocatedIn'),
+            DF.namedNode('http://dbpedia.org/resource/India'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+        ]);
+
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+          ),
+        ]);
+      });
+
+      it('should handle a link during the resource before creator', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/isLocatedIn'),
+          DF.namedNode('http://dbpedia.org/resource/India'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/isLocatedIn'),
+            DF.namedNode('http://dbpedia.org/resource/India'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+        ]);
+      });
+
+      it('should handle a link during the resource before location', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/isLocatedIn'),
+          DF.namedNode('http://dbpedia.org/resource/India'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/India#123'),
+            DF.namedNode('ex:vocabulary/isLocatedIn'),
+            DF.namedNode('http://dbpedia.org/resource/India'),
           ),
         ]);
       });
