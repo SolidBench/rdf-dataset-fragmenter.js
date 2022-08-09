@@ -33,6 +33,43 @@ describe('QuadTransformerDistinct', () => {
           DF.literal('o'),
         ))).toEqual([]);
       });
+
+      it('does not emit duplicates while taking into account allowedComponent', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s'),
+          DF.namedNode('ex:p'),
+          DF.literal('o'),
+        ), 'subject')).toEqual([
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:p'),
+            DF.literal('o'),
+          ),
+        ]);
+
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s'),
+          DF.namedNode('ex:p'),
+          DF.literal('o'),
+        ), 'object')).toEqual([
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:p'),
+            DF.literal('o'),
+          ),
+        ]);
+
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s'),
+          DF.namedNode('ex:p'),
+          DF.literal('o'),
+        ), 'subject')).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s'),
+          DF.namedNode('ex:p'),
+          DF.literal('o'),
+        ), 'object')).toEqual([]);
+      });
     });
   });
 

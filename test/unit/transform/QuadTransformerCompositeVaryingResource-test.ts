@@ -1,9 +1,13 @@
 import { DataFactory } from 'rdf-data-factory';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
+import {
+  QuadTransformerAppendResourceSolidTypeIndex,
+} from '../../../lib/transform/QuadTransformerAppendResourceSolidTypeIndex';
 import { QuadTransformerCompositeSequential } from '../../../lib/transform/QuadTransformerCompositeSequential';
 import {
   QuadTransformerCompositeVaryingResource,
 } from '../../../lib/transform/QuadTransformerCompositeVaryingResource';
+import { QuadTransformerDistinct } from '../../../lib/transform/QuadTransformerDistinct';
 import { QuadTransformerRemapResourceIdentifier } from '../../../lib/transform/QuadTransformerRemapResourceIdentifier';
 import { ValueModifierRegexReplaceGroup } from '../../../lib/transform/value/ValueModifierRegexReplaceGroup';
 
@@ -709,6 +713,199 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             DF.namedNode('ex:vocabulary/isLocatedIn'),
             DF.namedNode('http://dbpedia.org/resource/India'),
           ),
+        ]);
+      });
+    });
+  });
+
+  describe('for one sequential transformer with two chained resource remappers with distinct', () => {
+    const triplesTypeIndex = [
+      DF.quad(
+        DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_SOLID_PUBLIC_TYPE_INDEX,
+        DF.namedNode('http://example.org/pods/bob/settings/publicTypeIndex'),
+      ),
+      DF.quad(
+        DF.namedNode('http://example.org/pods/bob/settings/publicTypeIndex'),
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_A,
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_SOLID_TYPE_INDEX,
+      ),
+      DF.quad(
+        DF.namedNode('http://example.org/pods/bob/settings/publicTypeIndex'),
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_A,
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_SOLID_LISTED_DOCUMENT,
+      ),
+      DF.quad(
+        DF.namedNode('http://example.org/pods/bob/settings/publicTypeIndex#posts'),
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_A,
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_SOLID_TYPE_REGISTRATION,
+      ),
+      DF.quad(
+        DF.namedNode('http://example.org/pods/bob/settings/publicTypeIndex#posts'),
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_SOLID_FOR_CLASS,
+        DF.namedNode('ex:vocabulary/Post'),
+      ),
+      DF.quad(
+        DF.namedNode('http://example.org/pods/bob/settings/publicTypeIndex#posts'),
+        QuadTransformerAppendResourceSolidTypeIndex.IRI_SOLID_INSTANCE_CONTAINER,
+        DF.namedNode('http://example.org/pods/bob/posts/'),
+      ),
+    ];
+
+    beforeEach(() => {
+      transformer = new QuadTransformerCompositeVaryingResource(
+        'vocabulary/Post$',
+        'vocabulary/hasCreator$',
+        [
+          new QuadTransformerCompositeSequential([
+            new QuadTransformerRemapResourceIdentifier(
+              '../posts/',
+              'vocabulary/Post$',
+              'vocabulary/id$',
+              'vocabulary/hasCreator$',
+              undefined,
+              undefined,
+            ),
+            new QuadTransformerDistinct(
+              new QuadTransformerAppendResourceSolidTypeIndex(
+                'vocabulary/Post$',
+                'vocabulary/hasCreator$',
+                '../settings/publicTypeIndex',
+                '#posts',
+                '../posts/',
+                true,
+              ),
+            ),
+          ]),
+        ],
+      );
+    });
+
+    describe('transform', () => {
+      it('should handle a valid resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          ...triplesTypeIndex,
+        ]);
+      });
+
+      it('should handle a link after the resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          ...triplesTypeIndex,
+        ]);
+
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+          ),
+        ]);
+      });
+
+      it('should handle a link during the resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          ...triplesTypeIndex,
         ]);
       });
     });

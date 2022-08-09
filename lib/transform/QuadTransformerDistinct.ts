@@ -15,10 +15,10 @@ export class QuadTransformerDistinct implements IQuadTransformer {
     this.passedQuads = new Set();
   }
 
-  public transform(quad: RDF.Quad): RDF.Quad[] {
+  public transform(quad: RDF.Quad, allowedComponent?: 'subject' | 'object'): RDF.Quad[] {
     return this.transformer.transform(quad)
       .filter(quadOut => {
-        const hash = JSON.stringify(quadToStringQuad(quadOut));
+        const hash = JSON.stringify({ ...quadToStringQuad(quadOut), allowedComponent });
         if (this.passedQuads.has(hash)) {
           return false;
         }
