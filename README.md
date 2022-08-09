@@ -354,6 +354,7 @@ A quad transformer can transform a stream of quads into another stream of quads.
 #### Distinct Quad Transformer
 
 A quad transformer that wraps over another quad transformer and removes duplicates.
+Only quads that are produced by the quad transformer (and are unequal to the incoming quad) will be filtered away.
 
 ```json
 {

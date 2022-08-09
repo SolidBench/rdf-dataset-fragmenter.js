@@ -1,7 +1,9 @@
 import { DataFactory } from 'rdf-data-factory';
+import { QuadMatcherPredicate } from '../../../lib/quadmatcher/QuadMatcherPredicate';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
-import { QuadTransformerClone } from '../../../lib/transform/QuadTransformerClone';
+import { QuadTransformerAppendQuad } from '../../../lib/transform/QuadTransformerAppendQuad';
 import { QuadTransformerDistinct } from '../../../lib/transform/QuadTransformerDistinct';
+import { TermTemplateStaticNamedNode } from '../../../lib/transform/termtemplate/TermTemplateStaticNamedNode';
 
 const DF = new DataFactory();
 
@@ -10,7 +12,13 @@ describe('QuadTransformerDistinct', () => {
 
   describe('over a cloning transformer', () => {
     beforeEach(() => {
-      transformer = new QuadTransformerDistinct(new QuadTransformerClone());
+      transformer = new QuadTransformerDistinct(new QuadTransformerAppendQuad(
+        new QuadMatcherPredicate('ex:p'),
+        new TermTemplateStaticNamedNode('ex:s2'),
+        new TermTemplateStaticNamedNode('ex:p2'),
+        new TermTemplateStaticNamedNode('ex:o2'),
+        new TermTemplateStaticNamedNode('ex:g2'),
+      ));
     });
 
     describe('transform', () => {
@@ -25,13 +33,25 @@ describe('QuadTransformerDistinct', () => {
             DF.namedNode('ex:p'),
             DF.literal('o'),
           ),
+          DF.quad(
+            DF.namedNode('ex:s2'),
+            DF.namedNode('ex:p2'),
+            DF.namedNode('ex:o2'),
+            DF.namedNode('ex:g2'),
+          ),
         ]);
 
         expect(transformer.transform(DF.quad(
           DF.namedNode('ex:s'),
           DF.namedNode('ex:p'),
           DF.literal('o'),
-        ))).toEqual([]);
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:p'),
+            DF.literal('o'),
+          ),
+        ]);
       });
 
       it('does not emit duplicates while taking into account allowedComponent', async() => {
@@ -45,6 +65,12 @@ describe('QuadTransformerDistinct', () => {
             DF.namedNode('ex:p'),
             DF.literal('o'),
           ),
+          DF.quad(
+            DF.namedNode('ex:s2'),
+            DF.namedNode('ex:p2'),
+            DF.namedNode('ex:o2'),
+            DF.namedNode('ex:g2'),
+          ),
         ]);
 
         expect(transformer.transform(DF.quad(
@@ -57,18 +83,36 @@ describe('QuadTransformerDistinct', () => {
             DF.namedNode('ex:p'),
             DF.literal('o'),
           ),
+          DF.quad(
+            DF.namedNode('ex:s2'),
+            DF.namedNode('ex:p2'),
+            DF.namedNode('ex:o2'),
+            DF.namedNode('ex:g2'),
+          ),
         ]);
 
         expect(transformer.transform(DF.quad(
           DF.namedNode('ex:s'),
           DF.namedNode('ex:p'),
           DF.literal('o'),
-        ), 'subject')).toEqual([]);
+        ), 'subject')).toEqual([
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:p'),
+            DF.literal('o'),
+          ),
+        ]);
         expect(transformer.transform(DF.quad(
           DF.namedNode('ex:s'),
           DF.namedNode('ex:p'),
           DF.literal('o'),
-        ), 'object')).toEqual([]);
+        ), 'object')).toEqual([
+          DF.quad(
+            DF.namedNode('ex:s'),
+            DF.namedNode('ex:p'),
+            DF.literal('o'),
+          ),
+        ]);
       });
     });
   });

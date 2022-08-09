@@ -1,5 +1,7 @@
 import { DataFactory } from 'rdf-data-factory';
+import { QuadMatcherPredicate } from '../../../lib/quadmatcher/QuadMatcherPredicate';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
+import { QuadTransformerAppendQuadLink } from '../../../lib/transform/QuadTransformerAppendQuadLink';
 import {
   QuadTransformerAppendResourceSolidTypeIndex,
 } from '../../../lib/transform/QuadTransformerAppendResourceSolidTypeIndex';
@@ -906,6 +908,182 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             DF.namedNode('http://example.org/pods/bob/profile/card#me'),
           ),
           ...triplesTypeIndex,
+          ...triplesTypeIndex,
+        ]);
+      });
+    });
+  });
+
+  describe(`for one sequential transformer with two chained resource remappers with distinct over append link`, () => {
+    beforeEach(() => {
+      transformer = new QuadTransformerCompositeVaryingResource(
+        'vocabulary/Post$',
+        'vocabulary/hasCreator$',
+        [
+          new QuadTransformerCompositeSequential([
+            new QuadTransformerRemapResourceIdentifier(
+              '../posts/',
+              'vocabulary/Post$',
+              'vocabulary/id$',
+              'vocabulary/hasCreator$',
+              undefined,
+              undefined,
+            ),
+            new QuadTransformerDistinct(
+              new QuadTransformerAppendQuadLink(
+                new QuadMatcherPredicate('vocabulary/hasCreator$'),
+                'object',
+                'http://localhost:3000/internal/postsFragmentation',
+                'http://localhost:3000/internal/FragmentationPerResource',
+              ),
+            ),
+          ]),
+        ],
+      );
+    });
+
+    describe('transform', () => {
+      it('should handle a valid resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+            DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+            DF.namedNode('http://localhost:3000/internal/FragmentationPerResource'),
+          ),
+        ]);
+      });
+
+      it('should handle a link after the resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+            DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+            DF.namedNode('http://localhost:3000/internal/FragmentationPerResource'),
+          ),
+        ]);
+
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+          ),
+        ]);
+      });
+
+      it('should handle a link during the resource', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+          DF.namedNode('ex:vocabulary/Post'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/id'),
+          DF.literal('123'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:fora#forum1'),
+          DF.namedNode('ex:vocabulary/containerOf'),
+          DF.namedNode('ex:s#abc'),
+        ))).toEqual([]);
+        expect(transformer.transform(DF.quad(
+          DF.namedNode('ex:s#abc'),
+          DF.namedNode('ex:vocabulary/hasCreator'),
+          DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+        ))).toEqual([
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+            DF.namedNode('ex:vocabulary/Post'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/id'),
+            DF.literal('123'),
+          ),
+          DF.quad(
+            DF.namedNode('ex:fora#forum1'),
+            DF.namedNode('ex:vocabulary/containerOf'),
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/posts/123'),
+            DF.namedNode('ex:vocabulary/hasCreator'),
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+            DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+            DF.namedNode('http://localhost:3000/internal/FragmentationPerResource'),
+          ),
+          DF.quad(
+            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
+            DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+            DF.namedNode('http://localhost:3000/internal/FragmentationPerResource'),
+          ),
         ]);
       });
     });

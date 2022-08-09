@@ -93,8 +93,6 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
           subQuadsOut = subQuadsLoop;
 
           return subQuadsOut;
-
-          // Return transformer.transform(subQuad));
         });
       }
 
