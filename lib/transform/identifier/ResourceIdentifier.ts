@@ -28,7 +28,8 @@ export class ResourceIdentifier<T> {
    * @param quad A quad
    */
   public isQuadBuffered(quad: RDF.Quad): boolean {
-    return Boolean(quad.subject.termType === 'NamedNode' && this.buffer[quad.subject.value]);
+    return Boolean((quad.subject.termType === 'NamedNode' && this.buffer[quad.subject.value]) ||
+      (quad.object.termType === 'NamedNode' && this.buffer[quad.object.value]));
   }
 
   /**
@@ -36,7 +37,10 @@ export class ResourceIdentifier<T> {
    * @param quad A quad
    */
   public getBufferResource(quad: RDF.Quad): IResource {
-    return this.buffer[quad.subject.value];
+    if (quad.subject.termType === 'NamedNode' && this.buffer[quad.subject.value]) {
+      return this.buffer[quad.subject.value];
+    }
+    return this.buffer[quad.object.value];
   }
 
   /**

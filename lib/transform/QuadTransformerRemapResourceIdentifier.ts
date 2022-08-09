@@ -115,7 +115,16 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
 
         // Flush buffered quads
         return resource.quads
-          .map(subQuad => DF.quad(resourceIri, subQuad.predicate, subQuad.object, subQuad.graph));
+          .map(subQuad => {
+            this.resourceIdentifier.forEachMappedResource(subQuad, (mapping, component) => {
+              if (component === 'subject') {
+                subQuad = DF.quad(mapping, subQuad.predicate, subQuad.object, subQuad.graph);
+              } else {
+                subQuad = DF.quad(subQuad.subject, subQuad.predicate, mapping, subQuad.graph);
+              }
+            });
+            return subQuad;
+          });
       }
 
       // Don't emit anything if our buffer is incomplete
