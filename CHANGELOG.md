@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.3.6"></a>
+## [v2.3.6](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.5...v2.3.6) - 2022-11-09
+
+### Fixed
+* [Include source map files in packed files](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/38466b5ee25a4f4e92767e1f5483d16982e01d8e)
+
 <a name="v2.3.5"></a>
 ## [v2.3.5](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.4...v2.3.5) - 2022-08-09
 
