@@ -5,7 +5,7 @@ import { PassThrough } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import AsyncLock = require('async-lock');
 import LRUCache = require('lru-cache');
-import mkdirp = require('mkdirp');
+import { mkdirp } from 'mkdirp';
 import rdfSerializer from 'rdf-serialize';
 
 /**

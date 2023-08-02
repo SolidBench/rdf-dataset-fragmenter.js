@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { PassThrough } from 'stream';
-import mkdirp = require('mkdirp');
+import { mkdirp } from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import { ParallelFileWriter } from '../../../lib/io/ParallelFileWriter';
 import mocked = jest.mocked;
