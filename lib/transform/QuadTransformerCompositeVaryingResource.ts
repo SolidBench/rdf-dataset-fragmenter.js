@@ -7,7 +7,7 @@ const DF = new DataFactory();
 
 /**
  * A quad transformer that wraps over other quad transformers,
- * and varies between based based on the configured resource type.
+ * and varies based on the configured resource type.
  *
  * Concretely, it will match all resources of the given type,
  * and evenly distribute these resources to the different quad transformers.
