@@ -430,6 +430,28 @@ Options:
 * `"searchRegex"`: The regex to search for.
 * `"replacementString"`: The string to replace.
 
+#### Replace BlankNode by NamedNode Transformer
+
+A quad transformer that replaces BlankNodes by NamedNodes if the node-value changes when performing search/ replacement.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerBlankToNamed",
+      "searchRegex": "^b0_tagclass",
+      "replacementString": "http://localhost:3000/www.ldbc.eu/tag"
+    }
+  ]
+}
+```
+
+This supports group-based replacements just like the [QuadTransformerReplaceIri](#replace-iri-quad-transformer)
+
+Options:
+* `"searchRegex"`: The regex to search for.
+* `"replacementString"`: The string to replace.
+
 #### Remap Resource Identifier Transformer
 
 A quad transformer that matches all resources of the given type,
