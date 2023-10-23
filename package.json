@@ -104,6 +104,7 @@
     "test": "jest ${1}",
     "test-watch": "jest ${1} --watch",
     "lint": "eslint . --ext .ts --cache",
+    "lint:fix": "eslint . --ext .ts --cache --fix",
     "build": "npm run build:ts && npm run build:components",
     "build:components": "componentsjs-generator -s lib -r rdfdf",
     "build:ts": "tsc",
