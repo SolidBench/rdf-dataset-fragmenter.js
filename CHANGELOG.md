@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.4.0"></a>
+## [v2.4.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.6...v2.4.0) - 2023-10-23
+
+### Added
+* [Add Replace BlankNode by NamedNode Transformer](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/5dd80e8c1f14f7a46b16954489f1f69f044160b4)
+
 <a name="v2.3.6"></a>
 ## [v2.3.6](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.5...v2.3.6) - 2022-11-09
 
