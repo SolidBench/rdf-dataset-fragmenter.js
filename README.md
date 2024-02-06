@@ -225,7 +225,9 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
   }
 }
 ```
+
 #### Constant Fragmentation Strategy
+
 A fragmentation stratety that delegates all quads towards a single path.
 
 ```json
@@ -236,6 +238,48 @@ A fragmentation stratety that delegates all quads towards a single path.
   }
 }
 ```
+
+#### VoID Description Fragmentation Strategy
+
+Fragmentation strategy that generates partial dataset descriptions
+using the standard [VoID vocabulary](https://www.w3.org/TR/void/).
+The dataset URIs are determined based on quad subject values using regular expressions.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryVoID",
+    "datasetPatterns": [
+      "^(.*\\/pods\\/[0-9]+\\/)"
+    ]
+  }
+}
+```
+
+
+#### Bloom Filter Fragmentation Strategy
+
+Fragmentation strategy that generates Bloom filters to capture co-occurrence of resources and properties,
+using the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership).
+The filters are generated per-dataset, where the dataset URI is determined based on quad subject values using regular expressions.
+After generation, the summaries can be re-mapped to a different document URI.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryBloom",
+    "hashBits": 256,
+    "hashCount": 4,
+    "datasetPatterns": [
+      "^(.+\\/pods\\/[0-9]+\\/)"
+    ],
+    "locationPatterns": [
+      "^(.+\\/pods\\/[0-9]+\\/)"
+    ]
+  }
+}
+```
+
 ### Quad Sinks
 
 A quad sink is able to direct a stream of quads as output from the fragmentation process.
