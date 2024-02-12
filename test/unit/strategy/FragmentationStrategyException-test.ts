@@ -6,7 +6,9 @@ import {
   FragmentationStrategyException,
   FragmentationStrategyExceptionEntry,
 } from '../../../lib/strategy/FragmentationStrategyException';
+
 const streamifyArray = require('streamify-array');
+
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');
