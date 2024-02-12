@@ -39,7 +39,6 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-test-modules-${{ hashFiles('**/yarn.lock') }}
       - run: yarn install --frozen-lockfile
-      - run: yarn run build
       - run: yarn run test
       - uses: coverallsapp/github-action@master
         with:
