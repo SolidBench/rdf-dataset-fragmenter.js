@@ -3,11 +3,14 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": [
-      "./tsconfig.eslint.json"
+      "tsconfig.eslint.json"
     ]
   },
   "extends": [
     "@rubensworks"
+  ],
+  "ignorePatterns": [
+    "*.d.ts"
   ],
   "rules": {
     "no-implicit-coercion": "off",

@@ -18,8 +18,8 @@
   },
   "include": [
     "index.ts",
-    "lib/**/*.ts",
-    "bin/**/*.ts"
+    "bin/**/*.ts",
+    "lib/**/*.ts"
   ],
   "exclude": [
     "**/*.d.ts"
