@@ -22,10 +22,10 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node-version:
-          - 14.x
-          - 16.x
-          - 18.x
-          - 20.x
+          - lts/-3
+          - lts/-2
+          - lts/-1
+          - lts/*
           - latest
     steps:
       - uses: actions/setup-node@v4
