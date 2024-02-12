@@ -63,7 +63,6 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
         // Determine a transformer based on the creator IRI
         let creatorHash = 0;
         for (let i = 0; i < resource.target.value.length; i++) {
-          // eslint-disable-next-line no-bitwise
           creatorHash += resource.target.value.charCodeAt(i);
         }
         creatorHash = Math.abs(creatorHash);

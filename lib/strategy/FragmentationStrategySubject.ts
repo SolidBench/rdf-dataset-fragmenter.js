@@ -11,7 +11,6 @@ export class FragmentationStrategySubject extends FragmentationStrategyStreamAda
   private readonly blankNodeBuffer: FragmentationBlankNodeBuffer<'subject', 'object'>;
   private readonly relativePath?: string;
 
-  // eslint-disable-next-line default-param-last
   public constructor(eagerFlushing = true, relativePath?: string) {
     super();
     this.blankNodeBuffer = new FragmentationBlankNodeBuffer('subject', 'object', eagerFlushing);

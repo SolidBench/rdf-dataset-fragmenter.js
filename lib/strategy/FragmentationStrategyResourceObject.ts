@@ -37,7 +37,7 @@ export class FragmentationStrategyResourceObject extends FragmentationStrategySt
     }
 
     // Match the target predicate
-    if (this.targetPredicate.exec(quad.predicate.value)) {
+    if (this.targetPredicate.test(quad.predicate.value)) {
       if (quad.object.termType !== 'NamedNode') {
         throw new Error(`Expected target predicate value of type NamedNode on resource '${quad.subject.value}', but got '${quad.object.value}' (${quad.object.termType})`);
       }
