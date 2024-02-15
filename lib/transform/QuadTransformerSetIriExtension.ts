@@ -19,7 +19,7 @@ export class QuadTransformerSetIriExtension extends QuadTransformerTerms {
   }
 
   protected transformTerm(term: RDF.Term): RDF.Term {
-    if (term.termType === 'NamedNode' && (!this.iriPattern || this.iriPattern.exec(term.value))) {
+    if (term.termType === 'NamedNode' && (!this.iriPattern || this.iriPattern.test(term.value))) {
       let value = term.value;
       const extensionMatch = /\.[a-z]*$/iu.exec(value);
       if (extensionMatch) {

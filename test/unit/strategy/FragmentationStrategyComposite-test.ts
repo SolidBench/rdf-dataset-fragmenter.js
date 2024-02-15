@@ -2,7 +2,9 @@ import { Readable } from 'stream';
 import arrayifyStream from 'arrayify-stream';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategyComposite } from '../../../lib/strategy/FragmentationStrategyComposite';
+
 const streamifyArray = require('streamify-array');
+
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');

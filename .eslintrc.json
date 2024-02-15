@@ -1,0 +1,39 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": [
+      "tsconfig.eslint.json"
+    ]
+  },
+  "extends": [
+    "@rubensworks"
+  ],
+  "ignorePatterns": [
+    "*.d.ts"
+  ],
+  "rules": {
+    "no-implicit-coercion": "off",
+    "import/group-exports": "off",
+    "import/no-nodejs-modules": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "lib/**/*VoID*"
+      ],
+      "rules": {
+        "unicorn/filename-case": "off"
+      }
+    },
+    {
+      "files": [
+        "test/**/*.ts"
+      ],
+      "rules": {
+        "import/no-commonjs": "off",
+        "import/no-unassigned-import": "off"
+      }
+    }
+  ]
+}

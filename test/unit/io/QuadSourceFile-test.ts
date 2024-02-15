@@ -2,8 +2,10 @@ import arrayifyStream from 'arrayify-stream';
 import { DataFactory } from 'rdf-data-factory';
 import 'jest-rdf';
 import { QuadSourceFile } from '../../../lib/io/QuadSourceFile';
-const DF = new DataFactory();
+
 const streamifyString = require('streamify-string');
+
+const DF = new DataFactory();
 
 jest.mock('fs', () => ({
   createReadStream(filePath: string) {

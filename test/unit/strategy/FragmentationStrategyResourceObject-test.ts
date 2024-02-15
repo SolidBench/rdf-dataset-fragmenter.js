@@ -1,7 +1,8 @@
 import { DataFactory } from 'rdf-data-factory';
-
 import { FragmentationStrategyResourceObject } from '../../../lib/strategy/FragmentationStrategyResourceObject';
+
 const streamifyArray = require('streamify-array');
+
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');

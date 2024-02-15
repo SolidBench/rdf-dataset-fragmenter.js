@@ -2,6 +2,7 @@ import * as readline from 'readline';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { QuadSinkFile } from '../../../lib/io/QuadSinkFile';
+
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');

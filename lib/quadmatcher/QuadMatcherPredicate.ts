@@ -12,6 +12,6 @@ export class QuadMatcherPredicate implements IQuadMatcher {
   }
 
   public matches(quad: RDF.Quad): boolean {
-    return Boolean(this.predicate.exec(quad.predicate.value));
+    return Boolean(this.predicate.test(quad.predicate.value));
   }
 }

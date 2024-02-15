@@ -57,7 +57,7 @@ export class QuadSinkFile implements IQuadSink {
     path = path.replace(/[*|"<>?:]/ug, '_');
 
     // Add file extension if we don't have one yet
-    if (this.fileExtension && !/\.[a-z]$/iu.exec(this.fileExtension)) {
+    if (this.fileExtension && !/\.[a-z]$/iu.test(this.fileExtension)) {
       path = `${path}${this.fileExtension}`;
     }
 
