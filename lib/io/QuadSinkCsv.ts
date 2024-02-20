@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import type { WriteStream } from 'fs';
 import { dirname } from 'path';
 import type * as RDF from '@rdfjs/types';
-import * as mkdirp from 'mkdirp';
+import mkdirp from 'mkdirp';
 import { termToString } from 'rdf-string';
 import type { QuadTermName } from 'rdf-terms';
 import type { IQuadSink } from './IQuadSink';

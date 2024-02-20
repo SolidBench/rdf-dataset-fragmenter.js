@@ -17,6 +17,7 @@ export * from './lib/strategy/FragmentationStrategyObject';
 export * from './lib/strategy/FragmentationStrategyResourceObject';
 export * from './lib/strategy/FragmentationStrategyStreamAdapter';
 export * from './lib/strategy/FragmentationStrategySubject';
+export * from './lib/strategy/FragmentationStrategyShape';
 export * from './lib/strategy/IFragmentationStrategy';
 export * from './lib/transform/termtemplate/ITermTemplate';
 export * from './lib/transform/termtemplate/TermTemplateQuadComponent';

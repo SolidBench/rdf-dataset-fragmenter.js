@@ -5,6 +5,7 @@ import * as mkdirp from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import { QuadSinkCsv } from '../../../lib/io/QuadSinkCsv';
 import mocked = jest.mocked;
+
 const DF = new DataFactory();
 
 jest.mock('fs');

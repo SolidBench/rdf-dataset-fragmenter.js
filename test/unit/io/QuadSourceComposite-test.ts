@@ -1,6 +1,7 @@
 import { Readable } from 'stream';
 import arrayifyStream from 'arrayify-stream';
 import { QuadSourceComposite } from '../../../lib/io/QuadSourceComposite';
+
 const streamifyArray = require('streamify-array');
 
 describe('QuadSourceComposite', () => {

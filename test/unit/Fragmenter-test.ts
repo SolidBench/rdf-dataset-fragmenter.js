@@ -11,6 +11,7 @@ import {
 import { QuadTransformerReplaceIri } from '../../lib/transform/QuadTransformerReplaceIri';
 
 const streamifyArray = require('streamify-array');
+
 const DF = new DataFactory();
 
 describe('Fragmenter', () => {

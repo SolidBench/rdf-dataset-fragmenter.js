@@ -183,6 +183,33 @@ Blank nodes are not supported.
   }
 }
 ```
+#### Resource Object Fragmentation Shape
+
+A fragmentation strategy that groups triples by (subject) resources.
+It generates shapes and shape index files in the root of the iri subjects for each information type defined in `shapeFolder`. 
+The `shapeFolder` must contain a `config.json` following the schema below.
+
+```json
+{
+    "shapes": {
+        "bar": {
+            "shape": "foo.shexc",
+            "folder": "foo"
+        },
+    }
+}
+```
+The `shape` must be a path relative to the `shapeFolder` and the `folder` must be the name of the last possible iri path of the resource.
+
+```json
+{
+  "fragmentationStrategy": { 
+        "@type": "FragmentationStrategyShape",
+        "shapeFolder": "${path_of_the}",
+        "tripleShapeTreeLocator": true|false
+      }
+}
+```
 
 #### Exception Fragmentation Strategy
 

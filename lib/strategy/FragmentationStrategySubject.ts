@@ -9,9 +9,8 @@ import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStrea
  */
 export class FragmentationStrategySubject extends FragmentationStrategyStreamAdapter {
   private readonly blankNodeBuffer: FragmentationBlankNodeBuffer<'subject', 'object'>;
-  private readonly relativePath?: string;
+  protected readonly relativePath?: string;
 
-  // eslint-disable-next-line default-param-last
   public constructor(eagerFlushing = true, relativePath?: string) {
     super();
     this.blankNodeBuffer = new FragmentationBlankNodeBuffer('subject', 'object', eagerFlushing);
@@ -21,16 +20,19 @@ export class FragmentationStrategySubject extends FragmentationStrategyStreamAda
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     // Only accept IRI subjects.
     if (quad.subject.termType === 'NamedNode') {
-      // If the subject is a named node, add the quad to the subject's document.
-      const baseIri = quad.subject.value.endsWith('/') ? quad.subject.value : `${quad.subject.value}/`;
-      const iri = this.relativePath ? resolve(this.relativePath, baseIri) : quad.subject.value;
-      await quadSink.push(iri, quad);
+      await quadSink.push(FragmentationStrategySubject.generateIri(quad, this.relativePath), quad);
 
       // Save the subject in our blank node buffer, as it may be needed to identify documents for other quads.
       await this.blankNodeBuffer.materializeValueForNamedKey(quad.object, quad.subject, quadSink);
     }
 
     await this.blankNodeBuffer.push(quad, quadSink);
+  }
+
+  public static generateIri(quad: RDF.Quad, relativePath?: string): string {
+    // If the subject is a named node, add the quad to the subject's document.
+    const baseIri = quad.subject.value.endsWith('/') ? quad.subject.value : `${quad.subject.value}/`;
+    return relativePath ? resolve(relativePath, baseIri) : quad.subject.value;
   }
 
   protected async flush(quadSink: IQuadSink): Promise<void> {
