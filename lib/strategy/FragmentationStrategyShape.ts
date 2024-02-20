@@ -127,9 +127,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     await quadSink.push(iri, shapeTreeIndicator);
   }
 
-  // TODO when the vocabulary will be done, it is needed to handle the header of the shapetree iri
-  // AKA saying that the resource is a shape index, make sure it is declare only one time
-  // like bun the blank node to the resource
+  // TODO when the vocabulary will be done, it is needed to handle the definition of the shape index
+  // declaring the type and link the entry to the shape index instance
+  // this has to be define one time using the current resource tracking mecanism or a new one
   public static async generateShapetreeTriples(quadSink: IQuadSink,
     shapeTreeIRI: string,
     shapeIRI: string,
