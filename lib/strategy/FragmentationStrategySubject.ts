@@ -9,7 +9,7 @@ import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStrea
  */
 export class FragmentationStrategySubject extends FragmentationStrategyStreamAdapter {
   private readonly blankNodeBuffer: FragmentationBlankNodeBuffer<'subject', 'object'>;
-  protected readonly relativePath?: string;
+  private readonly relativePath?: string;
 
   public constructor(eagerFlushing = true, relativePath?: string) {
     super();
