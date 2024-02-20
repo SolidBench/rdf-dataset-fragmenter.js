@@ -174,8 +174,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         .on('data', async(quad: RDF.Quad) => {
           promises.push(quadSink.push(shapeIRI, quad));
         })
-        // We ignore this because it is difficult to provide a valid Shex document that
-        // would not be parsable in RDF when it has been in ShExJ
+        // We ignore this because it is difficult to provide a valid ShEx document that
+        // would not be parsable in RDF given it has been already parsed in ShExJ
 
         // eslint-disable-next-line no-inline-comments
         .on('error', /* istanbul ignore next */(error: any) => {
