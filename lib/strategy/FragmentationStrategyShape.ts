@@ -161,7 +161,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const stringShapeJsonLD = JSON.stringify(shapeJSONLD);
 
     return new Promise((resolve, reject) => {
-      // Stringigy streams
       const promises: Promise<void>[] = [];
       // The jsonLD is not valid without the context field and the library doesn't include it
       // because a ShExJ MAY contain a @context field
