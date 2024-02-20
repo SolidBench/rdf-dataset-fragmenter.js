@@ -161,8 +161,8 @@ describe('FragmentationStrategyShape', () => {
   });
 
   describe('generateShapeIndexInformation', () => {
-    let iriHandled: Set<string> = new Set();
-    let resourceHandled: Set<string> = new Set();
+    let irisHandled: Set<string> = new Set();
+    let resourcesHandled: Set<string> = new Set();
 
     const podIRI = 'http://localhost:3000/pods/00000000000000000065';
     const shapeTreeIRI = 'boo';
@@ -173,8 +173,8 @@ describe('FragmentationStrategyShape', () => {
     const originalImplementationGenerateShapeTreeLocator = FragmentationStrategyShape.generateShapeTreeLocator;
 
     beforeEach(() => {
-      iriHandled = new Set();
-      resourceHandled = new Set();
+      irisHandled = new Set();
+      resourcesHandled = new Set();
       sink = {
         push: jest.fn(),
       };
@@ -196,8 +196,8 @@ describe('FragmentationStrategyShape', () => {
       const folder = 'posts';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
-        iriHandled,
-        resourceHandled,
+        irisHandled,
+        resourcesHandled,
         resourceId,
         iri,
         podIRI,
@@ -217,10 +217,10 @@ describe('FragmentationStrategyShape', () => {
         'http://localhost:3000/pods/00000000000000000065/posts/',
       );
 
-      expect(iriHandled.size).toBe(1);
-      expect(iriHandled.has(iri)).toBe(true);
-      expect(resourceHandled.size).toBe(1);
-      expect(resourceHandled.has(resourceId)).toBe(true);
+      expect(irisHandled.size).toBe(1);
+      expect(irisHandled.has(iri)).toBe(true);
+      expect(resourcesHandled.size).toBe(1);
+      expect(resourcesHandled.has(resourceId)).toBe(true);
     });
 
     it(`should call the generateShape and the generateShapetreeTriples when the iri is in the root.
@@ -230,8 +230,8 @@ describe('FragmentationStrategyShape', () => {
       const folder = 'profile';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
-        iriHandled,
-        resourceHandled,
+        irisHandled,
+        resourcesHandled,
         resourceId,
         iri,
         podIRI,
@@ -251,10 +251,10 @@ describe('FragmentationStrategyShape', () => {
         'http://localhost:3000/pods/00000000000000000065/profile',
       );
 
-      expect(iriHandled.size).toBe(1);
-      expect(iriHandled.has(iri)).toBe(true);
-      expect(resourceHandled.size).toBe(1);
-      expect(resourceHandled.has(resourceId)).toBe(true);
+      expect(irisHandled.size).toBe(1);
+      expect(irisHandled.has(iri)).toBe(true);
+      expect(resourcesHandled.size).toBe(1);
+      expect(resourcesHandled.has(resourceId)).toBe(true);
     });
   });
 
@@ -407,7 +407,7 @@ describe('FragmentationStrategyShape', () => {
     });
 
     it(`should handle one time quads with the same suject 
-    when the suject link to a resource inside a container in a pod`, async() => {
+    when the suject links to a resource inside a container in a pod`, async() => {
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562'),
@@ -530,7 +530,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeTreeLocator).not.toHaveBeenCalled();
     });
 
-    it('should handle a quad referring to resource in the root of a pod bounded by a shape', async() => {
+    it('should handle a quad referring to a resource in the root of a pod bounded by a shape', async() => {
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts#1'),
@@ -613,7 +613,7 @@ describe('FragmentationStrategyShape', () => {
         );
       });
 
-    it('should handle multiple quads refering to resource in the root of a pod root bounded by a shape',
+    it('should handle multiple quads refering to resources in the root of a pod bounded by a shape',
       async() => {
         const quads = [
           DF.quad(
@@ -657,7 +657,7 @@ describe('FragmentationStrategyShape', () => {
         }
       });
 
-    it('should handle multiple quads refering to resource in multiple pod roots that are bounded by a shape',
+    it('should handle multiple quads refering to resources in multiple pod roots that are bounded by a shape',
       async() => {
         const quads = [
           DF.quad(

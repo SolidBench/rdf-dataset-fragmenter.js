@@ -23,8 +23,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   private readonly tripleShapeTreeLocator?: boolean;
   private readonly shapeMap: Map<string, IShapeEntry>;
 
-  private readonly iriHandled: Set<string> = new Set();
-  private readonly resourceHandled: Set<string> = new Set();
+  private readonly irisHandled: Set<string> = new Set();
+  private readonly resourcesHandled: Set<string> = new Set();
 
   public static readonly rdfTypeNode = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
   public static readonly shapeTreeNode = DF.namedNode('http://www.w3.org/ns/shapetrees#ShapeTree');
@@ -56,28 +56,28 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
-    if (!this.iriHandled.has(iri)) {
+    if (!this.irisHandled.has(iri)) {
       for (const [ resourceIndex, { shape, folder }] of this.shapeMap) {
         const positionContainerResourceNotInRoot = iri.indexOf(`/${folder}/`);
-        const positionContainerResourceIsRoot = iri.indexOf(`/${resourceIndex}`);
+        const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
 
-        if (positionContainerResourceNotInRoot !== -1 || positionContainerResourceIsRoot !== -1) {
+        if (positionContainerResourceNotInRoot !== -1 || positionContainerResourceInRoot !== -1) {
           const resourceId = positionContainerResourceNotInRoot !== -1 ?
             `${iri.slice(0, Math.max(0, positionContainerResourceNotInRoot))}/${resourceIndex}` :
-            `${iri.slice(0, Math.max(0, positionContainerResourceIsRoot))}/${resourceIndex}`;
+            `${iri.slice(0, Math.max(0, positionContainerResourceInRoot))}/${resourceIndex}`;
 
           const podIRI = positionContainerResourceNotInRoot !== -1 ?
             iri.slice(0, Math.max(0, positionContainerResourceNotInRoot)) :
-            iri.slice(0, Math.max(0, positionContainerResourceIsRoot));
+            iri.slice(0, Math.max(0, positionContainerResourceInRoot));
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
           if (this.tripleShapeTreeLocator === true) {
             await FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri);
           }
 
-          if (!this.resourceHandled.has(resourceId)) {
+          if (!this.resourcesHandled.has(resourceId)) {
             await FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
-              this.iriHandled,
-              this.resourceHandled,
+              this.irisHandled,
+              this.resourcesHandled,
               resourceId,
               iri,
               podIRI,
@@ -93,8 +93,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   }
 
   public static async generateShapeIndexInformation(quadSink: IQuadSink,
-    iriHandled: Set<string>,
-    resourceHandled: Set<string>,
+    irisHandled: Set<string>,
+    resourcesHandled: Set<string>,
     resourceId: string,
     iri: string,
     podIRI: string,
@@ -111,8 +111,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
     await Promise.all(promises);
 
-    iriHandled.add(iri);
-    resourceHandled.add(resourceId);
+    irisHandled.add(iri);
+    resourcesHandled.add(resourceId);
   }
 
   public static async generateShapeTreeLocator(quadSink: IQuadSink,
