@@ -62,13 +62,13 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
 
         if (positionContainerResourceNotInRoot !== -1 || positionContainerResourceInRoot !== -1) {
-          const resourceId = positionContainerResourceNotInRoot !== -1 ?
-            `${iri.slice(0, Math.max(0, positionContainerResourceNotInRoot))}/${resourceIndex}` :
-            `${iri.slice(0, Math.max(0, positionContainerResourceInRoot))}/${resourceIndex}`;
+          const positionContainer = positionContainerResourceNotInRoot !== -1 ?
+            positionContainerResourceNotInRoot :
+            positionContainerResourceInRoot;
 
-          const podIRI = positionContainerResourceNotInRoot !== -1 ?
-            iri.slice(0, Math.max(0, positionContainerResourceNotInRoot)) :
-            iri.slice(0, Math.max(0, positionContainerResourceInRoot));
+          const resourceId = `${iri.slice(0, Math.max(0, positionContainer))}/${resourceIndex}`;
+          const podIRI = iri.slice(0, Math.max(0, positionContainer));
+
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
           if (this.tripleShapeTreeLocator === true) {
             await FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri);
