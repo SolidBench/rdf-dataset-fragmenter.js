@@ -55,7 +55,7 @@ export class ResourceIdentifier<T> {
   public tryInitializingBuffer(quad: RDF.Quad): boolean {
     if (quad.subject.termType === 'NamedNode' &&
       quad.predicate.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' &&
-      quad.object.termType === 'NamedNode' && this.type.exec(quad.object.value)) {
+      quad.object.termType === 'NamedNode' && this.type.test(quad.object.value)) {
       this.buffer[quad.subject.value] = { quads: [ quad ], type: quad.object };
 
       return true;
@@ -74,7 +74,7 @@ export class ResourceIdentifier<T> {
     resource.quads.push(quad);
 
     // Try to set the target
-    if (this.targetPredicate.exec(quad.predicate.value)) {
+    if (this.targetPredicate.test(quad.predicate.value)) {
       if (quad.object.termType !== 'NamedNode') {
         throw new Error(`Expected target value of type NamedNode on resource '${quad.subject.value}'`);
       }

@@ -32,7 +32,7 @@ export class QuadMatcherResourceType implements IQuadMatcher {
     // Add buffer entry on applicable resource type
     if (quad.subject.termType === 'NamedNode' &&
       quad.predicate.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' &&
-      quad.object.termType === 'NamedNode' && this.type.exec(quad.object.value)) {
+      quad.object.termType === 'NamedNode' && this.type.test(quad.object.value)) {
       if (this.matchFullResource) {
         this.matchingSubjects[quad.subject.value] = true;
       }

@@ -17,7 +17,11 @@ export class QuadSourceFile implements IQuadSource {
   }
 
   public getQuads(): RDF.Stream & Readable {
-    return rdfParser.parse(fs.createReadStream(this.filePath), { path: this.filePath, baseIRI: this.baseIRI });
+    // The parser from 'rdf-parse' uses Readable from 'readable-stream', hence this cast
+    return <RDF.Stream & Readable><unknown>rdfParser.parse(fs.createReadStream(this.filePath), {
+      path: this.filePath,
+      baseIRI: this.baseIRI,
+    });
   }
 }
 

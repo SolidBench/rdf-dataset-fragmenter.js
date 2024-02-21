@@ -78,7 +78,7 @@ export class QuadTransformerRemapResourceIdentifier implements IQuadTransformer 
       const resource = this.resourceIdentifier.getBufferResource(quad);
 
       // Try to set the id
-      if (this.identifierPredicate.exec(quad.predicate.value)) {
+      if (this.identifierPredicate.test(quad.predicate.value)) {
         if (resource.id) {
           throw new Error(`Illegal overwrite of identifier value on resource '${quad.subject.value}'`);
         }

@@ -25,7 +25,7 @@ export abstract class QuadTransformerAppendResourceAdapter implements IQuadTrans
     // Append SCL policy to applicable resource type
     if (quad.subject.termType === 'NamedNode' &&
       quad.predicate.value === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' &&
-      quad.object.termType === 'NamedNode' && this.type.exec(quad.object.value)) {
+      quad.object.termType === 'NamedNode' && this.type.test(quad.object.value)) {
       this.appendQuads(quad, quads);
     }
 
