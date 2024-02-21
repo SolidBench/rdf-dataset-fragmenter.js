@@ -96,8 +96,7 @@ describe('FragmentationStrategyShape', () => {
       };
     });
 
-    it(`should add into the sink the quad related to the type,
-     the shape and the target and interpret correctly that the data is inside a container a pod`, async() => {
+    it(`should add into the sinks quads refering to a shapetree and interpret correctly that the data is inside a container of a pod`, async() => {
       const isInRootOfPod = false;
       await FragmentationStrategyShape.generateShapetreeTriples(sink,
         shapeTreeIRI,
@@ -115,8 +114,7 @@ describe('FragmentationStrategyShape', () => {
       expect((<RDF.Quad>calls[1][1]).predicate).toStrictEqual(FragmentationStrategyShape.solidInstanceContainer);
     });
 
-    it(`should add into the sink the quad related to the type,
-     the shape and the target and interpret correctly that the data is at the root of a pod`, async() => {
+    it(`should add into the sink quads refereing to a shapetree and interpret correctly that the data is at the root of a pod`, async() => {
       const isNotInRootOfPod = true;
       await FragmentationStrategyShape.generateShapetreeTriples(sink,
         shapeTreeIRI,
@@ -146,7 +144,7 @@ describe('FragmentationStrategyShape', () => {
       };
     });
 
-    it('should add a shape tree descriptor to the content iri', async() => {
+    it('should add a shapetree descriptor to the sink at the given iri', async() => {
       await FragmentationStrategyShape.generateShapeTreeLocator(sink, podIRI, shapeTreeIRI, iri);
       expect(sink.push).toHaveBeenCalledTimes(1);
       const call = sink.push.mock.calls;
@@ -189,8 +187,8 @@ describe('FragmentationStrategyShape', () => {
       FragmentationStrategyShape.generateShapeTreeLocator = originalImplementationGenerateShapeTreeLocator;
     });
 
-    it(`should call the generateShape and the generateShapetreeTriples when the iri is in a resource in the pod.
-     It should also add the iri into the resouceHandle.`, async() => {
+    it(`should call the generateShape and the generateShapetreeTriples when the iri is in a container in the pod.
+     It should also add the iri into the resoucesHandle and irisHandled sets.`, async() => {
       const iri = 'http://localhost:3000/pods/00000000000000000065/posts/2012-05-08#893353212198';
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/posts';
       const folder = 'posts';
@@ -223,8 +221,8 @@ describe('FragmentationStrategyShape', () => {
       expect(resourcesHandled.has(resourceId)).toBe(true);
     });
 
-    it(`should call the generateShape and the generateShapetreeTriples when the iri is in the root.
-     It should also add the iri into the resouceHandle.`, async() => {
+    it(`should call the generateShape and the generateShapetreeTriples when the iri is in the root of the pod.
+     It should also add the iri into the resoucesHandled and the irisHandled sets.`, async() => {
       const iri = 'http://localhost:3000/pods/00000000000000000065/profile/card#me';
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/profile';
       const folder = 'profile';
@@ -307,7 +305,7 @@ describe('FragmentationStrategyShape', () => {
       FragmentationStrategyShape.generateShapeTreeLocator = originalImplementationGenerateShapeTreeLocator;
     });
 
-    it('should handle an empty stream', async() => {
+    it('should not handle an empty stream', async() => {
       await strategy.fragment(streamifyArray([]), sink);
       expect(sink.push).not.toHaveBeenCalled();
     });
@@ -449,57 +447,57 @@ describe('FragmentationStrategyShape', () => {
       );
     });
 
-    it('should handle multiple subjects when the quad subject is inside a container in the root of a pod', async() => {
-      const quads = [
-        DF.quad(
-          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#1'),
-          DF.namedNode('foo'),
-          DF.namedNode('bar'),
-        ),
+    it('should handle one time multiple subjects when the quad subjects are inside the same container of a pod',
+      async() => {
+        const quads = [
+          DF.quad(
+            DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#1'),
+            DF.namedNode('foo'),
+            DF.namedNode('bar'),
+          ),
 
-        DF.quad(
-          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#2'),
-          DF.namedNode('boo'),
-          DF.namedNode('cook'),
-        ),
+          DF.quad(
+            DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#2'),
+            DF.namedNode('boo'),
+            DF.namedNode('cook'),
+          ),
 
-        DF.quad(
-          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#3'),
-          DF.namedNode('boo'),
-          DF.namedNode('cook'),
-        ),
-      ];
-      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+          DF.quad(
+            DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#3'),
+            DF.namedNode('boo'),
+            DF.namedNode('cook'),
+          ),
+        ];
+        await strategy.fragment(streamifyArray([ ...quads ]), sink);
 
-      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
-      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
-        sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
-
-      );
-
-      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
-      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
-        sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        false,
-        'http://localhost:3000/pods/00000000000000000267/posts/',
-      );
-
-      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(3);
-      for (let i = 1; i < quads.length + 1; i++) {
-        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(i,
+        expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
+        expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
-          quads[i - 1].subject.value);
-      }
-    });
+          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          `${shapeFolder}/posts.shexc`,
 
-    it(`should handle a quad given that the quad is inside a container in a pod bounded by shape
-     when tripleShapeTreeLocator is false`, async() => {
+        );
+
+        expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
+        expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
+          sink,
+          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          false,
+          'http://localhost:3000/pods/00000000000000000267/posts/',
+        );
+
+        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(3);
+        for (let i = 1; i < quads.length + 1; i++) {
+          expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(i,
+            sink,
+            'http://localhost:3000/pods/00000000000000000267/',
+            'http://localhost:3000/pods/00000000000000000267/shapetree',
+            quads[i - 1].subject.value);
+        }
+      });
+
+    it(`should handle a quad inside a container in a pod bounded by shape when tripleShapeTreeLocator is false`, async() => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, false);
       const quads = [
         DF.quad(
@@ -613,7 +611,7 @@ describe('FragmentationStrategyShape', () => {
         );
       });
 
-    it('should handle multiple quads refering to resources in the root of a pod bounded by a shape',
+    it('should handle one time multiple quads refering to resources in the root of a pod bounded by a shape',
       async() => {
         const quads = [
           DF.quad(
@@ -701,8 +699,7 @@ describe('FragmentationStrategyShape', () => {
         }
       });
 
-    it(`should handle a quad given that the quad is inside the root of a pod bounded by shape
-     when tripleShapeTreeLocator is false`, async() => {
+    it(`should handle a quad inside the root of a pod bounded by shape when tripleShapeTreeLocator is false`, async() => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, false);
       const quads = [
         DF.quad(
