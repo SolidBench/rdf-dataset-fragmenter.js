@@ -9,7 +9,7 @@ import type { IQuadSink } from '../io/IQuadSink';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
 import { FragmentationStrategySubject } from './FragmentationStrategySubject';
 // eslint-disable-next-line import/extensions
-import SHEX_CONTEXT from './shex_context.json';
+import * as SHEX_CONTEXT from './shex_context.json';
 
 const DF = new DataFactory<RDF.Quad>();
 

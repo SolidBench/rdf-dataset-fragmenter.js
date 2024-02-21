@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "lib": [
-      "es2021",
+      "es6",
       "dom"
     ],
     "target": "es6",
@@ -15,8 +15,7 @@
     "declaration": true,
     "importHelpers": false,
     "strict": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
+    "resolveJsonModule": true
   },
   "include": [
     "index.ts",
