@@ -199,7 +199,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
       this.shapeTreeShapeNode,
       DF.namedNode(shapeIRI),
     );
-    // We need to indicate if the shape index target a single file or if it is a whole container that is targeted
+    // We need to indicate if the shape index target a single file or if it is a container that is targeted
     const target = DF.quad(
       blankNode,
       isInRootOfPod ? this.solidInstance : this.solidInstanceContainer,
