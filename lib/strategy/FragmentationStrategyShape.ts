@@ -96,13 +96,14 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
 
+          const promises: Promise<void>[] = [];
           // We add a triple in each file to locate the shape index if it is enable
           if (this.tripleShapeTreeLocator === true) {
-            await FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri);
+            promises.push(FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri));
           }
 
           if (!this.resourcesHandled.has(resourceId)) {
-            await FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
+            promises.push(FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
               this.irisHandled,
               this.resourcesHandled,
               resourceId,
@@ -111,9 +112,11 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
               shapeTreeIRI,
               directory,
               shape,
-              positionContainerResourceNotInRoot === -1);
+              positionContainerResourceNotInRoot === -1));
+            await Promise.all(promises);
             return;
           }
+          await promises[0];
         }
       }
     }
