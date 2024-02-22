@@ -28,9 +28,7 @@ export class QuadTransformerDistributeIri extends QuadTransformerTerms {
       const match = this.search.exec(term.value);
       if (match) {
         if (match.length < 2) {
-          throw new Error(`QuadTransformerDistributeIri error: The "searchRegex" did not contain any groups. ` +
-              `QuadTransformerDistributeIri requires at least one group-based replacement, ` +
-              `of which the first group must match a number.`);
+          throw new Error(`'searchRegex' did not contain any groups, while QuadTransformerDistributeIri requires at least one group-based replacement, of which the first group must match a number.`);
         }
         const nr = Number.parseInt(match[1], 10);
         if (Number.isNaN(nr)) {
