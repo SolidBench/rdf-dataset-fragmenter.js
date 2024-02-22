@@ -213,7 +213,7 @@ An exemple of the `component.js` configuration is presented below
       }
 }
 ```
-Belown an exemple file tree and of the output is shown.
+Belown an exemple file tree and of the outputs are shown.
 
 ```
 ├── comments
