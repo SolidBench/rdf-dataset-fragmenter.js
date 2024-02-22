@@ -186,29 +186,75 @@ Blank nodes are not supported.
 #### Resource Object Fragmentation Shape
 
 A fragmentation strategy that groups triples by (subject) resources.
-It generates shapes and shape index files in the root of the iri subjects for each information type defined in `shapeFolder`. 
-The `shapeFolder` must contain a `config.json` following the schema below.
+It generates shapes and shape index files in the root of the iri container for each information type defined in `shapeDirectory`. 
+The `shapeDirectory` must contain a `config.json` following the exemple below.
+The `shape` must be a path relative to the `shapeDirectory` and the `directory` must be the name of container of the subject.
 
+`./shape/config.json`
 ```json
 {
     "shapes": {
-        "bar": {
-            "shape": "foo.shexc",
-            "folder": "foo"
+        "comments": {
+            "shape": "comments.shexc",
+            "directory": "comments"
         },
     }
 }
 ```
-The `shape` must be a path relative to the `shapeFolder` and the `folder` must be the name of the last possible iri path of the resource.
+
+An exemple of the `component.js` configuration is presented below
 
 ```json
 {
   "fragmentationStrategy": { 
         "@type": "FragmentationStrategyShape",
-        "shapeFolder": "${path_of_the}",
-        "tripleShapeTreeLocator": true|false
+        "shapeDirectory": "./shape",
+        "tripleShapeTreeLocator": true
       }
 }
+```
+Belown an exemple file tree and of the output is shown.
+
+```
+├── comments
+│   ├── 2012-08-10.nq
+│   └── 2012-08-17.nq
+├── comments_shape.nq
+├── noise
+│   ├── NOISE-12310.nq
+│   └── NOISE-9909.nq
+├── posts.nq
+├── posts_shape.nq
+├── profile
+│   └── card.nq
+├── profile_shape.nq
+├── settings
+│   └── publicTypeIndex.nq
+└── shapetree.nq
+```
+
+
+`http://localhost:3000/pods/00000000000000000768/profile_shape`
+
+```nquad
+<http://localhost:3000/pods/00000000000000000768/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_3068_49 .
+_:df_3068_49 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Shape> .
+```
+
+`http://localhost:3000/pods/00000000000000000768/shapetree`
+
+```nquad
+_:df_3_356 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/profile_shape> .
+_:df_3_356 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000238/profile/> .
+_:df_3_2013 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/comments_shape> .
+_:df_3_2013 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000238/comments/> .
+_:df_3_2921 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/posts_shape> .
+_:df_3_2921 <http://www.w3.org/ns/solid/terms#instance> <http://localhost:3000/pods/00000000000000000238/posts> .
+```
+`http://localhost:3000/pods/00000000000000000768/profile/card`
+```nquad
+<http://localhost:3000/pods/00000000000000000768/> <http://www.w3.org/ns/shapetrees#ShapeTreeLocator> <http://localhost:3000/pods/00000000000000000768/shapetree> .
+<http://localhost:3000/pods/00000000000000000768/profile/card#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Person> .
 ```
 
 #### Exception Fragmentation Strategy
