@@ -55,7 +55,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const shapeMap: Map<string, IShapeEntry> = new Map();
     const config = JSON.parse(readFileSync(join(shapeFolder, 'config.json')).toString());
     const shapes = config.shapes;
-    for (const [ dataType, shapeEntry ] of Object.entries(shapes)) {
+    for (const [dataType, shapeEntry] of Object.entries(shapes)) {
       shapeMap.set(dataType, {
         shape: readFileSync(join(shapeFolder, (<IShapeEntry>shapeEntry).shape)).toString(),
         directory: (<IShapeEntry>shapeEntry).directory,
@@ -77,7 +77,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
     // If iri already has been handled, we do nothing
     if (!this.irisHandled.has(iri)) {
-      for (const [ resourceIndex, { shape, directory }] of this.shapeMap) {
+      for (const [resourceIndex, { shape, directory }] of this.shapeMap) {
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
@@ -116,7 +116,10 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
             await Promise.all(promises);
             return;
           }
-          await promises[0];
+          if (promises.length === 1) {
+            await promises[0];
+            return;
+          }
         }
       }
     }
@@ -239,7 +242,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         skipContextValidation: true,
       });
       jsonldParser
-        .on('data', async(quad: RDF.Quad) => {
+        .on('data', async (quad: RDF.Quad) => {
           promises.push(quadSink.push(shapeIRI, quad));
         })
         // We ignore this because it is difficult to provide a valid ShEx document that
@@ -249,7 +252,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         .on('error', /* istanbul ignore next */(error: any) => {
           reject(error);
         })
-        .on('end', async() => {
+        .on('end', async () => {
           await Promise.all(promises);
           resolve();
         });
