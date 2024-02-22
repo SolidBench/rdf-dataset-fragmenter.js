@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { readFile } from 'fs/promises';
+import { join } from 'path';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategyShape } from '../../../lib/strategy/FragmentationStrategyShape';
@@ -22,42 +22,30 @@ describe('FragmentationStrategyShape', () => {
     });
 
     it('should push the shape inside the sink given a shex shape path with one shape', async() => {
-      (<jest.Mock>readFile).mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({
-            toString() {
-              return `
-                                PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-                                PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
-                                PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
+      const shexc = `
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+      PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
-                                <#Post> {
-                                    ldbcvoc:id xsd:long {1} ;
-                                    ldbcvoc:imageFile xsd:string * ;
-                                    ldbcvoc:locationIP xsd:string {1} ;
-                                    ldbcvoc:browserUsed xsd:string {1} ;
-                                    ldbcvoc:creationDate xsd:dateTime {1} ;
-                                    ldbcvoc:hasCreator IRI {1} ;
-                                    schema:seeAlso IRI * ;
-                                    ldbcvoc:isLocatedIn IRI ? ;
-                                }
-                            `;
-            },
-          });
-        }),
-      );
+      <#Post> {
+          ldbcvoc:id xsd:long {1} ;
+          ldbcvoc:imageFile xsd:string * ;
+          ldbcvoc:locationIP xsd:string {1} ;
+          ldbcvoc:browserUsed xsd:string {1} ;
+          ldbcvoc:creationDate xsd:dateTime {1} ;
+          ldbcvoc:hasCreator IRI {1} ;
+          schema:seeAlso IRI * ;
+          ldbcvoc:isLocatedIn IRI ? ;
+      }
+  `;
 
-      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', 'bar');
+      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', shexc);
       expect(sink.push).toHaveBeenCalledTimes(81);
     });
 
     it('should reject the promise given that the shape is not valid', async() => {
-      (<jest.Mock>readFile).mockReturnValueOnce(
-        new Promise(resolve => {
-          resolve({
-            toString() {
-              return `
-                                PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      const shexc = `
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                                 PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
                                 PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
@@ -71,14 +59,9 @@ describe('FragmentationStrategyShape', () => {
                                     ldbcvoc:hasCreator IRI {1} ;
                                     schema:seeAlso IRI * ;
                                     ldbcvoc:isLocatedIn IRI ? ;
-                                }
-                            `;
-            },
-          });
-        }),
-      );
+                                }`;
 
-      await expect(FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', 'bar')).rejects.toBeDefined();
+      await expect(FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', shexc)).rejects.toBeDefined();
       expect(sink.push).toHaveBeenCalledTimes(0);
     });
   });
@@ -271,25 +254,36 @@ describe('FragmentationStrategyShape', () => {
         push: jest.fn(),
       };
 
-      (<jest.Mock>readFileSync).mockReturnValue(
-        {
-          toString: () => `{
-            "shapes": {
-                "comments": {
-                    "shape": "comments.shexc",
-                    "folder": "comments"
-                },
-                "posts": {
-                    "shape": "posts.shexc",
-                    "folder": "posts"
-                },
-                "card": {
-                    "shape": "profile.shexc",
-                    "folder": "profile"
+      (<jest.Mock>readFileSync).mockImplementation(
+        (val: string) => {
+          if (val === join(shapeFolder, 'config.json')) {
+            return {
+              toString: () => `{
+                "shapes": {
+                    "comments": {
+                        "shape": "comments.shexc",
+                        "directory": "comments"
+                    },
+                    "posts": {
+                        "shape": "posts.shexc",
+                        "directory": "posts"
+                    },
+                    "card": {
+                        "shape": "profile.shexc",
+                        "directory": "profile"
+                    }
                 }
-            }
-        }`,
-        },
+            }`,
+            };
+          } if (val === join(shapeFolder, 'comments.shexc')) {
+            return 'comments';
+          } if (val === join(shapeFolder, 'posts.shexc')) {
+            return 'posts';
+          } if (val === join(shapeFolder, 'profile.shexc')) {
+            return 'profile';
+          }
+        }
+        ,
       );
 
       FragmentationStrategyShape.generateShapetreeTriples = jest.fn();
@@ -336,7 +330,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
+        'posts',
 
       );
 
@@ -382,7 +376,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
+        'posts',
 
       );
 
@@ -425,7 +419,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
+        'posts',
 
       );
 
@@ -474,7 +468,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/posts_shape',
-          `${shapeFolder}/posts.shexc`,
+          'posts',
 
         );
 
@@ -512,7 +506,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
+        'posts',
 
       );
 
@@ -542,7 +536,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
+        'posts',
 
       );
 
@@ -589,7 +583,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/posts_shape',
-          `${shapeFolder}/posts.shexc`,
+          'posts',
 
         );
 
@@ -631,7 +625,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/posts_shape',
-          `${shapeFolder}/posts.shexc`,
+          'posts',
 
         );
 
@@ -684,7 +678,7 @@ describe('FragmentationStrategyShape', () => {
           expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(i,
             sink,
             `${pods[i - 1]}/posts_shape`,
-            `${shapeFolder}/posts.shexc`);
+            'posts');
           expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(i,
             sink,
             `${pods[i - 1]}/shapetree`,
@@ -714,7 +708,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`,
+        'posts',
 
       );
 
@@ -792,20 +786,20 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
         sink,
         'http://localhost:3000/pods/00000000000000000267/profile_shape',
-        `${shapeFolder}/profile.shexc`);
+        'profile');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape',
-        `${shapeFolder}/posts.shexc`);
+        'posts');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(3,
         sink,
         'http://localhost:3000/pods/000000000000000002671/posts_shape',
-        `${shapeFolder}/posts.shexc`);
+        'posts');
 
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(4,
         sink,
         'http://localhost:3000/pods/000000000000000002671/comments_shape',
-        `${shapeFolder}/comments.shexc`);
+        'comments');
 
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(1,
         sink,
