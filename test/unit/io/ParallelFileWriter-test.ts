@@ -4,6 +4,7 @@ import { mkdirp } from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import { ParallelFileWriter } from '../../../lib/io/ParallelFileWriter';
 import mocked = jest.mocked;
+
 const DF = new DataFactory();
 const stringifyStream = require('stream-to-string');
 
