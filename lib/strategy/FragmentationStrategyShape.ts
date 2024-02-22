@@ -216,7 +216,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   /**
    * Generate an ShExj shape from a SheXC file and push the quads into a quad sink
    * @param {IQuadSink} quadSink - a quad sink
-  * @param {string} shapeIRI - The iri of the target shape
+   * @param {string} shapeIRI - The iri of the target shape
    * @param {string} shape - SheXC string
    */
   public static async generateShape(quadSink: IQuadSink, shapeIRI: string, shape: string): Promise<void> {
