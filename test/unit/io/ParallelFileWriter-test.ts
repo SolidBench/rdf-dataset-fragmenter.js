@@ -1,13 +1,12 @@
 import * as fs from 'fs';
 import { PassThrough } from 'stream';
+import { mkdirp } from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import { ParallelFileWriter } from '../../../lib/io/ParallelFileWriter';
 import mocked = jest.mocked;
 
-const mkdirp = require('mkdirp');
-const stringifyStream = require('stream-to-string');
-
 const DF = new DataFactory();
+const stringifyStream = require('stream-to-string');
 
 jest.mock('fs');
 jest.mock('mkdirp');
