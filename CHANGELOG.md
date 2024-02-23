@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.5.0"></a>
+## [v2.5.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.4.0...v2.5.0) - 2024-02-23
+
+### Added
+* [Add QuadTransformerDistributeIri](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/6e1f00bbc41e43a18b0ba3389c53aa05544d8867)
+
+### Changed
+* [Upgrade mkdirp for better compatability with newer TS versions](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/ca663778f12aebd941255dc0a4ed3cbc50d63d31)
+
 <a name="v2.4.0"></a>
 ## [v2.4.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.3.6...v2.4.0) - 2023-10-23
 
