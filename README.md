@@ -214,7 +214,7 @@ An exemple of the `component.js` configuration is presented below
       }
 }
 ```
-Belown an exemple file tree and of the outputs are shown.
+A sample output file tree and its associated file is displayed below.
 
 ```
 ├── comments
