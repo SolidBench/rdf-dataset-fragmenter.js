@@ -142,9 +142,6 @@ describe('FragmentationStrategyShape', () => {
   });
 
   describe('generateShapeIndexInformation', () => {
-    let irisHandled: Set<string> = new Set();
-    let resourcesHandled: Set<string> = new Set();
-
     const podIRI = 'http://localhost:3000/pods/00000000000000000065';
     const shapeTreeIRI = 'boo';
     const shapePath = 'bar';
@@ -154,8 +151,6 @@ describe('FragmentationStrategyShape', () => {
     const originalImplementationGenerateShapeTreeLocator = FragmentationStrategyShape.generateShapeTreeLocator;
 
     beforeEach(() => {
-      irisHandled = new Set();
-      resourcesHandled = new Set();
       sink = {
         push: jest.fn(),
       };
@@ -177,8 +172,6 @@ describe('FragmentationStrategyShape', () => {
       const folder = 'posts';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
-        irisHandled,
-        resourcesHandled,
         resourceId,
         iri,
         podIRI,
@@ -197,11 +190,6 @@ describe('FragmentationStrategyShape', () => {
         false,
         'http://localhost:3000/pods/00000000000000000065/posts/',
       );
-
-      expect(irisHandled.size).toBe(1);
-      expect(irisHandled.has(iri)).toBe(true);
-      expect(resourcesHandled.size).toBe(1);
-      expect(resourcesHandled.has(resourceId)).toBe(true);
     });
 
     it(`should call the generateShape and the generateShapetreeTriples when the iri is in the root of the pod.
@@ -211,8 +199,6 @@ describe('FragmentationStrategyShape', () => {
       const folder = 'profile';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
-        irisHandled,
-        resourcesHandled,
         resourceId,
         iri,
         podIRI,
@@ -231,11 +217,6 @@ describe('FragmentationStrategyShape', () => {
         true,
         'http://localhost:3000/pods/00000000000000000065/profile',
       );
-
-      expect(irisHandled.size).toBe(1);
-      expect(irisHandled.has(iri)).toBe(true);
-      expect(resourcesHandled.size).toBe(1);
-      expect(resourcesHandled.has(resourceId)).toBe(true);
     });
   });
 

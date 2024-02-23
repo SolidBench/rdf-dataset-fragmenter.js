@@ -104,8 +104,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
           if (!this.resourcesHandled.has(resourceId)) {
             promises.push(FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
-              this.irisHandled,
-              this.resourcesHandled,
               resourceId,
               iri,
               podIRI,
@@ -113,6 +111,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
               directory,
               shape,
               positionContainerResourceNotInRoot === -1));
+            this.irisHandled.add(iri);
+            this.resourcesHandled.add(resourceId);
             await Promise.all(promises);
             return;
           }
@@ -128,9 +128,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   /**
    * Generate all the mandatory shape index information and push them into a quad sink
    * @param {IQuadSink} quadSink - a quad sink
-   * @param {Set<string>} irisHandled - the iri that has been handled, the function will add the current iri to the set
-   * @param {Set<string>} resourcesHandled - the resource that has been handled,
-   * the function will add the current resource to the set
    * @param {string} resourceId - the id of the resource, may be used to locate the target of the shape index
    * @param {string} iri - the targeted iri where the quad will be pushed
    * @param {string} podIRI - the iri of the pod
@@ -140,8 +137,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * @param {boolean} isInRootOfPod - indicate if the resource is at the root of the pod
    */
   public static async generateShapeIndexInformation(quadSink: IQuadSink,
-    irisHandled: Set<string>,
-    resourcesHandled: Set<string>,
     resourceId: string,
     iri: string,
     podIRI: string,
@@ -159,9 +154,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     ];
 
     await Promise.all(promises);
-
-    irisHandled.add(iri);
-    resourcesHandled.add(resourceId);
   }
 
   /**
