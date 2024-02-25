@@ -105,7 +105,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
           if (!this.resourcesHandled.has(resourceId)) {
             promises.push(FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
               resourceId,
-              iri,
               podIRI,
               shapeTreeIRI,
               directory,
@@ -129,7 +128,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * Generate all the mandatory shape index information and push them into a quad sink
    * @param {IQuadSink} quadSink - a quad sink
    * @param {string} resourceId - the id of the resource, may be used to locate the target of the shape index
-   * @param {string} iri - the targeted iri where the quad will be pushed
    * @param {string} podIRI - the iri of the pod
    * @param {string} shapeTreeIRI - the iri of the shapetree
    * @param {string} directory - the folder bounded binded by the shape
@@ -138,14 +136,13 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    */
   public static async generateShapeIndexInformation(quadSink: IQuadSink,
     resourceId: string,
-    iri: string,
     podIRI: string,
     shapeTreeIRI: string,
     directory: string,
     shape: string,
     isInRootOfPod: boolean): Promise<void> {
     const shapeIRI = `${podIRI}/${directory}_shape`;
-    // In Solid the path to a container must have a trailing "/"
+    // In Solid the path to a container end with a trailing "/"
     // hence when the resource is not in the root the content iri must be different.
     const contentIri = isInRootOfPod ? resourceId : `${podIRI}/${directory}/`;
     const promises = [

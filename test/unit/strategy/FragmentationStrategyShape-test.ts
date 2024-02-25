@@ -167,13 +167,11 @@ describe('FragmentationStrategyShape', () => {
 
     it(`should call the generateShape and the generateShapetreeTriples when the iri is in a container in the pod.
      It should also add the iri into the resoucesHandle and irisHandled sets.`, async() => {
-      const iri = 'http://localhost:3000/pods/00000000000000000065/posts/2012-05-08#893353212198';
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/posts';
       const folder = 'posts';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
         resourceId,
-        iri,
         podIRI,
         shapeTreeIRI,
         folder,
@@ -194,13 +192,11 @@ describe('FragmentationStrategyShape', () => {
 
     it(`should call the generateShape and the generateShapetreeTriples when the iri is in the root of the pod.
      It should also add the iri into the resoucesHandled and the irisHandled sets.`, async() => {
-      const iri = 'http://localhost:3000/pods/00000000000000000065/profile/card#me';
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/profile';
       const folder = 'profile';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
         resourceId,
-        iri,
         podIRI,
         shapeTreeIRI,
         folder,
