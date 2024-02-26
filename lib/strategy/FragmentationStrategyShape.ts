@@ -88,9 +88,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
             positionContainerResourceInRoot;
 
           // We use as an id the path of the iri until the resource identifier.
-          // It is a different discrimination mechanism than the one related to the iri because even
-          // if we don't want to add shape index information we might want to add shapeTreeLocator in
-          // every resource bounded by a shape.
+          // It is a different discrimination mechanism than the one related to the iri
+          // to avoid the for loop and some calculation
           const resourceId = `${iri.slice(0, Math.max(0, positionContainer))}/${resourceIndex}`;
           const podIRI = iri.slice(0, Math.max(0, positionContainer));
 
@@ -116,6 +115,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
             return;
           }
           if (promises.length === 1) {
+            this.irisHandled.add(iri);
+            this.resourcesHandled.add(resourceId);
             await promises[0];
             return;
           }

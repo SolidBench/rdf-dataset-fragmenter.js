@@ -459,13 +459,21 @@ describe('FragmentationStrategyShape', () => {
         );
 
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(3);
-        for (let i = 1; i < quads.length + 1; i++) {
-          expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(i,
-            sink,
-            'http://localhost:3000/pods/00000000000000000267/',
-            'http://localhost:3000/pods/00000000000000000267/shapetree',
-            quads[i - 1].subject.value);
-        }
+        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(1,
+          sink,
+          'http://localhost:3000/pods/00000000000000000267/',
+          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#1');
+        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(2,
+          sink,
+          'http://localhost:3000/pods/00000000000000000267/',
+          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#2');
+        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(3,
+          sink,
+          'http://localhost:3000/pods/00000000000000000267/',
+          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#3');
       });
 
     it(`should handle a quad inside a container in a pod bounded by shape when tripleShapeTreeLocator is false`, async() => {
@@ -616,14 +624,16 @@ describe('FragmentationStrategyShape', () => {
         );
 
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(2);
-
-        for (let i = 1; i < quads.length + 1; i++) {
-          expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(i,
-            sink,
-            'http://localhost:3000/pods/00000000000000000267/',
-            'http://localhost:3000/pods/00000000000000000267/shapetree',
-            quads[i - 1].subject.value);
-        }
+        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(1,
+          sink,
+          'http://localhost:3000/pods/00000000000000000267/',
+          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          'http://localhost:3000/pods/00000000000000000267/posts#1');
+        expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(2,
+          sink,
+          'http://localhost:3000/pods/00000000000000000267/',
+          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          'http://localhost:3000/pods/00000000000000000267/posts#2');
       });
 
     it('should handle multiple quads refering to resources in multiple pod roots that are bounded by a shape',
@@ -669,6 +679,48 @@ describe('FragmentationStrategyShape', () => {
             quads[i - 1].subject.value);
         }
       });
+
+    it(`should handle multiple quads with the same subject and different object and predication 
+    when the subject is in a container of a pod`, async() => {
+      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, true);
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2010-09-24#2'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2010-09-24#2'),
+          DF.namedNode('foo1'),
+          DF.namedNode('bar1'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2010-09-24#2'),
+          DF.namedNode('foo2'),
+          DF.namedNode('bar2'),
+        ),
+      ];
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'posts',
+
+      );
+
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        false,
+        'http://localhost:3000/pods/00000000000000000267/posts/',
+      );
+
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(1);
+    });
 
     it(`should handle a quad inside the root of a pod bounded by shape when tripleShapeTreeLocator is false`, async() => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, false);
