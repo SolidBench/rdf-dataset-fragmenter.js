@@ -1,15 +1,14 @@
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
-import type { IDatasetSummary } from '../summary/DatasetSummary';
+import type { IDatasetSummaryCollector } from '../summary/DatasetSummaryCollector';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
 
 /**
  * Fragmentation strategy that collects dataset summaries per dataset.
  */
-export abstract class FragmentationStrategyDatasetSummary extends FragmentationStrategyStreamAdapter {
+export class FragmentationStrategyDatasetSummary extends FragmentationStrategyStreamAdapter {
+  private readonly collectors: IDatasetSummaryCollector[];
   private readonly iriToDataset: Map<RegExp, string>;
-
-  private readonly summaries: Map<string, IDatasetSummary>;
 
   private readonly blankNodeQuads: Map<string, RDF.Quad[]>;
   private readonly blankNodeDatasets: Map<string, Set<string>>;
@@ -18,14 +17,12 @@ export abstract class FragmentationStrategyDatasetSummary extends FragmentationS
     super();
     this.blankNodeQuads = new Map();
     this.blankNodeDatasets = new Map();
-    this.summaries = new Map();
+    this.collectors = options.collectors;
     this.iriToDataset = new Map(Object.entries(options.iriToDataset).map(([ exp, sub ]) => [
       new RegExp(exp, 'u'),
       sub,
     ]));
   }
-
-  protected abstract createDatasetSummary(dataset: string): IDatasetSummary;
 
   protected subjectToDataset(iri: string): string | undefined {
     for (const [ exp, sub ] of this.iriToDataset) {
@@ -36,12 +33,7 @@ export abstract class FragmentationStrategyDatasetSummary extends FragmentationS
   }
 
   protected registerDatasetQuad(dataset: string, quad: RDF.Quad): void {
-    let summary = this.summaries.get(dataset);
-    if (!summary) {
-      summary = this.createDatasetSummary(dataset);
-      this.summaries.set(dataset, summary);
-    }
-    summary.register(quad);
+    this.collectors.forEach(collector => collector.register(dataset, quad));
   }
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
@@ -86,9 +78,11 @@ export abstract class FragmentationStrategyDatasetSummary extends FragmentationS
         }
       }
     }
-    for (const [ dataset, summary ] of this.summaries) {
-      for (const quad of summary.toQuads()) {
-        await quadSink.push(dataset, quad);
+    for (const collector of this.collectors) {
+      for (const [ dataset, summary ] of collector.toQuads()) {
+        for (const quad of summary) {
+          await quadSink.push(dataset, quad);
+        }
       }
     }
     await super.flush(quadSink);
@@ -102,4 +96,8 @@ export interface IFragmentationStrategyDatasetSummaryOptions {
    * @range {json}
    */
   iriToDataset: Record<string, string>;
+  /**
+   * Collectors used to generate the actual descriptions.
+   */
+  collectors: IDatasetSummaryCollector[];
 }
