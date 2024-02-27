@@ -24,12 +24,14 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
     ]));
   }
 
-  protected subjectToDataset(iri: string): string | undefined {
+  protected subjectToDatasets(iri: string): Set<string> {
+    const datasets = new Set<string>();
     for (const [ exp, sub ] of this.iriToDataset) {
       if (exp.test(iri)) {
-        return iri.replace(exp, sub);
+        datasets.add(iri.replace(exp, sub));
       }
     }
+    return datasets;
   }
 
   protected registerDatasetQuad(dataset: string, quad: RDF.Quad): void {
@@ -38,16 +40,16 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     if (quad.subject.termType === 'NamedNode') {
-      const dataset = this.subjectToDataset(quad.subject.value);
-      if (dataset) {
+      const subjectDatasets = this.subjectToDatasets(quad.subject.value);
+      for (const dataset of subjectDatasets) {
         this.registerDatasetQuad(dataset, quad);
         if (quad.object.termType === 'BlankNode') {
-          let datasets = this.blankNodeDatasets.get(quad.object.value);
-          if (!datasets) {
-            datasets = new Set();
-            this.blankNodeDatasets.set(quad.object.value, datasets);
+          let objectDatasets = this.blankNodeDatasets.get(quad.object.value);
+          if (!objectDatasets) {
+            objectDatasets = new Set();
+            this.blankNodeDatasets.set(quad.object.value, objectDatasets);
           }
-          datasets.add(dataset);
+          objectDatasets.add(dataset);
         }
       }
     } else if (quad.subject.termType === 'BlankNode') {
