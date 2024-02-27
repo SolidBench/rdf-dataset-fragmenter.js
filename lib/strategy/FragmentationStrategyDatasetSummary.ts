@@ -8,7 +8,8 @@ import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStrea
  */
 export class FragmentationStrategyDatasetSummary extends FragmentationStrategyStreamAdapter {
   private readonly collectors: IDatasetSummaryCollector[];
-  private readonly iriToDataset: Map<RegExp, string>;
+  private readonly subjectToDataset: Map<RegExp, string>;
+  private readonly datasetToSummary: Map<RegExp, string>;
 
   private readonly blankNodeQuads: Map<string, RDF.Quad[]>;
   private readonly blankNodeDatasets: Map<string, Set<string>>;
@@ -18,20 +19,24 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
     this.blankNodeQuads = new Map();
     this.blankNodeDatasets = new Map();
     this.collectors = options.collectors;
-    this.iriToDataset = new Map(Object.entries(options.iriToDataset).map(([ exp, sub ]) => [
+    this.subjectToDataset = new Map(Object.entries(options.subjectToDataset).map(([ exp, sub ]) => [
+      new RegExp(exp, 'u'),
+      sub,
+    ]));
+    this.datasetToSummary = new Map(Object.entries(options.datasetToSummary).map(([ exp, sub ]) => [
       new RegExp(exp, 'u'),
       sub,
     ]));
   }
 
-  protected subjectToDatasets(iri: string): Set<string> {
-    const datasets = new Set<string>();
-    for (const [ exp, sub ] of this.iriToDataset) {
+  protected getMappings(iri: string, map: Map<RegExp, string>): Set<string> {
+    const mappings = new Set<string>();
+    for (const [ exp, sub ] of map) {
       if (exp.test(iri)) {
-        datasets.add(iri.replace(exp, sub));
+        mappings.add(iri.replace(exp, sub));
       }
     }
-    return datasets;
+    return mappings;
   }
 
   protected registerDatasetQuad(dataset: string, quad: RDF.Quad): void {
@@ -40,7 +45,7 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     if (quad.subject.termType === 'NamedNode') {
-      const subjectDatasets = this.subjectToDatasets(quad.subject.value);
+      const subjectDatasets = this.getMappings(quad.subject.value, this.subjectToDataset);
       for (const dataset of subjectDatasets) {
         this.registerDatasetQuad(dataset, quad);
         if (quad.object.termType === 'BlankNode') {
@@ -82,8 +87,11 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
     }
     for (const collector of this.collectors) {
       for (const [ dataset, summary ] of collector.toQuads()) {
+        const targets = this.getMappings(dataset, this.datasetToSummary);
         for (const quad of summary) {
-          await quadSink.push(dataset, quad);
+          for (const target of targets) {
+            await quadSink.push(target, quad);
+          }
         }
       }
     }
@@ -97,7 +105,13 @@ export interface IFragmentationStrategyDatasetSummaryOptions {
    * Used to determine the dataset for a given subject IRI.
    * @range {json}
    */
-  iriToDataset: Record<string, string>;
+  subjectToDataset: Record<string, string>;
+  /**
+   * Mapping of regular expressions to their replacements.
+   * Used to determine the IRIs to store dataset summaries.
+   * @range {json}
+   */
+  datasetToSummary: Record<string, string>;
   /**
    * Collectors used to generate the actual descriptions.
    */
