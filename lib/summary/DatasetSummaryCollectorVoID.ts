@@ -34,52 +34,52 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
   public static readonly VOID_CLASS_PARTITION = DF.namedNode(`${DatasetSummaryCollectorVoID.VOID_PREFIX}classPartition`);
 
   public register(dataset: string, quad: RDF.Quad): void {
-    if (quad.subject.termType !== 'NamedNode' && quad.subject.termType !== 'BlankNode') {
-      throw new Error(`Only named and blank nodes are accepted as subject: ${termToString(quad.subject)}`);
-    }
-    if (quad.predicate.termType !== 'NamedNode') {
-      throw new Error(`Only named nodes are accepted as predicate: ${termToString(quad.predicate)}`);
-    }
-    if (
-      quad.object.termType !== 'BlankNode' &&
-      quad.object.termType !== 'NamedNode' &&
-      quad.object.termType !== 'Literal'
-    ) {
-      throw new Error(`Only named and blank nodes or literals are accepted as object: ${termToString(quad.object)}`);
-    }
     const summary = this.getDatasetSummary(dataset);
     summary.totalQuads++;
-    summary.distinctSubjects.add(quad.subject.value);
-    summary.distinctObjects.add(quad.object.termType === 'Literal' ?
-      quad.object.value + quad.object.language + quad.object.datatype.value :
-      quad.object.value);
-
-    let predicateSubjects = summary.distinctSubjectsByPredicate.get(quad.predicate.value);
-    if (!predicateSubjects) {
-      predicateSubjects = new Set();
-      summary.distinctSubjectsByPredicate.set(quad.predicate.value, predicateSubjects);
-    }
-    predicateSubjects.add(quad.subject.value);
-
-    let predicateObjects = summary.distinctObjectsByPredicate.get(quad.predicate.value);
-    if (!predicateObjects) {
-      predicateObjects = new Set();
-      summary.distinctObjectsByPredicate.set(quad.predicate.value, predicateObjects);
-    }
-    predicateObjects.add(quad.predicate.value);
-
-    summary.totalQuadsByPredicate.set(
-      quad.predicate.value,
-      (summary.totalQuadsByPredicate.get(quad.predicate.value) ?? 0) + 1,
-    );
-
-    if (quad.predicate.value === DatasetSummaryCollectorVoID.RDF_TYPE.value && quad.object.termType === 'NamedNode') {
-      let entitiesByClass = summary.entitiesByClass.get(quad.object.value);
-      if (!entitiesByClass) {
-        entitiesByClass = new Set();
-        summary.entitiesByClass.set(quad.object.value, entitiesByClass);
+    if (quad.subject.termType === 'NamedNode' || quad.subject.termType === 'BlankNode') {
+      const subjectString = termToString(quad.subject);
+      summary.distinctSubjects.add(subjectString);
+      if (quad.predicate.termType === 'NamedNode') {
+        let predicateSubjects = summary.distinctSubjectsByPredicate.get(quad.predicate.value);
+        if (!predicateSubjects) {
+          predicateSubjects = new Set();
+          summary.distinctSubjectsByPredicate.set(quad.predicate.value, predicateSubjects);
+        }
+        predicateSubjects.add(subjectString);
+        if (
+          quad.predicate.value === DatasetSummaryCollectorVoID.RDF_TYPE.value &&
+          quad.object.termType === 'NamedNode'
+        ) {
+          let entitiesByClass = summary.entitiesByClass.get(quad.object.value);
+          if (!entitiesByClass) {
+            entitiesByClass = new Set();
+            summary.entitiesByClass.set(quad.object.value, entitiesByClass);
+          }
+          entitiesByClass.add(subjectString);
+        }
       }
-      entitiesByClass.add(quad.subject.value);
+    }
+    if (
+      quad.object.termType === 'NamedNode' ||
+      quad.object.termType === 'BlankNode' ||
+      quad.object.termType === 'Literal'
+    ) {
+      const objectString = termToString(quad.object);
+      summary.distinctObjects.add(objectString);
+      if (quad.predicate.termType === 'NamedNode') {
+        let predicateObjects = summary.distinctObjectsByPredicate.get(quad.predicate.value);
+        if (!predicateObjects) {
+          predicateObjects = new Set();
+          summary.distinctObjectsByPredicate.set(quad.predicate.value, predicateObjects);
+        }
+        predicateObjects.add(objectString);
+      }
+    }
+    if (quad.predicate.termType === 'NamedNode') {
+      summary.totalQuadsByPredicate.set(
+        quad.predicate.value,
+        (summary.totalQuadsByPredicate.get(quad.predicate.value) ?? 0) + 1,
+      );
     }
   }
 
@@ -107,7 +107,7 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
           DatasetSummaryCollectorVoID.XSD_INTEGER,
         )),
         DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_DISTINCT_OBJECTS, DF.literal(
-          summary.distinctSubjects.size.toString(10),
+          summary.distinctObjects.size.toString(10),
           DatasetSummaryCollectorVoID.XSD_INTEGER,
         )),
       ];
