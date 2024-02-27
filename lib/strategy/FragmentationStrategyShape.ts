@@ -26,6 +26,7 @@ interface IShapeEntry {
 export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapter {
   private readonly relativePath?: string;
   private readonly tripleShapeTreeLocator?: boolean;
+  private readonly generationProbability?: number;
   private readonly shapeMap: Map<string, IShapeEntry>;
 
   private readonly irisHandled: Set<string> = new Set();
@@ -39,11 +40,19 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   public static readonly solidInstanceContainer = DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
   public static readonly shapeTreeFileName: string = 'shapetree';
 
-  public constructor(shapeDirectory: string, relativePath?: string, tripleShapeTreeLocator?: boolean) {
+  public constructor(shapeDirectory: string,
+    relativePath?: string,
+    tripleShapeTreeLocator?: boolean,
+    generationProbability?: number) {
     super();
     this.tripleShapeTreeLocator = tripleShapeTreeLocator;
     this.relativePath = relativePath;
     this.shapeMap = this.generateShapeMap(shapeDirectory);
+    this.generationProbability = generationProbability;
+    if (this.generationProbability !== undefined &&
+      (this.generationProbability > 1 || this.generationProbability < 0)) {
+      throw new Error('The probability to generate shape information should be between 0 and 1');
+    }
   }
 
   /**
@@ -65,6 +74,16 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   }
 
   /**
+   * This method was create because in jest I was not able
+   * to mock the Math object. The mock return value only work
+   * with the debugger, but not in the actual test.
+   */
+  /* istanbul ignore next */
+  public static random(): number {
+    return Math.random();
+  }
+
+  /**
    * From a quad generate the IRI based on the {@link FragmentationStrategySubject}.
    * Evaluate if shape index information should be generated based on which quad has been handled and
    * the shape config file provides. Generate the right iri for the shape indexes.
@@ -81,17 +100,22 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
+        const positionContainer = positionContainerResourceNotInRoot !== -1 ?
+          positionContainerResourceNotInRoot :
+          positionContainerResourceInRoot;
 
-        if (positionContainerResourceNotInRoot !== -1 || positionContainerResourceInRoot !== -1) {
-          const positionContainer = positionContainerResourceNotInRoot !== -1 ?
-            positionContainerResourceNotInRoot :
-            positionContainerResourceInRoot;
+        // We use as an id the path of the iri until the resource identifier.
+        // It is a different discrimination mechanism than the one related to the iri because even
+        // if we don't want to add shape index information we might want to add shapeTreeLocator in
+        // every resource bounded by a shape.
+        const resourceId = `${iri.slice(0, Math.max(0, positionContainer))}/${resourceIndex}`;
 
-          // We use as an id the path of the iri until the resource identifier.
-          // It is a different discrimination mechanism than the one related to the iri because even
-          // if we don't want to add shape index information we might want to add shapeTreeLocator in
-          // every resource bounded by a shape.
-          const resourceId = `${iri.slice(0, Math.max(0, positionContainer))}/${resourceIndex}`;
+        // We ignore based on a probability the generation of shape information
+        const generate: boolean = this.generationProbability === undefined ?
+          true :
+          FragmentationStrategyShape.random() <= this.generationProbability;
+
+        if (positionContainer !== -1 && generate) {
           const podIRI = iri.slice(0, Math.max(0, positionContainer));
 
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
@@ -121,6 +145,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
             await promises[0];
             return;
           }
+        } else if (!generate) {
+          this.irisHandled.add(iri);
+          this.resourcesHandled.add(resourceId);
         }
       }
     }

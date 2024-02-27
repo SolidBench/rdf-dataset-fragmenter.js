@@ -10,6 +10,7 @@ const DF = new DataFactory();
 
 jest.mock('fs');
 jest.mock('fs/promises');
+jest.mock('random');
 
 describe('FragmentationStrategyShape', () => {
   let sink: any;
@@ -216,6 +217,52 @@ describe('FragmentationStrategyShape', () => {
     });
   });
 
+  describe('constructor', () => {
+    const shapeFolder = 'bar';
+
+    beforeEach(() => {
+      (<jest.Mock>readFileSync).mockImplementation(
+        (val: string) => {
+          if (val === join(shapeFolder, 'config.json')) {
+            return {
+              toString: () => `{
+                "shapes": {
+                    "comments": {
+                        "shape": "comments.shexc",
+                        "directory": "comments"
+                    },
+                    "posts": {
+                        "shape": "posts.shexc",
+                        "directory": "posts"
+                    },
+                    "card": {
+                        "shape": "profile.shexc",
+                        "directory": "profile"
+                    }
+                }
+            }`,
+            };
+          } if (val === join(shapeFolder, 'comments.shexc')) {
+            return 'comments';
+          } if (val === join(shapeFolder, 'posts.shexc')) {
+            return 'posts';
+          } if (val === join(shapeFolder, 'profile.shexc')) {
+            return 'profile';
+          }
+        }
+        ,
+      );
+    });
+
+    it('should throw given a generation probability lower than 0', () => {
+      expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, -22); }).toThrow();
+    });
+
+    it('should throw given a generation probability higer than 1', () => {
+      expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, 22); }).toThrow();
+    });
+  });
+
   describe('fragment', () => {
     let strategy: FragmentationStrategyShape;
     const shapeFolder = 'foo';
@@ -225,7 +272,7 @@ describe('FragmentationStrategyShape', () => {
     const originalImplementationGenerateShapetreeTriples = FragmentationStrategyShape.generateShapetreeTriples;
     const originalImplementationGenerateShape = FragmentationStrategyShape.generateShape;
     const originalImplementationGenerateShapeTreeLocator = FragmentationStrategyShape.generateShapeTreeLocator;
-
+    const originalImplementationGenerateRandom = FragmentationStrategyShape.random;
     beforeEach(() => {
       sink = {
         push: jest.fn(),
@@ -266,14 +313,19 @@ describe('FragmentationStrategyShape', () => {
       FragmentationStrategyShape.generateShapetreeTriples = jest.fn();
       FragmentationStrategyShape.generateShape = jest.fn();
       FragmentationStrategyShape.generateShapeTreeLocator = jest.fn();
-
+      FragmentationStrategyShape.random = jest.fn();
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator);
+    });
+
+    afterEach(() => {
+      jest.resetAllMocks();
     });
 
     afterAll(() => {
       FragmentationStrategyShape.generateShapetreeTriples = originalImplementationGenerateShapetreeTriples;
       FragmentationStrategyShape.generateShape = originalImplementationGenerateShape;
       FragmentationStrategyShape.generateShapeTreeLocator = originalImplementationGenerateShapeTreeLocator;
+      FragmentationStrategyShape.random = originalImplementationGenerateRandom;
     });
 
     it('should not handle an empty stream', async() => {
@@ -875,6 +927,234 @@ describe('FragmentationStrategyShape', () => {
         'http://localhost:3000/pods/000000000000000002671/',
         'http://localhost:3000/pods/000000000000000002671/shapetree',
         'http://localhost:3000/pods/000000000000000002671/comments/comments#3');
+    });
+
+    it('should not handle multiple quad given that the generation probability is of 0', async() => {
+      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0);
+      (<jest.Mock>FragmentationStrategyShape.random).mockReturnValue(1);
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts#1'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.blankNode(),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/posts#2'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/posts#2'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/comments/comments#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/comments/alpha#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.blankNode(),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/bar#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/bar/foo#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+      ];
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(0);
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(0);
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(0);
+    });
+
+    it(`should handle multiples quads where some are bounded to shapes 
+    and other not when the generation probability is of 1`, async() => {
+      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 1);
+      (<jest.Mock>FragmentationStrategyShape.random).mockReturnValue(0);
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts#1'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.blankNode(),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/posts#2'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/posts#2'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/comments/comments#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/comments/alpha#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.blankNode(),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/bar#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/bar/foo#3'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+      ];
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(4);
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(4);
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(5);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/profile_shape',
+        'profile');
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'posts');
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(3,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/posts_shape',
+        'posts');
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(4,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/comments_shape',
+        'comments');
+
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        'http://localhost:3000/pods/00000000000000000267/profile_shape',
+        false,
+        'http://localhost:3000/pods/00000000000000000267/profile/');
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        true,
+        'http://localhost:3000/pods/00000000000000000267/posts');
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(3,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/shapetree',
+        'http://localhost:3000/pods/000000000000000002671/posts_shape',
+        true,
+        'http://localhost:3000/pods/000000000000000002671/posts');
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(4,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/shapetree',
+        'http://localhost:3000/pods/000000000000000002671/comments_shape',
+        false,
+        'http://localhost:3000/pods/000000000000000002671/comments/');
+
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/',
+        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        'http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562');
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/',
+        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        'http://localhost:3000/pods/00000000000000000267/posts#1');
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(3,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/',
+        'http://localhost:3000/pods/000000000000000002671/shapetree',
+        'http://localhost:3000/pods/000000000000000002671/posts#2');
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(4,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/',
+        'http://localhost:3000/pods/000000000000000002671/shapetree',
+        'http://localhost:3000/pods/000000000000000002671/comments/comments#3');
+    });
+
+    it(`should handle multiples quads where some are bounded to shapes 
+    and other not when the generation probability is of 1`, async() => {
+      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0.2);
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts#1'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.blankNode(),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts#2'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+      ];
+
+      (<jest.Mock>FragmentationStrategyShape.random)
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(1);
+
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
+      expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(1);
     });
   });
 });
