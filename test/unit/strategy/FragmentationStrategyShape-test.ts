@@ -10,7 +10,6 @@ const DF = new DataFactory();
 
 jest.mock('fs');
 jest.mock('fs/promises');
-jest.mock('random');
 
 describe('FragmentationStrategyShape', () => {
   let sink: any;
