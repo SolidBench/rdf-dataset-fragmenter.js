@@ -52,7 +52,6 @@
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^2.0.0",
-    "@types/babel__parser": "^7.1.1",
     "@types/jest": "^29.0.0",
     "arrayify-stream": "^2.0.0",
     "componentsjs-generator": "^3.0.0",
