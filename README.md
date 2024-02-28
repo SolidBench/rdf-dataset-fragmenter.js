@@ -204,7 +204,7 @@ The shape located at `shape` must be of the format [`ShExC`](https://shex.io/she
 ```
 
 An exemple of the `component.js` configuration is presented below.
-A probability for the generation of shape information of eachs resource can be defined with `generationProbability`.
+A probability for the generation of shape information of eachs resource can be defined with `generationProbability` in percentage.
 
 ```json
 {
@@ -212,7 +212,7 @@ A probability for the generation of shape information of eachs resource can be d
         "@type": "FragmentationStrategyShape",
         "shapeDirectory": "./shape",
         "tripleShapeTreeLocator": true,
-        "generationProbability": 0.5
+        "generationProbability": 50
       }
 }
 ```
