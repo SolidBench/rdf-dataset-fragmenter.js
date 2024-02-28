@@ -310,7 +310,7 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 }
 ```
 
-#### Probability Generation Fragementation Strategy
+#### Probability Generation Fragmentation Strategy
 
 A fragmentation strategy that ignore quads based on a probability.
 `generationProbability` is the probability for the quad to be handled by the `strategy`.
