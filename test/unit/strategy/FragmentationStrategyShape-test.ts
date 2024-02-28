@@ -1,5 +1,4 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategyShape } from '../../../lib/strategy/FragmentationStrategyShape';
@@ -217,56 +216,65 @@ describe('FragmentationStrategyShape', () => {
   });
 
   describe('constructor', () => {
-    const shapeFolder = 'bar';
+    const shapeConfig = {
+      comments: {
+        shape: 'comments.shexc',
+        directory: 'comments',
+      },
+      posts: {
+        shape: 'posts.shexc',
+        directory: 'posts',
+      },
+      card: {
+        shape: 'profile.shexc',
+        directory: 'profile',
+      },
+    };
 
-    beforeEach(() => {
-      (<jest.Mock>readFileSync).mockImplementation(
-        (val: string) => {
-          if (val === join(shapeFolder, 'config.json')) {
-            return {
-              toString: () => `{
-                "shapes": {
-                    "comments": {
-                        "shape": "comments.shexc",
-                        "directory": "comments"
-                    },
-                    "posts": {
-                        "shape": "posts.shexc",
-                        "directory": "posts"
-                    },
-                    "card": {
-                        "shape": "profile.shexc",
-                        "directory": "profile"
-                    }
-                }
-            }`,
-            };
-          } if (val === join(shapeFolder, 'comments.shexc')) {
-            return 'comments';
-          } if (val === join(shapeFolder, 'posts.shexc')) {
-            return 'posts';
-          } if (val === join(shapeFolder, 'profile.shexc')) {
-            return 'profile';
-          }
-        }
-        ,
-      );
-    });
+    (<jest.Mock>readFileSync).mockImplementation(
+      (val: string) => {
+        return {
+          toString() {
+            switch (val) {
+              case 'comments.shexc':
+                return 'comments';
+              case 'posts.shexc':
+                return 'posts';
+              case 'profile.shexc':
+                return 'profile';
+            }
+          },
+        };
+      },
+    );
 
     it('should throw given a generation probability lower than 0', () => {
-      expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, -22); }).toThrow();
+      expect(() => { new FragmentationStrategyShape(shapeConfig, undefined, undefined, -22); }).toThrow();
     });
 
     it('should throw given a generation probability higer than 100', () => {
-      expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, 220); }).toThrow();
+      expect(() => { new FragmentationStrategyShape(shapeConfig, undefined, undefined, 220); }).toThrow();
     });
   });
 
   describe('fragment', () => {
     let strategy: FragmentationStrategyShape;
-    const shapeFolder = 'foo';
     const relativePath = undefined;
     const tripleShapeTreeLocator = true;
+    const shapeConfig = {
+      comments: {
+        shape: 'comments.shexc',
+        directory: 'comments',
+      },
+      posts: {
+        shape: 'posts.shexc',
+        directory: 'posts',
+      },
+      card: {
+        shape: 'profile.shexc',
+        directory: 'profile',
+      },
+    };
 
     const originalImplementationGenerateShapetreeTriples = FragmentationStrategyShape.generateShapetreeTriples;
     const originalImplementationGenerateShape = FragmentationStrategyShape.generateShape;
@@ -278,40 +286,25 @@ describe('FragmentationStrategyShape', () => {
 
       (<jest.Mock>readFileSync).mockImplementation(
         (val: string) => {
-          if (val === join(shapeFolder, 'config.json')) {
-            return {
-              toString: () => `{
-                "shapes": {
-                    "comments": {
-                        "shape": "comments.shexc",
-                        "directory": "comments"
-                    },
-                    "posts": {
-                        "shape": "posts.shexc",
-                        "directory": "posts"
-                    },
-                    "card": {
-                        "shape": "profile.shexc",
-                        "directory": "profile"
-                    }
-                }
-            }`,
-            };
-          } if (val === join(shapeFolder, 'comments.shexc')) {
-            return 'comments';
-          } if (val === join(shapeFolder, 'posts.shexc')) {
-            return 'posts';
-          } if (val === join(shapeFolder, 'profile.shexc')) {
-            return 'profile';
-          }
-        }
-        ,
+          return {
+            toString() {
+              switch (val) {
+                case 'comments.shexc':
+                  return 'comments';
+                case 'posts.shexc':
+                  return 'posts';
+                case 'profile.shexc':
+                  return 'profile';
+              }
+            },
+          };
+        },
       );
 
       FragmentationStrategyShape.generateShapetreeTriples = jest.fn();
       FragmentationStrategyShape.generateShape = jest.fn();
       FragmentationStrategyShape.generateShapeTreeLocator = jest.fn();
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, tripleShapeTreeLocator);
     });
 
     afterEach(() => {
@@ -525,7 +518,7 @@ describe('FragmentationStrategyShape', () => {
       });
 
     it(`should handle a quad inside a container in a pod bounded by shape when tripleShapeTreeLocator is false`, async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, false);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, false);
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562'),
@@ -730,7 +723,7 @@ describe('FragmentationStrategyShape', () => {
 
     it(`should handle multiple quads with the same subject and different object and predication 
     when the subject is in a container of a pod`, async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, true);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, true);
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2010-09-24#2'),
@@ -771,7 +764,7 @@ describe('FragmentationStrategyShape', () => {
     });
 
     it(`should handle a quad inside the root of a pod bounded by shape when tripleShapeTreeLocator is false`, async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, false);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, false);
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts#1'),
@@ -926,7 +919,7 @@ describe('FragmentationStrategyShape', () => {
     });
 
     it('should not handle multiple quad given that the generation probability is of 0', async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, tripleShapeTreeLocator, 0);
       const spy = jest.spyOn(Math, 'random');
       spy
         .mockReturnValue(100);
@@ -991,7 +984,7 @@ describe('FragmentationStrategyShape', () => {
 
     it(`should handle multiples quads where some are bounded to shapes 
     and other not when the generation probability is of 1`, async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 1);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, tripleShapeTreeLocator, 1);
       const spy = jest.spyOn(Math, 'random');
       spy
         .mockReturnValue(0);
@@ -1120,7 +1113,7 @@ describe('FragmentationStrategyShape', () => {
 
     it(`should handle multiples quads where some are bounded to shapes 
     and other not when the generation probability has a propability`, async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 22);
+      strategy = new FragmentationStrategyShape(shapeConfig, relativePath, tripleShapeTreeLocator, 22);
       const quads: any = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),

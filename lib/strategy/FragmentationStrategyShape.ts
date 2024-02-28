@@ -1,5 +1,4 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
 import type * as RDF from '@rdfjs/types';
 import * as ShexParser from '@shexjs/parser';
 import { JsonLdParser } from 'jsonld-streaming-parser';
@@ -27,7 +26,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   private readonly relativePath?: string;
   private readonly tripleShapeTreeLocator?: boolean;
   private readonly generationProbability?: number;
-  private readonly shapeMap: Map<string, IShapeEntry>;
+  private readonly shapeMap: Record<string, IShapeEntry>;
 
   private readonly irisHandled: Set<string> = new Set();
   private readonly resourcesHandled: Set<string> = new Set();
@@ -42,20 +41,21 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
   /**
    *
-   * @param {string} shapeDirectory - the directory of the shape
+   * @param {Object} shapeConfig - An object representing the a map like object
+   * where the values follow the interface IShapeEntry @range {json}
    * @param {string} relativePath - the relatif path of the IRI
    * @param {boolean|undefined} tripleShapeTreeLocator - indicate if a shape locator triple is generated
    * @param {number|undefined} generationProbability - indicate if there is a probability [1, 100]
    * to generate shape information on a specific resource in a container @range {float}
    */
-  public constructor(shapeDirectory: string,
+  public constructor(shapeConfig: Object,
     relativePath?: string,
     tripleShapeTreeLocator?: boolean,
     generationProbability?: number) {
     super();
     this.tripleShapeTreeLocator = tripleShapeTreeLocator;
     this.relativePath = relativePath;
-    this.shapeMap = this.generateShapeMap(shapeDirectory);
+    this.shapeMap = this.generateShapeMap(shapeConfig);
     this.generationProbability = generationProbability;
     if (this.generationProbability !== undefined &&
       (this.generationProbability > 100 || this.generationProbability < 0)) {
@@ -66,17 +66,15 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   /**
    * Generate a map of the resource type and the shape information
    * @param {string} shapeFolder - directory containing the shape information
-   * @returns {Map<string, IShapeEntry>} a map of the resource with their shape information
+   * @returns {Record<string, IShapeEntry>} a map of the resource with their shape information
    */
-  private generateShapeMap(shapeFolder: string): Map<string, IShapeEntry> {
-    const shapeMap: Map<string, IShapeEntry> = new Map();
-    const config = JSON.parse(readFileSync(join(shapeFolder, 'config.json')).toString());
-    const shapes = config.shapes;
-    for (const [ dataType, shapeEntry ] of Object.entries(shapes)) {
-      shapeMap.set(dataType, {
-        shape: readFileSync(join(shapeFolder, (<IShapeEntry>shapeEntry).shape)).toString(),
+  private generateShapeMap(shapeConfig: Object): Record<string, IShapeEntry> {
+    const shapeMap: Record<string, IShapeEntry> = {};
+    for (const [ dataType, shapeEntry ] of Object.entries(shapeConfig)) {
+      shapeMap[dataType] = {
+        shape: readFileSync((<IShapeEntry>shapeEntry).shape).toString(),
         directory: (<IShapeEntry>shapeEntry).directory,
-      });
+      };
     }
     return shapeMap;
   }
@@ -109,7 +107,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
     // If iri already has been handled, we do nothing
     if (!this.irisHandled.has(iri)) {
-      for (const [ resourceIndex, { shape, directory }] of this.shapeMap) {
+      for (const [ resourceIndex, { shape, directory }] of Object.entries(this.shapeMap)) {
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);

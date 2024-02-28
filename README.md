@@ -186,33 +186,34 @@ Blank nodes are not supported.
 #### Resource Object Fragmentation Shape
 
 A fragmentation strategy that groups triples by (subject) resources.
-It generates shapes and shape index files in the root of the iri container for each information type defined in `shapeDirectory`. 
-The `shapeDirectory` must contain a `config.json` following the example below.
-The `shape` must be a path relative to the `shapeDirectory` and the `directory` must be the name of container of the subject.
-The shape located at `shape` must be of the format [`ShExC`](https://shex.io/shex-semantics/index.html#shexc).
-
-`./shape/config.json`
-```json
-{
-    "shapes": {
-        "comments": {
-            "shape": "comments.shexc",
-            "directory": "comments"
-        },
-    }
-}
-```
+It generates shapes and shape index files in the root of the iri container for each information type defined in the config. 
+The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format and
+`directory` must be the name of container of the subject.
+A probability for the generation of shape information of eachs resource can be defined with `generationProbability` in percentage.
 
 An exemple of the `component.js` configuration is presented below.
-A probability for the generation of shape information of eachs resource can be defined with `generationProbability` in percentage.
+
 
 ```json
 {
   "fragmentationStrategy": { 
         "@type": "FragmentationStrategyShape",
-        "shapeDirectory": "./shape",
         "tripleShapeTreeLocator": true,
-        "generationProbability": 50
+        "generationProbability": 50,
+        "shapeConfig": {
+          "comments": {
+            "shape": "./shapes/comments.shexc",
+            "directory": "comments"
+          },
+          "post": {
+            "shape": "./shapes/posts.shexc",
+            "directory": "posts"
+          },
+          "card": {
+            "shape": "./shapes/profile.shexc",
+            "directory": "profile"
+          }
+        }
       }
 }
 ```
