@@ -187,7 +187,7 @@ Blank nodes are not supported.
 
 A fragmentation strategy that groups triples by (subject) resources.
 It generates shapes and shape index files in the root of the iri container for each information type defined in `shapeDirectory`. 
-The `shapeDirectory` must contain a `config.json` following the exemple below.
+The `shapeDirectory` must contain a `config.json` following the example below.
 The `shape` must be a path relative to the `shapeDirectory` and the `directory` must be the name of container of the subject.
 The shape located at `shape` must be of the format [`ShExC`](https://shex.io/shex-semantics/index.html#shexc).
 
