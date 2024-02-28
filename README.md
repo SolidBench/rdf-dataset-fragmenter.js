@@ -216,7 +216,7 @@ A probability for the generation of shape information of eachs resource can be d
       }
 }
 ```
-A sample output file tree and its associated file is displayed below.
+A sample output file tree and its associated files is displayed below.
 
 ```
 ├── comments
@@ -238,10 +238,19 @@ A sample output file tree and its associated file is displayed below.
 
 
 `http://localhost:3000/pods/00000000000000000768/profile_shape`
-
+(sample of the output)
 ```nquad
-<http://localhost:3000/pods/00000000000000000768/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_3068_49 .
-_:df_3068_49 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Shape> .
+<http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_1829_49 .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+_:df_1829_51 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Schema> .
+_:df_1829_51 <http://www.w3.org/ns/shex#shapes> _:df_1829_50 .
+_:df_1829_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#NodeConstraint> .
+_:df_1829_0 <http://www.w3.org/ns/shex#nodeKind> <http://www.w3.org/ns/shex#iri> .
+_:df_1829_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#TripleConstraint> .
+_:df_1829_1 <http://www.w3.org/ns/shex#predicate> <http://www.w3.org/ns/pim/space#storage> .
+_:df_1829_1 <http://www.w3.org/ns/shex#valueExpr> _:df_1829
+
 ```
 
 `http://localhost:3000/pods/00000000000000000768/shapetree`
