@@ -72,7 +72,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const shapeMap: Map<string, IShapeEntry> = new Map();
     const config = JSON.parse(readFileSync(join(shapeFolder, 'config.json')).toString());
     const shapes = config.shapes;
-    for (const [ dataType, shapeEntry ] of Object.entries(shapes)) {
+    for (const [dataType, shapeEntry] of Object.entries(shapes)) {
       shapeMap.set(dataType, {
         shape: readFileSync(join(shapeFolder, (<IShapeEntry>shapeEntry).shape)).toString(),
         directory: (<IShapeEntry>shapeEntry).directory,
@@ -105,7 +105,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
     // If iri already has been handled, we do nothing
     if (!this.irisHandled.has(iri)) {
-      for (const [ resourceIndex, { shape, directory }] of this.shapeMap) {
+      for (const [resourceIndex, { shape, directory }] of this.shapeMap) {
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
@@ -130,34 +130,28 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
 
-          const promises: Promise<void>[] = [];
           // We add a triple in each file to locate the shape index if it is enable
           if (this.tripleShapeTreeLocator === true) {
-            promises.push(FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri));
+            await FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri);
+            this.irisHandled.add(iri);
           }
 
           if (!this.resourcesHandled.has(resourceId)) {
-            promises.push(FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
+            await FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
               resourceId,
               podIRI,
               shapeTreeIRI,
               directory,
               shape,
-              positionContainerResourceNotInRoot === -1));
+              positionContainerResourceNotInRoot === -1);
             this.irisHandled.add(iri);
             this.resourcesHandled.add(resourceId);
-            await Promise.all(promises);
-            return;
-          }
-          if (promises.length === 1) {
-            this.irisHandled.add(iri);
-            this.resourcesHandled.add(resourceId);
-            await promises[0];
             return;
           }
         }
       }
     }
+    this.irisHandled.add(iri);
   }
 
   /**
@@ -181,12 +175,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     // In Solid the path to a container end with a trailing "/"
     // hence when the resource is not in the root the content iri must be different.
     const contentIri = isInRootOfPod ? resourceId : `${podIRI}/${directory}/`;
-    const promises = [
-      FragmentationStrategyShape.generateShape(quadSink, shapeIRI, shape),
-      FragmentationStrategyShape.generateShapetreeTriples(quadSink, shapeTreeIRI, shapeIRI, isInRootOfPod, contentIri),
-    ];
-
-    await Promise.all(promises);
+    await FragmentationStrategyShape.generateShape(quadSink, shapeIRI, shape);
+    await FragmentationStrategyShape.generateShapetreeTriples(quadSink, shapeTreeIRI, shapeIRI, isInRootOfPod, contentIri);
   }
 
   /**
@@ -236,12 +226,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
       isInRootOfPod ? this.solidInstance : this.solidInstanceContainer,
       DF.namedNode(contentIri),
     );
-    await Promise.all(
-      [
-        quadSink.push(shapeTreeIRI, shape),
-        quadSink.push(shapeTreeIRI, target),
-      ],
-    );
+    await quadSink.push(shapeTreeIRI, shape)
+    await quadSink.push(shapeTreeIRI, target)
   }
 
   /**
@@ -254,9 +240,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const shexParser = ShexParser.construct(shapeIRI);
     const shapeJSONLD = shexParser.parse(shapeShexc);
     const stringShapeJsonLD = JSON.stringify(shapeJSONLD);
+    const quads: RDF.Quad[] = []
 
     return new Promise((resolve, reject) => {
-      const promises: Promise<void>[] = [];
       // The jsonLD is not valid without the context field and the library doesn't include it
       // because a ShExJ MAY contain a @context field
       // https://shex.io/shex-semantics/#shexj
@@ -266,8 +252,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         skipContextValidation: true,
       });
       jsonldParser
-        .on('data', async(quad: RDF.Quad) => {
-          promises.push(quadSink.push(shapeIRI, quad));
+        .on('data', async (quad: RDF.Quad) => {
+          quads.push(quad);
         })
         // We ignore this because it is difficult to provide a valid ShEx document that
         // would not be parsable in RDF given it has been already parsed in ShExJ
@@ -276,8 +262,10 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         .on('error', /* istanbul ignore next */(error: any) => {
           reject(error);
         })
-        .on('end', async() => {
-          await Promise.all(promises);
+        .on('end', async () => {
+          for (const quad of quads) {
+            await quadSink.push(shapeIRI, quad);
+          }
           resolve();
         });
 
