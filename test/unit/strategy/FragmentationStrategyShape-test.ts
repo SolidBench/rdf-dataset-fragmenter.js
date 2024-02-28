@@ -271,7 +271,6 @@ describe('FragmentationStrategyShape', () => {
     const originalImplementationGenerateShapetreeTriples = FragmentationStrategyShape.generateShapetreeTriples;
     const originalImplementationGenerateShape = FragmentationStrategyShape.generateShape;
     const originalImplementationGenerateShapeTreeLocator = FragmentationStrategyShape.generateShapeTreeLocator;
-    const originalImplementationGenerateRandom = FragmentationStrategyShape.random;
     beforeEach(() => {
       sink = {
         push: jest.fn(),
@@ -312,7 +311,6 @@ describe('FragmentationStrategyShape', () => {
       FragmentationStrategyShape.generateShapetreeTriples = jest.fn();
       FragmentationStrategyShape.generateShape = jest.fn();
       FragmentationStrategyShape.generateShapeTreeLocator = jest.fn();
-      FragmentationStrategyShape.random = jest.fn();
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator);
     });
 
@@ -324,7 +322,6 @@ describe('FragmentationStrategyShape', () => {
       FragmentationStrategyShape.generateShapetreeTriples = originalImplementationGenerateShapetreeTriples;
       FragmentationStrategyShape.generateShape = originalImplementationGenerateShape;
       FragmentationStrategyShape.generateShapeTreeLocator = originalImplementationGenerateShapeTreeLocator;
-      FragmentationStrategyShape.random = originalImplementationGenerateRandom;
     });
 
     it('should not handle an empty stream', async() => {
@@ -930,7 +927,9 @@ describe('FragmentationStrategyShape', () => {
 
     it('should not handle multiple quad given that the generation probability is of 0', async() => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0);
-      (<jest.Mock>FragmentationStrategyShape.random).mockReturnValue(1);
+      const spy = jest.spyOn(Math, 'random');
+      spy
+        .mockReturnValue(1);
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
@@ -993,7 +992,9 @@ describe('FragmentationStrategyShape', () => {
     it(`should handle multiples quads where some are bounded to shapes 
     and other not when the generation probability is of 1`, async() => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 1);
-      (<jest.Mock>FragmentationStrategyShape.random).mockReturnValue(0);
+      const spy = jest.spyOn(Math, 'random');
+      spy
+        .mockReturnValue(0);
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
@@ -1118,9 +1119,9 @@ describe('FragmentationStrategyShape', () => {
     });
 
     it(`should handle multiples quads where some are bounded to shapes 
-    and other not when the generation probability is of 1`, async() => {
+    and other not when the generation probability has a propability`, async() => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0.2);
-      const quads = [
+      const quads: any = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
           DF.namedNode('foo'),
@@ -1142,18 +1143,17 @@ describe('FragmentationStrategyShape', () => {
           DF.namedNode('bar'),
         ),
       ];
-
-      (<jest.Mock>FragmentationStrategyShape.random)
+      const spy = jest.spyOn(Math, 'random');
+      spy
         .mockReturnValueOnce(0)
         .mockReturnValueOnce(1)
-        .mockReturnValueOnce(0)
-        .mockReturnValueOnce(1);
+        .mockReturnValueOnce(0);
 
       await strategy.fragment(streamifyArray([ ...quads ]), sink);
-
+      expect(spy).toHaveBeenCalledTimes(3);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
-      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(1);
+      expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledTimes(2);
     });
   });
 });

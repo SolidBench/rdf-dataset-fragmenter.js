@@ -74,13 +74,14 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   }
 
   /**
-   * This method was create because in jest I was not able
-   * to mock the Math object. The mock return value only work
-   * with the debugger, but not in the actual test.
+   * Determine if the shape information should be generated.
+   * returns always true if the probability is not defined.
+   * @returns {boolean} indicate if the shape information should be generated
    */
-  /* istanbul ignore next */
-  public static random(): number {
-    return Math.random();
+  public shouldGenerate(): boolean {
+    return this.generationProbability === undefined ?
+      true :
+      Math.random() <= this.generationProbability;
   }
 
   /**
@@ -109,13 +110,14 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         // if we don't want to add shape index information we might want to add shapeTreeLocator in
         // every resource bounded by a shape.
         const resourceId = `${iri.slice(0, Math.max(0, positionContainer))}/${resourceIndex}`;
-
-        // We ignore based on a probability the generation of shape information
-        const generate: boolean = this.generationProbability === undefined ?
-          true :
-          FragmentationStrategyShape.random() <= this.generationProbability;
-
-        if (positionContainer !== -1 && generate) {
+        if (positionContainer !== -1) {
+          const generate = this.shouldGenerate();
+          // Skip the resource based on the generation probability
+          if (!generate) {
+            this.irisHandled.add(iri);
+            this.resourcesHandled.add(resourceId);
+            return;
+          }
           const podIRI = iri.slice(0, Math.max(0, positionContainer));
 
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
@@ -145,9 +147,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
             await promises[0];
             return;
           }
-        } else if (!generate) {
-          this.irisHandled.add(iri);
-          this.resourcesHandled.add(resourceId);
         }
       }
     }
