@@ -285,8 +285,4 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
       jsonldParser.end();
     });
   }
-
-  protected async flush(quadSink: IQuadSink): Promise<void> {
-    await super.flush(quadSink);
-  }
 }
