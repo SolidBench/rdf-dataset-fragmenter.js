@@ -257,8 +257,8 @@ describe('FragmentationStrategyShape', () => {
       expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, -22); }).toThrow();
     });
 
-    it('should throw given a generation probability higer than 1', () => {
-      expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, 22); }).toThrow();
+    it('should throw given a generation probability higer than 100', () => {
+      expect(() => { new FragmentationStrategyShape(shapeFolder, undefined, undefined, 220); }).toThrow();
     });
   });
 
@@ -929,7 +929,7 @@ describe('FragmentationStrategyShape', () => {
       strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0);
       const spy = jest.spyOn(Math, 'random');
       spy
-        .mockReturnValue(1);
+        .mockReturnValue(100);
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
@@ -1120,7 +1120,7 @@ describe('FragmentationStrategyShape', () => {
 
     it(`should handle multiples quads where some are bounded to shapes 
     and other not when the generation probability has a propability`, async() => {
-      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 0.2);
+      strategy = new FragmentationStrategyShape(shapeFolder, relativePath, tripleShapeTreeLocator, 22);
       const quads: any = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562'),
@@ -1146,7 +1146,7 @@ describe('FragmentationStrategyShape', () => {
       const spy = jest.spyOn(Math, 'random');
       spy
         .mockReturnValueOnce(0)
-        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(100)
         .mockReturnValueOnce(0);
 
       await strategy.fragment(streamifyArray([ ...quads ]), sink);

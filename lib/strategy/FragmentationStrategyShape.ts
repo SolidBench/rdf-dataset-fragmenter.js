@@ -50,8 +50,8 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     this.shapeMap = this.generateShapeMap(shapeDirectory);
     this.generationProbability = generationProbability;
     if (this.generationProbability !== undefined &&
-      (this.generationProbability > 1 || this.generationProbability < 0)) {
-      throw new Error('The probability to generate shape information should be between 0 and 1');
+      (this.generationProbability > 100 || this.generationProbability < 0)) {
+      throw new Error('The probability to generate shape information should be between 0 and 100');
     }
   }
 
@@ -81,7 +81,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   public shouldGenerate(): boolean {
     return this.generationProbability === undefined ?
       true :
-      Math.random() <= this.generationProbability;
+      Math.random() * 100 <= this.generationProbability;
   }
 
   /**
