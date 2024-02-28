@@ -40,6 +40,14 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   public static readonly solidInstanceContainer = DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
   public static readonly shapeTreeFileName: string = 'shapetree';
 
+  /**
+   *
+   * @param {string} shapeDirectory - the directory of the shape
+   * @param {string} relativePath - the relatif path of the IRI
+   * @param {boolean|undefined} tripleShapeTreeLocator - indicate if a shape locator triple is generated
+   * @param {number|undefined} generationProbability - indicate if there is a probability [1, 100]
+   * to generate shape information on a specific resource in a container @range {float}
+   */
   public constructor(shapeDirectory: string,
     relativePath?: string,
     tripleShapeTreeLocator?: boolean,
