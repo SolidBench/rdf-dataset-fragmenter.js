@@ -17,7 +17,7 @@ export class FragmentationStrategySubject extends FragmentationStrategyStreamAda
     this.relativePath = relativePath;
   }
 
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  public async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     // Only accept IRI subjects.
     if (quad.subject.termType === 'NamedNode') {
       await quadSink.push(FragmentationStrategySubject.generateIri(quad, this.relativePath), quad);

@@ -189,7 +189,6 @@ A fragmentation strategy that groups triples by (subject) resources.
 It generates shapes and shape index files in the root of the iri container for each information type defined in the config. 
 The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format and
 `directory` must be the name of container of the subject.
-A probability for the generation of shape information of eachs resource can be defined with `generationProbability` in percentage.
 
 An exemple of the `component.js` configuration is presented below.
 
@@ -199,7 +198,6 @@ An exemple of the `component.js` configuration is presented below.
   "fragmentationStrategy": { 
         "@type": "FragmentationStrategyShape",
         "tripleShapeTreeLocator": true,
-        "generationProbability": 50,
         "shapeConfig": {
           "comments": {
             "shape": "./shapes/comments.shexc",
@@ -310,6 +308,42 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
     ]
   }
 }
+```
+
+#### Probability Generation Fragementation Strategy
+
+A fragmentation strategy that ignore quads based on a probability.
+`generationProbability` is the probability for the quad to be handled by the `strategy`.
+The `strategy` must be a `FragmentationStrategyStreamAdapter`.
+When `partitionByResourceType` is the stategy will skip resource type of a container instead of working triple by triple.
+
+```json
+{
+  "fragmentationStrategy": { 
+        "@type": "FragmentationStrategyProbabilityQuadHandling",
+        "generationProbability": 33,
+        "partitionByResourceType": true,
+        "strategy": { 
+            "@type": "FragmentationStrategyShape",
+            "tripleShapeTreeLocator": true,
+            "shapeConfig": {
+              "comments": {
+                "shape": "./shapes/comments.shexc",
+                "directory": "comments"
+              },
+              "post": {
+                "shape": "./shapes/posts.shexc",
+                "directory": "posts"
+              },
+              "card": {
+                "shape": "./shapes/profile.shexc",
+                "directory": "profile"
+              }
+            }
+        }
+    }
+}
+
 ```
 
 ### Quad Sinks

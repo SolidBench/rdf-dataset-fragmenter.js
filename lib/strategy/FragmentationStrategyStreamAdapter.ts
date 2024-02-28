@@ -31,7 +31,7 @@ export abstract class FragmentationStrategyStreamAdapter implements IFragmentati
     await this.flush(quadSink);
   }
 
-  protected abstract handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void>;
+  public abstract handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void>;
 
   protected async flush(quadSink: IQuadSink): Promise<void> {
     // Do nothing, implementors of this class can optionally override this

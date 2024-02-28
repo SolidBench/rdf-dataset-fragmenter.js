@@ -25,7 +25,6 @@ interface IShapeEntry {
 export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapter {
   private readonly relativePath?: string;
   private readonly tripleShapeTreeLocator?: boolean;
-  private readonly generationProbability?: number;
   private readonly shapeMap: Record<string, IShapeEntry>;
 
   private readonly irisHandled: Set<string> = new Set();
@@ -40,27 +39,20 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   public static readonly shapeTreeFileName: string = 'shapetree';
 
   /**
-   *
-   * @param {Object} shapeConfig - An object representing the a map like object
+   * @param {Record<string, IShapeEntry>} shapeConfig - An object representing the a map like object
    * where the values follow the interface IShapeEntry @range {json}
    * @param {string} relativePath - the relatif path of the IRI
    * @param {boolean|undefined} tripleShapeTreeLocator - indicate if a shape locator triple is generated
    * @param {number|undefined} generationProbability - indicate if there is a probability [1, 100]
    * to generate shape information on a specific resource in a container @range {float}
    */
-  public constructor(shapeConfig: Object,
+  public constructor(shapeConfig: Record<string, IShapeEntry>,
     relativePath?: string,
-    tripleShapeTreeLocator?: boolean,
-    generationProbability?: number) {
+    tripleShapeTreeLocator?: boolean) {
     super();
     this.tripleShapeTreeLocator = tripleShapeTreeLocator;
     this.relativePath = relativePath;
     this.shapeMap = this.generateShapeMap(shapeConfig);
-    this.generationProbability = generationProbability;
-    if (this.generationProbability !== undefined &&
-      (this.generationProbability > 100 || this.generationProbability < 0)) {
-      throw new Error('The probability to generate shape information should be between 0 and 100');
-    }
   }
 
   /**
@@ -68,7 +60,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * @param {string} shapeFolder - directory containing the shape information
    * @returns {Record<string, IShapeEntry>} a map of the resource with their shape information
    */
-  private generateShapeMap(shapeConfig: Object): Record<string, IShapeEntry> {
+  private generateShapeMap(shapeConfig: object): Record<string, IShapeEntry> {
     const shapeMap: Record<string, IShapeEntry> = {};
     for (const [ dataType, shapeEntry ] of Object.entries(shapeConfig)) {
       shapeMap[dataType] = {
@@ -80,17 +72,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   }
 
   /**
-   * Determine if the shape information should be generated.
-   * returns always true if the probability is not defined.
-   * @returns {boolean} indicate if the shape information should be generated
-   */
-  public shouldGenerate(): boolean {
-    return this.generationProbability === undefined ?
-      true :
-      Math.random() * 100 <= this.generationProbability;
-  }
-
-  /**
    * From a quad generate the IRI based on the {@link FragmentationStrategySubject}.
    * Evaluate if shape index information should be generated based on which quad has been handled and
    * the shape config file provides. Generate the right iri for the shape indexes.
@@ -99,7 +80,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * @param {RDF.Quad} quad - a quad
    * @param {IQuadSink} quadSink - a quad sink
    */
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  public async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     // We cannot derive the resource type from a blank node
     if (quad.subject.termType === 'BlankNode') {
       return;
@@ -121,13 +102,6 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         // every resource bounded by a shape.
         const resourceId = `${iri.slice(0, Math.max(0, positionContainer))}/${resourceIndex}`;
         if (positionContainer !== -1) {
-          const generate = this.shouldGenerate();
-          // Skip the resource based on the generation probability
-          if (!generate) {
-            this.irisHandled.add(iri);
-            this.resourcesHandled.add(resourceId);
-            return;
-          }
           const podIRI = iri.slice(0, Math.max(0, positionContainer));
 
           const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;

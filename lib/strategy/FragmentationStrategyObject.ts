@@ -15,7 +15,7 @@ export class FragmentationStrategyObject extends FragmentationStrategyStreamAdap
     this.blankNodeBuffer = new FragmentationBlankNodeBuffer('object', 'subject', eagerFlushing);
   }
 
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  public async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     // Only accept IRI subjects.
     if (quad.object.termType === 'NamedNode') {
       // If the subject is a named node, add the quad to the subject's document.
