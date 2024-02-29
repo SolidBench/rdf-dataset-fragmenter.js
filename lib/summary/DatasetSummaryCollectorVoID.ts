@@ -8,6 +8,7 @@ export interface IDatasetSummaryVoID extends IDatasetSummary {
   totalQuads: number;
   readonly distinctSubjects: Set<string>;
   readonly distinctObjects: Set<string>;
+  readonly vocabularies: Set<string>;
 
   // Property partition-related data
   readonly totalQuadsByPredicate: Map<string, number>;
@@ -32,6 +33,9 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
   public static readonly VOID_DISTINCT_OBJECTS = DF.namedNode(`${DatasetSummaryCollectorVoID.VOID_PREFIX}distinctObjects`);
   public static readonly VOID_PROPERTY_PARTITION = DF.namedNode(`${DatasetSummaryCollectorVoID.VOID_PREFIX}propertyPartition`);
   public static readonly VOID_CLASS_PARTITION = DF.namedNode(`${DatasetSummaryCollectorVoID.VOID_PREFIX}classPartition`);
+  public static readonly VOID_VOCABULARY = DF.namedNode(`${DatasetSummaryCollectorVoID.VOID_PREFIX}vocabulary`);
+
+  private static readonly DATASET_REGEX = new RegExp(/#?(\w+)$/u, 'u');
 
   public register(dataset: string, quad: RDF.Quad): void {
     const summary = this.getDatasetSummary(dataset);
@@ -56,6 +60,7 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
             summary.entitiesByClass.set(quad.object.value, entitiesByClass);
           }
           entitiesByClass.add(subjectString);
+          summary.vocabularies.add(this.vocabularyFromIri(quad.object.value));
         }
       }
     }
@@ -80,6 +85,7 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
         quad.predicate.value,
         (summary.totalQuadsByPredicate.get(quad.predicate.value) ?? 0) + 1,
       );
+      summary.vocabularies.add(this.vocabularyFromIri(quad.predicate.value));
     }
   }
 
@@ -111,6 +117,11 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
           DatasetSummaryCollectorVoID.XSD_INTEGER,
         )),
       ];
+      for (const vocabulary of summary.vocabularies) {
+        summaryQuads.push(
+          DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_VOCABULARY, DF.namedNode(vocabulary)),
+        );
+      }
       for (const [ predicate, count ] of summary.totalQuadsByPredicate) {
         const partitionIri = DF.namedNode(`${dataset}#${this.hashString(predicate)}`);
         summaryQuads.push(
@@ -161,6 +172,7 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
         totalQuads: 0,
         distinctSubjects: new Set(),
         distinctObjects: new Set(),
+        vocabularies: new Set(),
         totalQuadsByPredicate: new Map(),
         distinctSubjectsByPredicate: new Map(),
         distinctObjectsByPredicate: new Map(),
@@ -173,5 +185,14 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
 
   protected hashString(value: string): string {
     return createHash('md5', { encoding: 'utf8' }).update(value).end().digest('hex');
+  }
+
+  /**
+   * Takes an IRI and returns the corresponding vocabulary, as defined in
+   * https://www.w3.org/TR/void/#vocabularies
+   * @param iri The predicate or class IRI
+   */
+  protected vocabularyFromIri(iri: string): string {
+    return iri.replace(DatasetSummaryCollectorVoID.DATASET_REGEX, '');
   }
 }

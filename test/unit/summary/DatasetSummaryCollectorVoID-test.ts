@@ -73,6 +73,16 @@ describe('DatasetSummaryVoID', () => {
       ),
       DF.quad(
         dataset,
+        DatasetSummaryCollectorVoID.VOID_VOCABULARY,
+        DF.namedNode(`${quadClass.value.split(':')[0]}:`),
+      ),
+      DF.quad(
+        dataset,
+        DatasetSummaryCollectorVoID.VOID_VOCABULARY,
+        DF.namedNode(DatasetSummaryCollectorVoID.RDF_TYPE.value.split('#')[0]),
+      ),
+      DF.quad(
+        dataset,
         DatasetSummaryCollectorVoID.VOID_PROPERTY_PARTITION,
         propertyPartitionPredicate,
       ),
