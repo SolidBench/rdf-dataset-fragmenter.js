@@ -247,7 +247,7 @@ The Bloom strategy generates Bloom filters using the custom [membership filter v
 ```json
 {
   "fragmentationStrategy": {
-    "@type": "FragmentationStrategyDatasetSummaryVoID",
+    "@type": "FragmentationStrategyDatasetSummaryBloom",
     "hashBits": 256,
     "hashCount": 4,
     "subjectToDataset": {

@@ -1,7 +1,14 @@
 import { DatasetSummaryVoID } from '../summary/DatasetSummaryVoID';
-import { FragmentationStrategyDatasetSummary } from './FragmentationStrategyDatasetSummary';
+import {
+  FragmentationStrategyDatasetSummary,
+  type IFragmentationStrategyDatasetSummaryOptions,
+} from './FragmentationStrategyDatasetSummary';
 
 export class FragmentationStrategyDatasetSummaryVoID extends FragmentationStrategyDatasetSummary<DatasetSummaryVoID> {
+  public constructor(args: IFragmentationStrategyDatasetSummaryOptions) {
+    super(args);
+  }
+
   protected getDatasetsForSubject(subject: string): Set<string> {
     let mapping = subject;
     for (const [ exp, sub ] of this.subjectToDataset) {
