@@ -35,7 +35,7 @@ describe('DatasetSummaryVoID', () => {
 
   it('should properly register quads', async() => {
     quads.forEach(quad => collector.register(quad));
-    expect(collector.toQuads()).toBeRdfIsomorphic([
+    expect(collector.serialize().quads).toBeRdfIsomorphic([
       DF.quad(
         dataset,
         DatasetSummaryVoID.RDF_TYPE,
@@ -165,13 +165,13 @@ describe('DatasetSummaryVoID', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.toQuads()).toBeRdfIsomorphic([]);
+    expect(collector.serialize().quads).toBeRdfIsomorphic([]);
   });
 
   it('should always produce rdf:type as the first quad', async() => {
     quads.forEach(quad => collector.register(quad));
     const typedSubjects = new Set<string>();
-    for (const quad of collector.toQuads()) {
+    for (const quad of collector.serialize().quads) {
       if (!typedSubjects.has(quad.subject.value)) {
         expect(quad.predicate.value).toEqual(DatasetSummaryVoID.RDF_TYPE.value);
         typedSubjects.add(quad.subject.value);

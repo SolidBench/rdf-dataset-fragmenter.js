@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
 import { termToString } from 'rdf-string';
-import { DF, DatasetSummary, type IDatasetSummaryArgs } from './DatasetSummary';
+import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArgs } from './DatasetSummary';
 
 export class DatasetSummaryVoID extends DatasetSummary {
   // Entire dataset-related data
@@ -98,7 +98,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
     }
   }
 
-  public toQuads(): RDF.Quad[] {
+  public serialize(): IDatasetSummaryOutput {
     const output: RDF.Quad[] = [];
     if (this.totalQuads > 0) {
       const datasetIri = DF.namedNode(this.dataset);
@@ -168,7 +168,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
         );
       }
     }
-    return output;
+    return { iri: this.dataset, quads: output };
   }
 
   protected hashString(value: string): string {

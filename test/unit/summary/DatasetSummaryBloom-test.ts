@@ -27,7 +27,7 @@ describe('DatasetSummaryCollectorBloom', () => {
 
   it('should properly register quads', async() => {
     quads.forEach(quad => collector.register(quad));
-    const filters = collector.toQuads().filter(quad =>
+    const filters = collector.serialize().quads.filter(quad =>
       quad.predicate.value === DatasetSummaryBloom.MEM_PROP_BINARYREPRESENTATION.value &&
       quad.object.termType === 'Literal' &&
       quad.object.datatype === DatasetSummaryBloom.XSD_BASE64)
@@ -45,13 +45,13 @@ describe('DatasetSummaryCollectorBloom', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.toQuads()).toBeRdfIsomorphic([]);
+    expect(collector.serialize().quads).toBeRdfIsomorphic([]);
   });
 
   it('should always produce rdf:type in the first quad for each subject', async() => {
     quads.forEach(quad => collector.register(quad));
     const typedSubjects = new Set<string>();
-    for (const quad of collector.toQuads()) {
+    for (const quad of collector.serialize().quads) {
       if (!typedSubjects.has(quad.subject.value)) {
         expect(quad.predicate.value).toEqual(DatasetSummaryBloom.RDF_TYPE.value);
         typedSubjects.add(quad.subject.value);

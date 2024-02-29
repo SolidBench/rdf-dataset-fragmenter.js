@@ -3,9 +3,14 @@ import { DataFactory } from 'rdf-data-factory';
 
 export const DF = new DataFactory();
 
+export interface IDatasetSummaryOutput {
+  iri: string;
+  quads: RDF.Quad[];
+}
+
 export interface IDatasetSummary {
   register: (quad: RDF.Quad) => void;
-  toQuads: () => RDF.Quad[];
+  serialize: () => IDatasetSummaryOutput;
 }
 
 export abstract class DatasetSummary implements IDatasetSummary {
@@ -20,7 +25,7 @@ export abstract class DatasetSummary implements IDatasetSummary {
   }
 
   public abstract register(quad: RDF.Quad): void;
-  public abstract toQuads(): RDF.Quad[];
+  public abstract serialize(): IDatasetSummaryOutput;
 }
 
 export interface IDatasetSummaryArgs {

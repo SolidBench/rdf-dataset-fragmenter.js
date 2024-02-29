@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import type * as RDF from '@rdfjs/types';
 import { Bloem } from 'bloem';
-import { DF, DatasetSummary, type IDatasetSummaryArgs } from './DatasetSummary';
+import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArgs } from './DatasetSummary';
 
 export class DatasetSummaryBloom extends DatasetSummary {
   protected readonly iri: string;
@@ -67,7 +67,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
     }
   }
 
-  public toQuads(): RDF.Quad[] {
+  public serialize(): IDatasetSummaryOutput {
     const output: RDF.Quad[] = [];
     if (this.projectedProperties.size > 0 || this.projectedResources.size > 0) {
       const projections = new Map<RDF.NamedNode, Map<string, Bloem>>([
@@ -137,7 +137,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
         }
       }
     }
-    return output;
+    return { iri: this.iri, quads: output };
   }
 
   protected project(map: Map<string, Bloem>, key: string, value: string): void {
