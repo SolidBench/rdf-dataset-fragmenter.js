@@ -226,36 +226,40 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 }
 ```
 
-#### Dataset Summary Fragmentation Strategy
+#### Dataset Summary Fragmentation Strategies
 
-A fragmentation strategy that creates dataset descriptions based on quad subject values,
-using the provided list of dataset summary collectors. Collectors for summaries using
-the standard [VoID vocabulary](https://www.w3.org/TR/void/)
-and the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership)
-are available.
+Fragmentation strategies that generate dataset descriptions based on quad subject values.
+The VoID strategy generates a partial dataset description using the standard [VoID vocabulary](https://www.w3.org/TR/void/).
 
 ```json
 {
   "fragmentationStrategy": {
-    "@type": "FragmentationStrategyDatasetSummary",
+    "@type": "FragmentationStrategyDatasetSummaryVoID",
     "subjectToDataset": {
-      "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1",
-    },
-    "collectors": [
-      {
-        "@type": "DatasetSummaryCollectorVoID"
-      },
-      {
-        "@type": "DatasetSummaryCollectorBloom",
-        "hashBits": 256,
-        "hashCount": 4
-      }
-    ]
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
+    }
   }
 }
 ```
 
-The above example causes the generation of VoID descriptions and Bloom filters in a pod level.
+The Bloom strategy generates Bloom filters using the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership).
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryVoID",
+    "hashBits": 256,
+    "hashCount": 4,
+    "subjectToDataset": {
+      "(.*\\/pods\\/[0-9]+\\/[A-z0-9]+\\/).*$": "$1",
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1",
+    },
+    "datasetToSummary": {
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
+    }
+  }
+}
+```
 
 ### Quad Sinks
 
