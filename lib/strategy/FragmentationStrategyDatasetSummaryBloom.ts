@@ -18,6 +18,16 @@ export class FragmentationStrategyDatasetSummaryBloom extends FragmentationStrat
     ]));
   }
 
+  protected getDatasetsForSubject(subject: string): Set<string> {
+    const mappings = new Set<string>();
+    for (const [ exp, sub ] of this.subjectToDataset) {
+      if (exp.test(subject)) {
+        mappings.add(subject.replace(exp, sub));
+      }
+    }
+    return mappings;
+  }
+
   protected createSummary(dataset: string): DatasetSummaryBloom {
     let iri = dataset;
     for (const [ exp, sub ] of this.datasetToSummary) {

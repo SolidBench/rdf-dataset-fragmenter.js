@@ -25,15 +25,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
     ]));
   }
 
-  protected getMappings(iri: string, map: Map<RegExp, string>): Set<string> {
-    const mappings = new Set<string>();
-    for (const [ exp, sub ] of map) {
-      if (exp.test(iri)) {
-        mappings.add(iri.replace(exp, sub));
-      }
-    }
-    return mappings;
-  }
+  protected abstract getDatasetsForSubject(subject: string): Set<string>;
 
   protected abstract createSummary(dataset: string): T;
 
@@ -48,7 +40,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     if (quad.subject.termType === 'NamedNode') {
-      const subjectDatasets = this.getMappings(quad.subject.value, this.subjectToDataset);
+      const subjectDatasets = this.getDatasetsForSubject(quad.subject.value);
       for (const dataset of subjectDatasets) {
         this.registerDatasetQuad(dataset, quad);
         if (quad.object.termType === 'BlankNode') {
