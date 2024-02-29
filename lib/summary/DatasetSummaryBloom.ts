@@ -154,7 +154,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
     for (const value of values) {
       hash.update(value);
     }
-    return DF.namedNode(`${base}}#${hash.digest('hex')}`);
+    return DF.namedNode(`${base}#${hash.digest('hex')}`);
   }
 }
 

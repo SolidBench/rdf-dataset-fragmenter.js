@@ -1,16 +1,17 @@
 import { Readable } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import { FragmentationStrategyDatasetSummary } from '../../../lib/strategy/FragmentationStrategyDatasetSummary';
+import { FragmentationStrategyDatasetSummaryVoID } from '../../../lib/strategy/FragmentationStrategyDatasetSummaryVoID';
 import type { IFragmentationStrategy } from '../../../lib/strategy/IFragmentationStrategy';
+import { DatasetSummaryVoID } from '../../../lib/summary/DatasetSummaryVoID';
 
 const streamifyArray = require('streamify-array');
 
 const DF = new DataFactory();
 
-jest.mock('../../../lib/io/ParallelFileWriter');
+// Jest.mock('../../../lib/io/ParallelFileWriter');
 
-describe('FragmentationStrategySubject', () => {
+describe('FragmentationStrategyDatasetSummaryVoID', () => {
   const quadsEmpty: RDF.Quad[] = [];
   const quadsNoBnodes = [
     DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
@@ -62,19 +63,13 @@ describe('FragmentationStrategySubject', () => {
   ];
 
   let sink: any;
-  let collector: any;
   let strategy: IFragmentationStrategy;
 
   beforeEach(() => {
     sink = {
       push: jest.fn(),
     };
-    collector = {
-      register: jest.fn(),
-      flush: jest.fn(),
-    };
-    strategy = new FragmentationStrategyDatasetSummary({
-      collectors: [ collector ],
+    strategy = new FragmentationStrategyDatasetSummaryVoID({
       subjectToDataset: { '^(ex:[a-z0-9]+)$': '$1' },
     });
   });
@@ -83,147 +78,196 @@ describe('FragmentationStrategySubject', () => {
     it('should handle an empty stream', async() => {
       await strategy.fragment(streamifyArray([ ...quadsEmpty ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).not.toHaveBeenCalled();
     });
 
     it('should handle a stream without blank nodes', async() => {
       await strategy.fragment(streamifyArray([ ...quadsNoBnodes ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(quadsNoBnodes[0].subject.value, quadsNoBnodes[0]);
-      expect(collector.register).toHaveBeenCalledWith(quadsNoBnodes[1].subject.value, quadsNoBnodes[1]);
-      expect(collector.register).toHaveBeenCalledWith(quadsNoBnodes[2].subject.value, quadsNoBnodes[2]);
+      expect(sink.push).toHaveBeenCalledTimes(28);
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsNoBnodes[0].subject.value,
+        DF.quad(quadsNoBnodes[0].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
+      );
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsNoBnodes[2].subject.value,
+        DF.quad(quadsNoBnodes[2].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
+      );
     });
 
     it('should handle a stream with variables', async() => {
       await strategy.fragment(streamifyArray([ ...quadsVariables ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
     });
 
     it('should handle a stream with owned blank node', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnode ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnode[0].subject.value, quadsOwnedBnode[0]);
-      expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnode[0].subject.value, quadsOwnedBnode[1]);
+      expect(sink.push).toHaveBeenCalledTimes(14);
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsOwnedBnode[0].subject.value,
+        DF.quad(quadsOwnedBnode[0].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
+      );
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsOwnedBnode[0].subject.value,
+        DF.quad(
+          quadsOwnedBnode[0].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+        ),
+      );
     });
 
     it('should handle a stream with owned blank node in reverse link order', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeReverse ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledTimes(14);
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeReverse[1].subject.value,
-        quadsOwnedBnodeReverse[0],
+        DF.quad(quadsOwnedBnodeReverse[1].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeReverse[1].subject.value,
-        quadsOwnedBnodeReverse[1],
+        DF.quad(
+          quadsOwnedBnodeReverse[1].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+        ),
       );
     });
 
     it('should handle a stream with owned chained blank node', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeChained ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledTimes(14);
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeChained[0].subject.value,
-        quadsOwnedBnodeChained[0],
+        DF.quad(quadsOwnedBnodeChained[0].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeChained[0].subject.value,
-        quadsOwnedBnodeChained[1],
-      );
-      expect(collector.register).toHaveBeenCalledWith(
-        quadsOwnedBnodeChained[0].subject.value,
-        quadsOwnedBnodeChained[2],
-      );
-      expect(collector.register).toHaveBeenCalledWith(
-        quadsOwnedBnodeChained[0].subject.value,
-        quadsOwnedBnodeChained[3],
+        DF.quad(
+          quadsOwnedBnodeChained[0].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('4', DatasetSummaryVoID.XSD_INTEGER),
+        ),
       );
     });
 
     it('should handle a stream with owned chained blank node in reverse link order', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeChainedReverse ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledTimes(14);
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeChainedReverse[3].subject.value,
-        quadsOwnedBnodeChainedReverse[0],
+        DF.quad(quadsOwnedBnodeChainedReverse[3].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeChainedReverse[3].subject.value,
-        quadsOwnedBnodeChainedReverse[1],
-      );
-      expect(collector.register).toHaveBeenCalledWith(
-        quadsOwnedBnodeChainedReverse[3].subject.value,
-        quadsOwnedBnodeChainedReverse[2],
-      );
-      expect(collector.register).toHaveBeenCalledWith(
-        quadsOwnedBnodeChainedReverse[3].subject.value,
-        quadsOwnedBnodeChainedReverse[3],
+        DF.quad(
+          quadsOwnedBnodeChainedReverse[3].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('4', DatasetSummaryVoID.XSD_INTEGER),
+        ),
       );
     });
 
     it('should handle a stream with multiple owned blank nodes', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodes ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[0].subject.value, quadsOwnedBnodes[0]);
-      expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[0].subject.value, quadsOwnedBnodes[1]);
-      expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[2].subject.value, quadsOwnedBnodes[2]);
-      expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[2].subject.value, quadsOwnedBnodes[3]);
+      expect(sink.push).toHaveBeenCalledTimes(28);
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsOwnedBnodes[0].subject.value,
+        DF.quad(quadsOwnedBnodes[0].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
+      );
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsOwnedBnodes[0].subject.value,
+        DF.quad(
+          quadsOwnedBnodes[0].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+        ),
+      );
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsOwnedBnodes[2].subject.value,
+        DF.quad(quadsOwnedBnodes[2].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
+      );
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsOwnedBnodes[2].subject.value,
+        DF.quad(
+          quadsOwnedBnodes[2].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+        ),
+      );
     });
 
     it('should handle a stream with owned blank nodes in the same document', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeMultipleSameDoc ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledTimes(14);
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleSameDoc[0].subject.value,
-        quadsOwnedBnodeMultipleSameDoc[0],
+        DF.quad(
+          quadsOwnedBnodeMultipleSameDoc[0].subject,
+          DatasetSummaryVoID.RDF_TYPE,
+          DatasetSummaryVoID.VOID_DATASET,
+        ),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleSameDoc[0].subject.value,
-        quadsOwnedBnodeMultipleSameDoc[1],
-      );
-      expect(collector.register).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleSameDoc[0].subject.value,
-        quadsOwnedBnodeMultipleSameDoc[2],
+        DF.quad(
+          quadsOwnedBnodeMultipleSameDoc[0].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('3', DatasetSummaryVoID.XSD_INTEGER),
+        ),
       );
     });
 
     it('should handle a stream with owned blank node in multiple documents', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeMultipleDiffDoc ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledTimes(28);
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
-        quadsOwnedBnodeMultipleDiffDoc[0],
+        DF.quad(
+          quadsOwnedBnodeMultipleDiffDoc[0].subject,
+          DatasetSummaryVoID.RDF_TYPE,
+          DatasetSummaryVoID.VOID_DATASET,
+        ),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
-        quadsOwnedBnodeMultipleDiffDoc[2],
+        DF.quad(
+          quadsOwnedBnodeMultipleDiffDoc[0].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+        ),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
-        quadsOwnedBnodeMultipleDiffDoc[1],
+        DF.quad(
+          quadsOwnedBnodeMultipleDiffDoc[1].subject,
+          DatasetSummaryVoID.RDF_TYPE,
+          DatasetSummaryVoID.VOID_DATASET,
+        ),
       );
-      expect(collector.register).toHaveBeenCalledWith(
+      expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
-        quadsOwnedBnodeMultipleDiffDoc[2],
+        DF.quad(
+          quadsOwnedBnodeMultipleDiffDoc[1].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+        ),
       );
     });
 
     it('should handle a stream unowned blank node, and ignore it', async() => {
       await strategy.fragment(streamifyArray([ ...quadsUnownedBnode ]), sink);
-      expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.flush).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledTimes(1);
-      expect(collector.register).toHaveBeenCalledWith(quadsUnownedBnode[0].subject.value, quadsUnownedBnode[0]);
+      expect(sink.push).toHaveBeenCalledTimes(14);
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsUnownedBnode[0].subject.value,
+        DF.quad(quadsUnownedBnode[0].subject, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
+      );
+      expect(sink.push).toHaveBeenCalledWith(
+        quadsUnownedBnode[0].subject.value,
+        DF.quad(
+          quadsUnownedBnode[0].subject,
+          DatasetSummaryVoID.VOID_TRIPLES,
+          DF.literal('1', DatasetSummaryVoID.XSD_INTEGER),
+        ),
+      );
     });
 
     it('should reject on an erroring stream', async() => {

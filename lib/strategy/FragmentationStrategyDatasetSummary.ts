@@ -1,23 +1,24 @@
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
-import type { IDatasetSummaryCollector } from '../summary/DatasetSummaryCollector';
+import type { IDatasetSummary } from '../summary/DatasetSummary';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
 
 /**
  * Fragmentation strategy that collects dataset summaries per dataset.
  */
-export class FragmentationStrategyDatasetSummary extends FragmentationStrategyStreamAdapter {
-  private readonly collectors: IDatasetSummaryCollector[];
-  private readonly subjectToDataset: Map<RegExp, string>;
+export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSummary>
+  extends FragmentationStrategyStreamAdapter {
+  protected readonly summaries: Map<string, T>;
+  protected readonly subjectToDataset: Map<RegExp, string>;
 
   private readonly blankNodeQuads: Map<string, RDF.Quad[]>;
   private readonly blankNodeDatasets: Map<string, Set<string>>;
 
   public constructor(options: IFragmentationStrategyDatasetSummaryOptions) {
     super();
+    this.summaries = new Map();
     this.blankNodeQuads = new Map();
     this.blankNodeDatasets = new Map();
-    this.collectors = options.collectors;
     this.subjectToDataset = new Map(Object.entries(options.subjectToDataset).map(([ exp, sub ]) => [
       new RegExp(exp, 'u'),
       sub,
@@ -34,8 +35,15 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
     return mappings;
   }
 
+  protected abstract createSummary(dataset: string): T;
+
   protected registerDatasetQuad(dataset: string, quad: RDF.Quad): void {
-    this.collectors.forEach(collector => collector.register(dataset, quad));
+    let summary = this.summaries.get(dataset);
+    if (!summary) {
+      summary = this.createSummary(dataset);
+      this.summaries.set(dataset, summary);
+    }
+    summary.register(quad);
   }
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
@@ -80,8 +88,11 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
         }
       }
     }
-    for (const collector of this.collectors) {
-      await collector.flush(quadSink);
+    for (const summary of this.summaries.values()) {
+      const output = summary.serialize();
+      for (const quad of output.quads) {
+        await quadSink.push(output.iri, quad);
+      }
     }
     await super.flush(quadSink);
   }
@@ -94,8 +105,4 @@ export interface IFragmentationStrategyDatasetSummaryOptions {
    * @range {json}
    */
   subjectToDataset: Record<string, string>;
-  /**
-   * Collectors used to generate the actual descriptions.
-   */
-  collectors: IDatasetSummaryCollector[];
 }
