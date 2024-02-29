@@ -27,15 +27,29 @@ describe('DatasetSummaryVoID', () => {
   const propertyPartitionPredicate = DF.namedNode(`${dataset.value}#${hashTerm(quadPredicate)}`);
   const classPartition = DF.namedNode(`${dataset.value}#${hashTerm(quadClass)}`);
 
+  let sink: any;
+  let output: Map<string, RDF.Quad[]>;
   let collector: IDatasetSummaryCollector;
 
   beforeEach(() => {
+    output = new Map();
+    sink = {
+      push: jest.fn((ds, quad) => {
+        let dsQuads = output.get(ds);
+        if (!dsQuads) {
+          dsQuads = [];
+          output.set(ds, dsQuads);
+        }
+        dsQuads.push(quad);
+      }),
+    };
     collector = new DatasetSummaryCollectorVoID({});
   });
 
   it('should properly register quads', async() => {
     quads.forEach(quad => collector.register(dataset.value, quad));
-    expect(collector.toQuads().get(dataset.value)).toBeRdfIsomorphic([
+    await collector.flush(sink);
+    expect(output.get(dataset.value)).toBeRdfIsomorphic([
       DF.quad(
         dataset,
         DatasetSummaryCollectorVoID.RDF_TYPE,
@@ -165,15 +179,19 @@ describe('DatasetSummaryVoID', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.toQuads().size).toBe(0);
+    await collector.flush(sink);
+    expect(sink.push).not.toHaveBeenCalled();
   });
 
   it('should always produce rdf:type as the first quad', async() => {
     quads.forEach(quad => collector.register(dataset.value, quad));
-    expect(collector.toQuads().get(dataset.value)?.at(0)).toEqualRdfTerm(DF.quad(
-      dataset,
-      DatasetSummaryCollectorVoID.RDF_TYPE,
-      DatasetSummaryCollectorVoID.VOID_DATASET,
-    ));
+    await collector.flush(sink);
+    const typedSubjects = new Set<string>();
+    for (const quad of output.get(dataset.value)!) {
+      if (!typedSubjects.has(quad.subject.value)) {
+        expect(quad.predicate.value).toEqual(DatasetSummaryCollectorVoID.RDF_TYPE.value);
+        typedSubjects.add(quad.subject.value);
+      }
+    }
   });
 });

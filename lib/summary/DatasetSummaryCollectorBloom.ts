@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import type * as RDF from '@rdfjs/types';
 import { Bloem } from 'bloem';
+import type { IQuadSink } from '../io/IQuadSink';
 import type { IDatasetSummaryCollectorArgs, IDatasetSummary } from './DatasetSummaryCollector';
 import { DF, DatasetSummaryCollector } from './DatasetSummaryCollector';
 
@@ -10,8 +11,9 @@ export interface IDatasetSummaryBloom extends IDatasetSummary {
 }
 
 export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatasetSummaryBloom> {
-  private readonly hashBits: number;
-  private readonly hashCount: number;
+  protected readonly hashBits: number;
+  protected readonly hashCount: number;
+  protected readonly datasetToSummary: Map<RegExp, string>;
 
   public static readonly MEM_PREFIX = 'http://semweb.mmlab.be/ns/membership#';
 
@@ -47,6 +49,9 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
     super(args);
     this.hashBits = args.hashBits;
     this.hashCount = args.hashCount;
+    this.datasetToSummary = new Map(Object.entries(args.datasetToSummary).map(([ exp, sub ]) => [
+      new RegExp(exp, 'u'), sub,
+    ]));
   }
 
   public register(dataset: string, quad: RDF.Quad): void {
@@ -68,16 +73,17 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
     }
   }
 
-  public toQuads(): Map<string, RDF.Quad[]> {
-    const output = new Map<string, RDF.Quad[]>();
-    for (const [ dataset, summary ] of this.summaries) {
+  public async flush(sink: IQuadSink): Promise<void> {
+    for (const [ datasetIri, summary ] of this.summaries) {
+      const summaryIri = this.getSummaryIriForDataset(datasetIri);
       const summaryQuads: RDF.Quad[] = [];
       const projections = new Map<RDF.NamedNode, Map<string, Bloem>>([
         [ DatasetSummaryCollectorBloom.MEM_PROP_PROJECTEDPROPERTY, summary.projectedProperties ],
         [ DatasetSummaryCollectorBloom.MEM_PROP_PROJECTEDRESOURCE, summary.projectedResources ],
       ]);
       const hashFunctionIri = this.createFragmentIri(
-        dataset,
+        summaryIri,
+        datasetIri,
         DatasetSummaryCollectorBloom.MEM_CLASS_HASHFUNCTION.value,
       );
       for (const [ projection, projectionMapping ] of projections) {
@@ -85,7 +91,8 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
           const bitfieldBase64 = (<Buffer>(<any>filter).bitfield.toBuffer()).toString('base64');
 
           const collectionIri = this.createFragmentIri(
-            dataset,
+            summaryIri,
+            datasetIri,
             DatasetSummaryCollectorBloom.MEM_CLASS_MEMBERCOLLECTION.value,
             projection.value,
             projectedValue,
@@ -100,7 +107,7 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
             DF.quad(
               collectionIri,
               DatasetSummaryCollectorBloom.MEM_PROP_SOURCECOLLECTION,
-              DF.namedNode(dataset),
+              DF.namedNode(datasetIri),
             ),
             DF.quad(
               collectionIri,
@@ -110,7 +117,8 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
           );
 
           const filterIri = this.createFragmentIri(
-            dataset,
+            summaryIri,
+            datasetIri,
             DatasetSummaryCollectorBloom.MEM_CLASS_BLOOMFILTER.value,
             projection.value,
             projectedValue,
@@ -177,10 +185,11 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
             DF.literal(this.hashCount.toString(10), DatasetSummaryCollectorBloom.XSD_INTEGER),
           ),
         );
-        output.set(dataset, summaryQuads);
+        for (const quad of summaryQuads) {
+          await sink.push(summaryIri, quad);
+        }
       }
     }
-    return output;
   }
 
   protected project(map: Map<string, Bloem>, key: string, value: string): void {
@@ -192,28 +201,34 @@ export class DatasetSummaryCollectorBloom extends DatasetSummaryCollector<IDatas
     filter.add(Buffer.from(value));
   }
 
-  protected createFragmentIri(dataset: string, ...values: string[]): RDF.NamedNode {
+  protected createFragmentIri(base: string, ...values: string[]): RDF.NamedNode {
     const hash = createHash('md5');
     for (const value of values) {
       hash.update(value);
     }
-    return DF.namedNode(`${dataset}#${hash.digest('hex')}`);
+    return DF.namedNode(`${base}}#${hash.digest('hex')}`);
   }
 
-  protected getDatasetSummary(dataset: string): IDatasetSummaryBloom {
-    let summary = this.summaries.get(dataset);
-    if (!summary) {
-      summary = {
-        projectedProperties: new Map(),
-        projectedResources: new Map(),
-      };
-      this.summaries.set(dataset, summary);
+  protected getSummaryIriForDataset(dataset: string): string {
+    for (const [ exp, sub ] of this.datasetToSummary) {
+      if (exp.test(dataset)) {
+        dataset = dataset.replace(exp, sub);
+        break;
+      }
     }
-    return summary;
+    return dataset;
+  }
+
+  protected createDatasetSummary(): IDatasetSummaryBloom {
+    return {
+      projectedProperties: new Map(),
+      projectedResources: new Map(),
+    };
   }
 }
 
 export interface IDatasetSummaryCollectorBloomArgs extends IDatasetSummaryCollectorArgs {
   hashBits: number;
   hashCount: number;
+  datasetToSummary: Record<string, string>;
 }

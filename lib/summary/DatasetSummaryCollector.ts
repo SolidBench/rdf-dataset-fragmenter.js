@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
+import type { IQuadSink } from '../io/IQuadSink';
 
 export const DF = new DataFactory();
 
@@ -7,7 +8,7 @@ export interface IDatasetSummary {}
 
 export interface IDatasetSummaryCollector {
   register: (dataset: string, quad: RDF.Quad) => void;
-  toQuads: () => Map<string, RDF.Quad[]>;
+  flush: (sink: IQuadSink) => Promise<void>;
 }
 
 export abstract class DatasetSummaryCollector<T extends IDatasetSummary> implements IDatasetSummaryCollector {
@@ -21,8 +22,19 @@ export abstract class DatasetSummaryCollector<T extends IDatasetSummary> impleme
     this.summaries = new Map();
   }
 
+  protected getDatasetSummary(dataset: string): T {
+    let summary = this.summaries.get(dataset);
+    if (!summary) {
+      summary = this.createDatasetSummary();
+      this.summaries.set(dataset, summary);
+    }
+    return summary;
+  }
+
   public abstract register(dataset: string, quad: RDF.Quad): void;
-  public abstract toQuads(): Map<string, RDF.Quad[]>;
+  public abstract flush(sink: IQuadSink): Promise<void>;
+
+  protected abstract createDatasetSummary(): T;
 }
 
 export interface IDatasetSummaryCollectorArgs {}

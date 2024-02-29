@@ -9,7 +9,6 @@ import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStrea
 export class FragmentationStrategyDatasetSummary extends FragmentationStrategyStreamAdapter {
   private readonly collectors: IDatasetSummaryCollector[];
   private readonly subjectToDataset: Map<RegExp, string>;
-  private readonly datasetToSummary: Map<RegExp, string>;
 
   private readonly blankNodeQuads: Map<string, RDF.Quad[]>;
   private readonly blankNodeDatasets: Map<string, Set<string>>;
@@ -20,10 +19,6 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
     this.blankNodeDatasets = new Map();
     this.collectors = options.collectors;
     this.subjectToDataset = new Map(Object.entries(options.subjectToDataset).map(([ exp, sub ]) => [
-      new RegExp(exp, 'u'),
-      sub,
-    ]));
-    this.datasetToSummary = new Map(Object.entries(options.datasetToSummary).map(([ exp, sub ]) => [
       new RegExp(exp, 'u'),
       sub,
     ]));
@@ -86,14 +81,7 @@ export class FragmentationStrategyDatasetSummary extends FragmentationStrategySt
       }
     }
     for (const collector of this.collectors) {
-      for (const [ dataset, summary ] of collector.toQuads()) {
-        const targets = this.getMappings(dataset, this.datasetToSummary);
-        for (const quad of summary) {
-          for (const target of targets) {
-            await quadSink.push(target, quad);
-          }
-        }
-      }
+      await collector.flush(quadSink);
     }
     await super.flush(quadSink);
   }
@@ -106,12 +94,6 @@ export interface IFragmentationStrategyDatasetSummaryOptions {
    * @range {json}
    */
   subjectToDataset: Record<string, string>;
-  /**
-   * Mapping of regular expressions to their replacements.
-   * Used to determine the IRIs to store dataset summaries.
-   * @range {json}
-   */
-  datasetToSummary: Record<string, string>;
   /**
    * Collectors used to generate the actual descriptions.
    */

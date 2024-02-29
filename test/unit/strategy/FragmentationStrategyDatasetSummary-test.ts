@@ -71,12 +71,11 @@ describe('FragmentationStrategySubject', () => {
     };
     collector = {
       register: jest.fn(),
-      toQuads: jest.fn(() => new Map()),
+      flush: jest.fn(),
     };
     strategy = new FragmentationStrategyDatasetSummary({
       collectors: [ collector ],
       subjectToDataset: { '^(ex:[a-z0-9]+)$': '$1' },
-      datasetToSummary: { '^(ex:[a-z0-9]+)$': '$1' },
     });
   });
 
@@ -84,14 +83,14 @@ describe('FragmentationStrategySubject', () => {
     it('should handle an empty stream', async() => {
       await strategy.fragment(streamifyArray([ ...quadsEmpty ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).not.toHaveBeenCalled();
     });
 
     it('should handle a stream without blank nodes', async() => {
       await strategy.fragment(streamifyArray([ ...quadsNoBnodes ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(quadsNoBnodes[0].subject.value, quadsNoBnodes[0]);
       expect(collector.register).toHaveBeenCalledWith(quadsNoBnodes[1].subject.value, quadsNoBnodes[1]);
       expect(collector.register).toHaveBeenCalledWith(quadsNoBnodes[2].subject.value, quadsNoBnodes[2]);
@@ -100,13 +99,13 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with variables', async() => {
       await strategy.fragment(streamifyArray([ ...quadsVariables ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
     });
 
     it('should handle a stream with owned blank node', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnode ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnode[0].subject.value, quadsOwnedBnode[0]);
       expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnode[0].subject.value, quadsOwnedBnode[1]);
     });
@@ -114,7 +113,7 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with owned blank node in reverse link order', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeReverse ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(
         quadsOwnedBnodeReverse[1].subject.value,
         quadsOwnedBnodeReverse[0],
@@ -128,7 +127,7 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with owned chained blank node', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeChained ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(
         quadsOwnedBnodeChained[0].subject.value,
         quadsOwnedBnodeChained[0],
@@ -150,7 +149,7 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with owned chained blank node in reverse link order', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeChainedReverse ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(
         quadsOwnedBnodeChainedReverse[3].subject.value,
         quadsOwnedBnodeChainedReverse[0],
@@ -172,7 +171,7 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with multiple owned blank nodes', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodes ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[0].subject.value, quadsOwnedBnodes[0]);
       expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[0].subject.value, quadsOwnedBnodes[1]);
       expect(collector.register).toHaveBeenCalledWith(quadsOwnedBnodes[2].subject.value, quadsOwnedBnodes[2]);
@@ -182,7 +181,7 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with owned blank nodes in the same document', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeMultipleSameDoc ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleSameDoc[0].subject.value,
         quadsOwnedBnodeMultipleSameDoc[0],
@@ -200,7 +199,7 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream with owned blank node in multiple documents', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeMultipleDiffDoc ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
         quadsOwnedBnodeMultipleDiffDoc[0],
@@ -222,23 +221,9 @@ describe('FragmentationStrategySubject', () => {
     it('should handle a stream unowned blank node, and ignore it', async() => {
       await strategy.fragment(streamifyArray([ ...quadsUnownedBnode ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
+      expect(collector.flush).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledTimes(1);
       expect(collector.register).toHaveBeenCalledWith(quadsUnownedBnode[0].subject.value, quadsUnownedBnode[0]);
-    });
-
-    it('should pass on all quads from summary collector', async() => {
-      collector.toQuads = jest.fn(() => new Map([
-        [ quadsNoBnodes[0].subject.value, [ quadsNoBnodes[0], quadsNoBnodes[1] ]],
-        [ quadsNoBnodes[2].subject.value, [ quadsNoBnodes[2] ]],
-      ]));
-      await strategy.fragment(streamifyArray([ ...quadsNoBnodes ]), sink);
-      expect(sink.push).toHaveBeenCalledTimes(3);
-      expect(collector.register).toHaveBeenCalledTimes(3);
-      expect(collector.toQuads).toHaveBeenCalledTimes(1);
-      expect(sink.push).toHaveBeenCalledWith(quadsNoBnodes[0].subject.value, quadsNoBnodes[0]);
-      expect(sink.push).toHaveBeenCalledWith(quadsNoBnodes[1].subject.value, quadsNoBnodes[1]);
-      expect(sink.push).toHaveBeenCalledWith(quadsNoBnodes[2].subject.value, quadsNoBnodes[2]);
     });
 
     it('should reject on an erroring stream', async() => {

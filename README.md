@@ -241,9 +241,6 @@ are available.
     "subjectToDataset": {
       "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1",
     },
-    "datasetToSummary": {
-      "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1/summaries"
-    },
     "collectors": [
       {
         "@type": "DatasetSummaryCollectorVoID"
@@ -258,8 +255,7 @@ are available.
 }
 ```
 
-The above example causes the generation of VoID descriptions and Bloom filters in a pod level,
-with the result being placed in `/summaries` under each pod root.
+The above example causes the generation of VoID descriptions and Bloom filters in a pod level.
 
 ### Quad Sinks
 

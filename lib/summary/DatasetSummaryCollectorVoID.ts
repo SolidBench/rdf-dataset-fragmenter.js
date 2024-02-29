@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
 import { termToString } from 'rdf-string';
+import type { IQuadSink } from '../io/IQuadSink';
 import { DF, DatasetSummaryCollector, type IDatasetSummary } from './DatasetSummaryCollector';
 
 export interface IDatasetSummaryVoID extends IDatasetSummary {
@@ -89,11 +90,10 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
     }
   }
 
-  public toQuads(): Map<string, RDF.Quad[]> {
-    const output = new Map<string, RDF.Quad[]>();
+  public async flush(sink: IQuadSink): Promise<void> {
     for (const [ dataset, summary ] of this.summaries) {
-      const datasetIri = DF.namedNode(dataset.toString());
-      const summaryQuads: RDF.Quad[] = [
+      const datasetIri = DF.namedNode(dataset);
+      [
         DF.quad(datasetIri, DatasetSummaryCollectorVoID.RDF_TYPE, DatasetSummaryCollectorVoID.VOID_DATASET),
         DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_URISPACE, DF.literal(dataset.toString())),
         DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_CLASSES, DF.literal(
@@ -116,15 +116,16 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
           summary.distinctObjects.size.toString(10),
           DatasetSummaryCollectorVoID.XSD_INTEGER,
         )),
-      ];
+      ].forEach(async quad => await sink.push(dataset, quad));
       for (const vocabulary of summary.vocabularies) {
-        summaryQuads.push(
+        await sink.push(
+          dataset,
           DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_VOCABULARY, DF.namedNode(vocabulary)),
         );
       }
       for (const [ predicate, count ] of summary.totalQuadsByPredicate) {
         const partitionIri = DF.namedNode(`${dataset}#${this.hashString(predicate)}`);
-        summaryQuads.push(
+        [
           DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_PROPERTY_PARTITION, partitionIri),
           DF.quad(partitionIri, DatasetSummaryCollectorVoID.RDF_TYPE, DatasetSummaryCollectorVoID.VOID_DATASET),
           DF.quad(partitionIri, DatasetSummaryCollectorVoID.VOID_PROPERTY, DF.namedNode(predicate)),
@@ -132,25 +133,31 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
             count.toString(10),
             DatasetSummaryCollectorVoID.XSD_INTEGER,
           )),
-        );
+        ].forEach(async quad => await sink.push(dataset, quad));
         const distinctSubjectsForPredicate = summary.distinctSubjectsByPredicate.get(predicate);
         if (distinctSubjectsForPredicate) {
-          summaryQuads.push(DF.quad(partitionIri, DatasetSummaryCollectorVoID.VOID_DISTINCT_SUBJECTS, DF.literal(
-            distinctSubjectsForPredicate.size.toString(10),
-            DatasetSummaryCollectorVoID.XSD_INTEGER,
-          )));
+          await sink.push(
+            dataset,
+            DF.quad(partitionIri, DatasetSummaryCollectorVoID.VOID_DISTINCT_SUBJECTS, DF.literal(
+              distinctSubjectsForPredicate.size.toString(10),
+              DatasetSummaryCollectorVoID.XSD_INTEGER,
+            )),
+          );
         }
         const distinctObjectsForPredicate = summary.distinctObjectsByPredicate.get(predicate);
         if (distinctObjectsForPredicate) {
-          summaryQuads.push(DF.quad(partitionIri, DatasetSummaryCollectorVoID.VOID_DISTINCT_OBJECTS, DF.literal(
-            distinctObjectsForPredicate.size.toString(10),
-            DatasetSummaryCollectorVoID.XSD_INTEGER,
-          )));
+          await sink.push(
+            dataset,
+            DF.quad(partitionIri, DatasetSummaryCollectorVoID.VOID_DISTINCT_OBJECTS, DF.literal(
+              distinctObjectsForPredicate.size.toString(10),
+              DatasetSummaryCollectorVoID.XSD_INTEGER,
+            )),
+          );
         }
       }
       for (const [ rdfclass, entities ] of summary.entitiesByClass) {
         const partitionIri = DF.namedNode(`${dataset}#${this.hashString(rdfclass)}`);
-        summaryQuads.push(
+        [
           DF.quad(datasetIri, DatasetSummaryCollectorVoID.VOID_CLASS_PARTITION, partitionIri),
           DF.quad(partitionIri, DatasetSummaryCollectorVoID.RDF_TYPE, DatasetSummaryCollectorVoID.VOID_DATASET),
           DF.quad(partitionIri, DatasetSummaryCollectorVoID.VOID_CLASS, DF.namedNode(rdfclass)),
@@ -158,29 +165,22 @@ export class DatasetSummaryCollectorVoID extends DatasetSummaryCollector<IDatase
             entities.size.toString(),
             DatasetSummaryCollectorVoID.XSD_INTEGER,
           )),
-        );
+        ].forEach(async quad => await sink.push(dataset, quad));
       }
-      output.set(dataset, summaryQuads);
     }
-    return output;
   }
 
-  protected getDatasetSummary(dataset: string): IDatasetSummaryVoID {
-    let summary = this.summaries.get(dataset);
-    if (!summary) {
-      summary = {
-        totalQuads: 0,
-        distinctSubjects: new Set(),
-        distinctObjects: new Set(),
-        vocabularies: new Set(),
-        totalQuadsByPredicate: new Map(),
-        distinctSubjectsByPredicate: new Map(),
-        distinctObjectsByPredicate: new Map(),
-        entitiesByClass: new Map(),
-      };
-      this.summaries.set(dataset, summary);
-    }
-    return summary;
+  protected createDatasetSummary(): IDatasetSummaryVoID {
+    return {
+      totalQuads: 0,
+      distinctSubjects: new Set(),
+      distinctObjects: new Set(),
+      vocabularies: new Set(),
+      totalQuadsByPredicate: new Map(),
+      distinctSubjectsByPredicate: new Map(),
+      distinctObjectsByPredicate: new Map(),
+      entitiesByClass: new Map(),
+    };
   }
 
   protected hashString(value: string): string {
