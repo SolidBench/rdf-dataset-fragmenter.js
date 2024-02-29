@@ -252,7 +252,7 @@ The Bloom strategy generates Bloom filters using the custom [membership filter v
     "hashCount": 4,
     "subjectToDataset": {
       "(.*\\/pods\\/[0-9]+\\/[A-z0-9]+\\/).*$": "$1",
-      "(.*\\/pods\\/[0-9]+\\/).*$": "$1",
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
     },
     "datasetToSummary": {
       "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
