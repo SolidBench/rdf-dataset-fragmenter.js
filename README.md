@@ -228,39 +228,38 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 
 #### Dataset Summary Fragmentation Strategy
 
-A fragmentation strategy that creates dataset descriptions based on quad subject values.
-
-The VoID dataset description strategy creates a VoID dataset description for each dataset
-matching any of the provided IRI-to-dataset-URI mappings,
-using the standard [VoID vocabulary](https://www.w3.org/TR/void/):
-
-```json
-{
-  "fragmentationStrategy": {
-    "@type": "FragmentationStrategyDatasetSummaryVoID",
-    "iriToDataset": {
-      "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1"
-    }
-  }
-}
-```
-
-The Bloom filter strategy creates a set of membership filters for each dataset
-matching any of the provided IRI-to-dataset-URI mappings,
-using the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership):
+A fragmentation strategy that creates dataset descriptions based on quad subject values,
+using the provided list of dataset summary collectors. Collectors for summaries using
+the standard [VoID vocabulary](https://www.w3.org/TR/void/)
+and the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership)
+are available.
 
 ```json
 {
   "fragmentationStrategy": {
-    "@type": "FragmentationStrategyDatasetSummaryBloom",
-    "filterSize": 1024,
-    "filterSlices": 4,
-    "iriToDataset": {
-      "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1"
-    }
+    "@type": "FragmentationStrategyDatasetSummary",
+    "subjectToDataset": {
+      "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1",
+    },
+    "datasetToSummary": {
+      "^(https?:\\/\\/[a-z\\-]+:[0-9]+\\/pods\\/[0-9]+\\/).*$": "$1/summaries"
+    },
+    "collectors": [
+      {
+        "@type": "DatasetSummaryCollectorVoID"
+      },
+      {
+        "@type": "DatasetSummaryCollectorBloom",
+        "hashBits": 256,
+        "hashCount": 4
+      }
+    ]
   }
 }
 ```
+
+The above example causes the generation of VoID descriptions and Bloom filters in a pod level,
+with the result being placed in `/summaries` under each pod root.
 
 ### Quad Sinks
 
