@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import type { WriteStream } from 'fs';
 import type * as RDF from '@rdfjs/types';
-import * as mkdirp from 'mkdirp';
+import { mkdirp } from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import { QuadSinkCsv } from '../../../lib/io/QuadSinkCsv';
 import mocked = jest.mocked;
@@ -21,7 +21,7 @@ describe('QuadSinkCsv', () => {
     quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
     jest.resetAllMocks();
-    mockWriteStream = <any> {
+    mockWriteStream = <any>{
       on: jest.fn().mockImplementation((event, handler) => {
         if (event === 'open') {
           handler();
