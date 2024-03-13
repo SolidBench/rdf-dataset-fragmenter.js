@@ -42,6 +42,28 @@ describe('FragmentationStrategyShape', () => {
       expect(sink.push).toHaveBeenCalledTimes(81);
     });
 
+    it('should push the shape inside the sink given a shex shape with a template iri', async() => {
+      const shexc = `
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+      PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
+
+      <$> {
+          ldbcvoc:id xsd:long {1} ;
+          ldbcvoc:imageFile xsd:string * ;
+          ldbcvoc:locationIP xsd:string {1} ;
+          ldbcvoc:browserUsed xsd:string {1} ;
+          ldbcvoc:creationDate xsd:dateTime {1} ;
+          ldbcvoc:hasCreator IRI {1} ;
+          schema:seeAlso IRI * ;
+          ldbcvoc:isLocatedIn IRI ? ;
+      }
+  `;
+
+      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', shexc);
+      expect(sink.push).toHaveBeenCalledTimes(81);
+    });
+
     it('should reject the promise given that the shape is not valid', async() => {
       const shexc = `
       PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>

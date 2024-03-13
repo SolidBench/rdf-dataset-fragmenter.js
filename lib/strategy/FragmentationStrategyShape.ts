@@ -226,6 +226,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    */
   public static async generateShape(quadSink: IQuadSink, shapeIRI: string, shapeShexc: string): Promise<void> {
     const shexParser = ShexParser.construct(shapeIRI);
+    shapeShexc = shapeShexc.replace('$', shapeIRI);
     const shapeJSONLD = shexParser.parse(shapeShexc);
     const stringShapeJsonLD = JSON.stringify(shapeJSONLD);
     const quads: RDF.Quad[] = [];

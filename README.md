@@ -189,6 +189,7 @@ A fragmentation strategy that groups triples by (subject) resources.
 It generates shapes and shape index files in the root of the iri container for each information type defined in the config. 
 The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format,
 `directory` must be the name of container of the subject and `name` is the name of the shape inside the `ShEx` schema.
+If the IRI of the shape is `<$>` then the IRI will be to the pod.
 
 An exemple of the `component.js` configuration is presented below.
 
