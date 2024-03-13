@@ -187,8 +187,8 @@ Blank nodes are not supported.
 
 A fragmentation strategy that groups triples by (subject) resources.
 It generates shapes and shape index files in the root of the iri container for each information type defined in the config. 
-The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format and
-`directory` must be the name of container of the subject.
+The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format,
+`directory` must be the name of container of the subject and `name` is the name of the shape inside the `ShEx` schema.
 
 An exemple of the `component.js` configuration is presented below.
 
@@ -201,15 +201,18 @@ An exemple of the `component.js` configuration is presented below.
         "shapeConfig": {
           "comments": {
             "shape": "./shapes/comments.shexc",
-            "directory": "comments"
+            "directory": "comments",
+            "name": "Comment"
           },
           "post": {
             "shape": "./shapes/posts.shexc",
-            "directory": "posts"
+            "directory": "posts",
+            "name": "Post"
           },
           "card": {
             "shape": "./shapes/profile.shexc",
-            "directory": "profile"
+            "directory": "profile",
+            "name": "Profile"
           }
         }
       }
@@ -329,15 +332,18 @@ When `partitionByResourceType` is the stategy will skip resource type of a conta
             "shapeConfig": {
               "comments": {
                 "shape": "./shapes/comments.shexc",
-                "directory": "comments"
+                "directory": "comments",
+                "name": "Comment"
               },
               "post": {
                 "shape": "./shapes/posts.shexc",
-                "directory": "posts"
+                "directory": "posts",
+                "name": "Post"
               },
               "card": {
                 "shape": "./shapes/profile.shexc",
-                "directory": "profile"
+                "directory": "profile",
+                "name": "Profile"
               }
             }
         }
