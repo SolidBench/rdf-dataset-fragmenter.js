@@ -20,6 +20,10 @@ interface IShapeEntry {
    * @description the directory targeted by the shape
    */
   directory: string;
+  /**
+   * @description name of the targeted shape in the schema
+   */
+  name: string;
 }
 
 export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapter {
@@ -36,7 +40,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   public static readonly shapeTreeLocator = DF.namedNode('http://www.w3.org/ns/shapetrees#ShapeTreeLocator');
   public static readonly solidInstance = DF.namedNode('http://www.w3.org/ns/solid/terms#instance');
   public static readonly solidInstanceContainer = DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
-  public static readonly shapeTreeFileName: string = 'shapetree';
+  public static readonly shapeIndexFileName: string = 'shapeIndex';
 
   /**
    * @param {Record<string, IShapeEntry>} shapeConfig - An object representing the a map like object
@@ -66,6 +70,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
       shapeMap[dataType] = {
         shape: readFileSync((<IShapeEntry>shapeEntry).shape).toString(),
         directory: (<IShapeEntry>shapeEntry).directory,
+        name: (<IShapeEntry>shapeEntry).name,
       };
     }
     return shapeMap;
@@ -88,7 +93,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
     // If iri already has been handled, we do nothing
     if (!this.irisHandled.has(iri)) {
-      for (const [ resourceIndex, { shape, directory }] of Object.entries(this.shapeMap)) {
+      for (const [ resourceIndex, { shape, directory, name }] of Object.entries(this.shapeMap)) {
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
@@ -104,7 +109,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         if (positionContainer !== -1) {
           const podIRI = iri.slice(0, Math.max(0, positionContainer));
 
-          const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeTreeFileName}`;
+          const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeIndexFileName}`;
 
           // We add a triple in each file to locate the shape index if it is enable
           if (this.tripleShapeTreeLocator === true) {
@@ -119,6 +124,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
               shapeTreeIRI,
               directory,
               shape,
+              name,
               positionContainerResourceNotInRoot === -1);
             this.irisHandled.add(iri);
             this.resourcesHandled.add(resourceId);
@@ -138,6 +144,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * @param {string} shapeTreeIRI - the iri of the shapetree
    * @param {string} directory - the folder bounded binded by the shape
    * @param {string} shape - ShExC string
+   * @param {string} shapeName - name of the targeted shape in the schema
    * @param {boolean} isInRootOfPod - indicate if the resource is at the root of the pod
    */
   public static async generateShapeIndexInformation(quadSink: IQuadSink,
@@ -146,8 +153,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     shapeTreeIRI: string,
     directory: string,
     shape: string,
+    shapeName: string,
     isInRootOfPod: boolean): Promise<void> {
-    const shapeIRI = `${podIRI}/${directory}_shape`;
+    const shapeIRI = `${podIRI}/${directory}_shape#${shapeName}`;
     // In Solid the path to a container end with a trailing "/"
     // hence when the resource is not in the root the content iri must be different.
     const contentIri = isInRootOfPod ? resourceId : `${podIRI}/${directory}/`;

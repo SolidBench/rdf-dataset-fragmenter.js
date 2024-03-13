@@ -168,6 +168,7 @@ describe('FragmentationStrategyShape', () => {
      It should also add the iri into the resoucesHandle and irisHandled sets.`, async() => {
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/posts';
       const folder = 'posts';
+      const name = 'bar';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
         resourceId,
@@ -175,6 +176,7 @@ describe('FragmentationStrategyShape', () => {
         shapeTreeIRI,
         folder,
         shapePath,
+        name,
         false);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
@@ -183,7 +185,7 @@ describe('FragmentationStrategyShape', () => {
         1,
         sink,
         shapeTreeIRI,
-        `${podIRI}/${folder}_shape`,
+        `${podIRI}/${folder}_shape#${name}`,
         false,
         'http://localhost:3000/pods/00000000000000000065/posts/',
       );
@@ -193,6 +195,7 @@ describe('FragmentationStrategyShape', () => {
      It should also add the iri into the resoucesHandled and the irisHandled sets.`, async() => {
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/profile';
       const folder = 'profile';
+      const name = 'bar';
 
       await FragmentationStrategyShape.generateShapeIndexInformation(sink,
         resourceId,
@@ -200,6 +203,7 @@ describe('FragmentationStrategyShape', () => {
         shapeTreeIRI,
         folder,
         shapePath,
+        name,
         true);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
@@ -208,7 +212,7 @@ describe('FragmentationStrategyShape', () => {
         1,
         sink,
         shapeTreeIRI,
-        `${podIRI}/${folder}_shape`,
+        `${podIRI}/${folder}_shape#${name}`,
         true,
         'http://localhost:3000/pods/00000000000000000065/profile',
       );
@@ -223,14 +227,17 @@ describe('FragmentationStrategyShape', () => {
       comments: {
         shape: 'comments.shexc',
         directory: 'comments',
+        name: 'Comment',
       },
       posts: {
         shape: 'posts.shexc',
         directory: 'posts',
+        name: 'Post',
       },
       card: {
         shape: 'profile.shexc',
         directory: 'profile',
+        name: 'Profile',
       },
     };
 
@@ -305,7 +312,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -313,8 +320,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         false,
         'http://localhost:3000/pods/00000000000000000267/posts/',
       );
@@ -323,7 +330,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/',
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562',
       );
     });
@@ -351,7 +358,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -359,8 +366,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         false,
         'http://localhost:3000/pods/00000000000000000267/posts/',
       );
@@ -369,7 +376,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/',
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562',
       );
     });
@@ -394,7 +401,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -402,8 +409,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         false,
         'http://localhost:3000/pods/00000000000000000267/posts/',
       );
@@ -412,7 +419,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/',
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562',
       );
     });
@@ -443,7 +450,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
           'posts',
 
         );
@@ -451,8 +458,8 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
         expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
-          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+          'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
           false,
           'http://localhost:3000/pods/00000000000000000267/posts/',
         );
@@ -461,17 +468,17 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(1,
           sink,
           'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
           'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#1');
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(2,
           sink,
           'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
           'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#2');
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(3,
           sink,
           'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
           'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#3');
       });
 
@@ -489,7 +496,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -497,8 +504,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         false,
         'http://localhost:3000/pods/00000000000000000267/posts/',
       );
@@ -519,7 +526,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -527,8 +534,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         true,
         'http://localhost:3000/pods/00000000000000000267/posts',
       );
@@ -537,7 +544,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/',
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/00000000000000000267/posts#1',
       );
     });
@@ -566,7 +573,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
           'posts',
 
         );
@@ -574,8 +581,8 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
         expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
-          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+          'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
           true,
           'http://localhost:3000/pods/00000000000000000267/posts',
         );
@@ -584,7 +591,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
           'http://localhost:3000/pods/00000000000000000267/posts#1',
         );
       });
@@ -608,7 +615,7 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
           'posts',
 
         );
@@ -616,8 +623,8 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
         expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
           sink,
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
-          'http://localhost:3000/pods/00000000000000000267/posts_shape',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+          'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
           true,
           'http://localhost:3000/pods/00000000000000000267/posts',
         );
@@ -626,12 +633,12 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(1,
           sink,
           'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
           'http://localhost:3000/pods/00000000000000000267/posts#1');
         expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(2,
           sink,
           'http://localhost:3000/pods/00000000000000000267/',
-          'http://localhost:3000/pods/00000000000000000267/shapetree',
+          `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
           'http://localhost:3000/pods/00000000000000000267/posts#2');
       });
 
@@ -663,18 +670,18 @@ describe('FragmentationStrategyShape', () => {
         for (let i = 1; i < quads.length + 1; i++) {
           expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(i,
             sink,
-            `${pods[i - 1]}/posts_shape`,
+            `${pods[i - 1]}/posts_shape#Post`,
             'posts');
           expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(i,
             sink,
-            `${pods[i - 1]}/shapetree`,
-            `${pods[i - 1]}/posts_shape`,
+            `${pods[i - 1]}/${FragmentationStrategyShape.shapeIndexFileName}`,
+            `${pods[i - 1]}/posts_shape#Post`,
             true,
             `${pods[i - 1]}/posts`);
           expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(i,
             sink,
             `${pods[i - 1]}/`,
-            `${pods[i - 1]}/shapetree`,
+            `${pods[i - 1]}/${FragmentationStrategyShape.shapeIndexFileName}`,
             quads[i - 1].subject.value);
         }
       });
@@ -704,7 +711,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -712,8 +719,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         false,
         'http://localhost:3000/pods/00000000000000000267/posts/',
       );
@@ -735,7 +742,7 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts',
 
       );
@@ -743,8 +750,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenCalledWith(
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         true,
         'http://localhost:3000/pods/00000000000000000267/posts',
       );
@@ -813,66 +820,66 @@ describe('FragmentationStrategyShape', () => {
 
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
         sink,
-        'http://localhost:3000/pods/00000000000000000267/profile_shape',
+        'http://localhost:3000/pods/00000000000000000267/profile_shape#Profile',
         'profile');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
         sink,
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         'posts');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(3,
         sink,
-        'http://localhost:3000/pods/000000000000000002671/posts_shape',
+        'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
         'posts');
 
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(4,
         sink,
-        'http://localhost:3000/pods/000000000000000002671/comments_shape',
+        'http://localhost:3000/pods/000000000000000002671/comments_shape#Comment',
         'comments');
 
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(1,
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/profile_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/profile_shape#Profile',
         false,
         'http://localhost:3000/pods/00000000000000000267/profile/');
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(2,
         sink,
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
-        'http://localhost:3000/pods/00000000000000000267/posts_shape',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
         true,
         'http://localhost:3000/pods/00000000000000000267/posts');
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(3,
         sink,
-        'http://localhost:3000/pods/000000000000000002671/shapetree',
-        'http://localhost:3000/pods/000000000000000002671/posts_shape',
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
         true,
         'http://localhost:3000/pods/000000000000000002671/posts');
       expect(FragmentationStrategyShape.generateShapetreeTriples).toHaveBeenNthCalledWith(4,
         sink,
-        'http://localhost:3000/pods/000000000000000002671/shapetree',
-        'http://localhost:3000/pods/000000000000000002671/comments_shape',
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.shapeIndexFileName}`,
+        'http://localhost:3000/pods/000000000000000002671/comments_shape#Comment',
         false,
         'http://localhost:3000/pods/000000000000000002671/comments/');
 
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(1,
         sink,
         'http://localhost:3000/pods/00000000000000000267/',
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/00000000000000000267/profile/card#68732194891562');
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(2,
         sink,
         'http://localhost:3000/pods/00000000000000000267/',
-        'http://localhost:3000/pods/00000000000000000267/shapetree',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/00000000000000000267/posts#1');
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(3,
         sink,
         'http://localhost:3000/pods/000000000000000002671/',
-        'http://localhost:3000/pods/000000000000000002671/shapetree',
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/000000000000000002671/posts#2');
       expect(FragmentationStrategyShape.generateShapeTreeLocator).toHaveBeenNthCalledWith(4,
         sink,
         'http://localhost:3000/pods/000000000000000002671/',
-        'http://localhost:3000/pods/000000000000000002671/shapetree',
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.shapeIndexFileName}`,
         'http://localhost:3000/pods/000000000000000002671/comments/comments#3');
     });
   });
