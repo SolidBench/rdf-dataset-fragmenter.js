@@ -4,7 +4,7 @@ import type { Writable } from 'stream';
 import { PassThrough } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import AsyncLock = require('async-lock');
-import LRUCache = require('lru-cache');
+import { LRUCache } from 'lru-cache';
 import { mkdirp } from 'mkdirp';
 import rdfSerializer from 'rdf-serialize';
 
@@ -23,7 +23,7 @@ export class ParallelFileWriter {
   public constructor(options: IParallelFileWriterOptions) {
     this.cache = new LRUCache({
       max: options.streams,
-      dispose: (key, value) => this.closeWriteEntry(key, value),
+      dispose: (value, key) => this.closeWriteEntry(key, value),
       noDisposeOnSet: true,
     });
     this.lock = new AsyncLock();
@@ -56,7 +56,7 @@ export class ParallelFileWriter {
       this.fileClosingPromises = [];
 
       // Open the file stream, and prepare the RDF serializer
-      const writeStream: RDF.Stream & Writable = <any> new PassThrough({ objectMode: true });
+      const writeStream: RDF.Stream & Writable = <any>new PassThrough({ objectMode: true });
       const folder = dirname(path);
       await mkdirp(folder);
       const fileStream = fs.createWriteStream(path, { flags: 'a' });
@@ -72,12 +72,17 @@ export class ParallelFileWriter {
    */
   public async close(): Promise<void> {
     // Add listeners to be able to await stream closing
-    const outputStreamPromises = this.cache.keys()
-      .map(key => this.cache.get(key)!.fileStream)
-      .map(fileStream => new Promise((resolve, reject) => {
-        fileStream.on('finish', resolve);
-        fileStream.on('error', reject);
-      }));
+    const outputStreamPromises = [];
+    const keys = this.cache.keys();
+    for (const key of keys) {
+      const fileStream = this.cache.get(key)!.fileStream
+      outputStreamPromises.push(
+        new Promise((resolve, reject) => {
+          fileStream.on('finish', resolve);
+          fileStream.on('error', reject);
+        })
+      )
+    }
 
     // Close all output streams
     this.cache.forEach(writeEntry => writeEntry.writeStream.end());
@@ -86,7 +91,7 @@ export class ParallelFileWriter {
     await Promise.all(outputStreamPromises);
   }
 
-  protected closeWriteEntry(path: string, writeEntry: IWriteEntry): void {
+  protected closeWriteEntry(_path: string, writeEntry: IWriteEntry): void {
     this.fileClosingPromises.push(new Promise((resolve, reject) => {
       writeEntry.fileStream.on('finish', resolve);
       writeEntry.fileStream.on('error', reject);
