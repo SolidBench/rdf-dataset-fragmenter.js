@@ -85,7 +85,16 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
                 // Pass the current quad component as allowed component to the transformer,
                 // so that no other components of that quad are considered by the transformer.
                 subQuadsLoop = subQuadsLoop
-                  .flatMap(subSubQuadLoop => subTransformer.transform(subSubQuadLoop, component));
+                  .flatMap(subSubQuadLoop => {
+                    // Only map a transformer to a quad that matches.
+                    if (component === 'subject' && subSubQuadLoop.subject.value === subQuadLoop.subject.value) {
+                      return subTransformer.transform(subSubQuadLoop, component);
+                    }
+                    if (component === 'object' && subSubQuadLoop.object.value === subQuadLoop.object.value) {
+                      return subTransformer.transform(subSubQuadLoop, component);
+                    }
+                    return subSubQuadLoop;
+                  });
               });
             }
           }
