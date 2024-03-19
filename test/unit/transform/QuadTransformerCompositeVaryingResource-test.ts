@@ -908,7 +908,6 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             DF.namedNode('http://example.org/pods/bob/profile/card#me'),
           ),
           ...triplesTypeIndex,
-          ...triplesTypeIndex,
         ]);
       });
     });
@@ -1073,11 +1072,6 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             DF.namedNode('http://example.org/pods/bob/posts/123'),
             DF.namedNode('ex:vocabulary/hasCreator'),
             DF.namedNode('http://example.org/pods/bob/profile/card#me'),
-          ),
-          DF.quad(
-            DF.namedNode('http://example.org/pods/bob/profile/card#me'),
-            DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
-            DF.namedNode('http://localhost:3000/internal/FragmentationPerResource'),
           ),
           DF.quad(
             DF.namedNode('http://example.org/pods/bob/profile/card#me'),

@@ -75,15 +75,32 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
         // Flush buffered quads
         return resource.quads.flatMap(subQuad => {
           // Run through transformers in a loop until the quads don't change anymore
-          let resultBuilder = [ subQuad ];
-          this.resourceIdentifier.forEachMappedResource(subQuad, (subTransformer, component) => {
-            // Pass the current quad component as allowed component to the transformer,
-            // so that no other components of that quad are considered by the transformer.
-            resultBuilder = resultBuilder
-              .flatMap(subSubQuadLoop => subTransformer.transform(subSubQuadLoop, component));
-          });
+          let subQuadsOut = [];
+          let subQuadsLoop = [ subQuad ];
+          while (subQuadsOut.length !== subQuadsLoop.length) {
+            subQuadsOut = subQuadsLoop;
+            for (const subQuadLoop of subQuadsOut) {
+              // eslint-disable-next-line @typescript-eslint/no-loop-func
+              this.resourceIdentifier.forEachMappedResource(subQuadLoop, (subTransformer, component) => {
+                // Pass the current quad component as allowed component to the transformer,
+                // so that no other components of that quad are considered by the transformer.
+                subQuadsLoop = subQuadsLoop
+                  .flatMap(subSubQuadLoop => {
+                    // Only map a transformer to a quad that matches.
+                    if (component === 'subject' && subSubQuadLoop.subject.value === subQuadLoop.subject.value) {
+                      return subTransformer.transform(subSubQuadLoop, component);
+                    }
+                    if (component === 'object' && subSubQuadLoop.object.value === subQuadLoop.object.value) {
+                      return subTransformer.transform(subSubQuadLoop, component);
+                    }
+                    return subSubQuadLoop;
+                  });
+              });
+            }
+          }
+          subQuadsOut = subQuadsLoop;
 
-          return resultBuilder;
+          return subQuadsOut;
         });
       }
 
