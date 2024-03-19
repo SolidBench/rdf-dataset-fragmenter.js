@@ -1,0 +1,6 @@
+{
+  "ignoreComponents": [
+    "Map",
+    "Set"
+  ]
+}

@@ -226,6 +226,41 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 }
 ```
 
+#### Dataset Summary Fragmentation Strategies
+
+Fragmentation strategies that generate dataset descriptions based on quad subject values.
+The VoID strategy generates a partial dataset description using the standard [VoID vocabulary](https://www.w3.org/TR/void/).
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryVoID",
+    "subjectToDataset": {
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
+    }
+  }
+}
+```
+
+The Bloom strategy generates Bloom filters using the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership).
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryBloom",
+    "hashBits": 256,
+    "hashCount": 4,
+    "subjectToDataset": {
+      "(.*\\/pods\\/[0-9]+\\/[A-z0-9]+\\/).*$": "$1",
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
+    },
+    "datasetToSummary": {
+      "(.*\\/pods\\/[0-9]+\\/).*$": "$1"
+    }
+  }
+}
+```
+
 ### Quad Sinks
 
 A quad sink is able to direct a stream of quads as output from the fragmentation process.
