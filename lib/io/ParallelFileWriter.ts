@@ -73,13 +73,13 @@ export class ParallelFileWriter {
     const outputStreamPromises: Promise<any>[] = [];
 
     this.cache.forEach(entry => {
-      entry.writeStream.end();
       outputStreamPromises.push(
         new Promise(resolve => {
           entry.fileStream.on('finish', resolve);
           entry.fileStream.on('close', resolve);
         }),
       );
+      entry.writeStream.end();
     });
 
     await Promise.all(outputStreamPromises);
