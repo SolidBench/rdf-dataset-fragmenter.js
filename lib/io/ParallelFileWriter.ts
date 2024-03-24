@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import { dirname } from 'path';
-import type { Writable } from 'stream';
-import { PassThrough } from 'stream';
+import { type Writable, PassThrough } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import AsyncLock = require('async-lock');
 import { LRUCache } from 'lru-cache';
@@ -56,7 +55,7 @@ export class ParallelFileWriter {
       this.fileClosingPromises = [];
 
       // Open the file stream, and prepare the RDF serializer
-      const writeStream: RDF.Stream & Writable = <any>new PassThrough({ objectMode: true });
+      const writeStream: RDF.Stream & Writable = <any> new PassThrough({ objectMode: true });
       const folder = dirname(path);
       await mkdirp(folder);
       const fileStream = fs.createWriteStream(path, { flags: 'a' });
@@ -71,23 +70,18 @@ export class ParallelFileWriter {
    * Close all open streams.
    */
   public async close(): Promise<void> {
-    // Add listeners to be able to await stream closing
-    const outputStreamPromises = [];
-    const keys = this.cache.keys();
-    for (const key of keys) {
-      const fileStream = this.cache.get(key)!.fileStream
+    const outputStreamPromises: Promise<any>[] = [];
+
+    this.cache.forEach(entry => {
+      entry.writeStream.end();
       outputStreamPromises.push(
-        new Promise((resolve, reject) => {
-          fileStream.on('finish', resolve);
-          fileStream.on('error', reject);
-        })
-      )
-    }
+        new Promise(resolve => {
+          entry.fileStream.on('finish', resolve);
+          entry.fileStream.on('close', resolve);
+        }),
+      );
+    });
 
-    // Close all output streams
-    this.cache.forEach(writeEntry => writeEntry.writeStream.end());
-
-    // Wait for all streams to close
     await Promise.all(outputStreamPromises);
   }
 
