@@ -75,7 +75,7 @@ export class ParallelFileWriter {
     this.cache.forEach(entry => {
       // Wait asynchronously for the file stream associated with the current write stream to be close
       outputStreamPromises.push(
-        new Promise( (resolve, reject) => {
+        new Promise((resolve, reject) => {
           entry.fileStream.on('finish', resolve);
           entry.fileStream.on('error', reject);
           entry.fileStream.on('close', resolve);
