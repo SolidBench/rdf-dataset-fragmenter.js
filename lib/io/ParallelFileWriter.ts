@@ -78,7 +78,6 @@ export class ParallelFileWriter {
         new Promise((resolve, reject) => {
           entry.fileStream.on('finish', resolve);
           entry.fileStream.on('error', reject);
-          entry.fileStream.on('close', resolve);
         }),
       );
       // Close the current write stream
