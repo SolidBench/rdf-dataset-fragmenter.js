@@ -36,10 +36,9 @@
   "dependencies": {
     "@rdfjs/types": "*",
     "@types/async-lock": "^1.4.0",
-    "@types/lru-cache": "^5.0.0",
     "async-lock": "^1.4.0",
     "componentsjs": "^5.0.0",
-    "lru-cache": "^6.0.0",
+    "lru-cache": "^10.2.0",
     "mkdirp": "^3.0.1",
     "rdf-parse": "^2.0.0",
     "rdf-serialize": "^2.0.0",
