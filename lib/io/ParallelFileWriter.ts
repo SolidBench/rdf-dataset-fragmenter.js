@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import { dirname } from 'path';
-import type { Writable } from 'stream';
-import { PassThrough } from 'stream';
+import { type Writable, PassThrough } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import AsyncLock = require('async-lock');
-import LRUCache = require('lru-cache');
+import { LRUCache } from 'lru-cache';
 import { mkdirp } from 'mkdirp';
 import rdfSerializer from 'rdf-serialize';
 
@@ -23,7 +22,7 @@ export class ParallelFileWriter {
   public constructor(options: IParallelFileWriterOptions) {
     this.cache = new LRUCache({
       max: options.streams,
-      dispose: (key, value) => this.closeWriteEntry(key, value),
+      dispose: (value, key) => this.closeWriteEntry(key, value),
       noDisposeOnSet: true,
     });
     this.lock = new AsyncLock();
@@ -71,22 +70,24 @@ export class ParallelFileWriter {
    * Close all open streams.
    */
   public async close(): Promise<void> {
-    // Add listeners to be able to await stream closing
-    const outputStreamPromises = this.cache.keys()
-      .map(key => this.cache.get(key)!.fileStream)
-      .map(fileStream => new Promise((resolve, reject) => {
-        fileStream.on('finish', resolve);
-        fileStream.on('error', reject);
-      }));
+    const outputStreamPromises: Promise<any>[] = [];
 
-    // Close all output streams
-    this.cache.forEach(writeEntry => writeEntry.writeStream.end());
+    this.cache.forEach(entry => {
+      // Wait asynchronously for the file stream associated with the current write stream to be close
+      outputStreamPromises.push(
+        new Promise((resolve, reject) => {
+          entry.fileStream.on('finish', resolve);
+          entry.fileStream.on('error', reject);
+        }),
+      );
+      // Close the current write stream
+      entry.writeStream.end();
+    });
 
-    // Wait for all streams to close
     await Promise.all(outputStreamPromises);
   }
 
-  protected closeWriteEntry(path: string, writeEntry: IWriteEntry): void {
+  protected closeWriteEntry(_path: string, writeEntry: IWriteEntry): void {
     this.fileClosingPromises.push(new Promise((resolve, reject) => {
       writeEntry.fileStream.on('finish', resolve);
       writeEntry.fileStream.on('error', reject);

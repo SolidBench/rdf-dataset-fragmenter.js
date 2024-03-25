@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.5.1"></a>
+## [v2.5.1](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.5.0...v2.5.1) - 2024-03-25
+
+### Changed
+* [Update lru-cache to 10.2.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/46e531b4b1af12599c0289720927c1334480cbe1)
+
+### Fixed
+* [Fix QuadTransformerCompositeVaryingResource producing multiple fragmentation strategies](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/075deee99d9f61fb664ec36ade7c635c74939926)
+
 <a name="v2.5.0"></a>
 ## [v2.5.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.4.0...v2.5.0) - 2024-02-23
 
