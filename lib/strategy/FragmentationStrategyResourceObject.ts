@@ -20,7 +20,7 @@ export class FragmentationStrategyResourceObject extends FragmentationStrategySt
     this.resourceBuffer = {};
   }
 
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  public async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     // Create buffer if one doesn't exist yet
     if (!this.resourceBuffer[quad.subject.value]) {
       this.resourceBuffer[quad.subject.value] = [];

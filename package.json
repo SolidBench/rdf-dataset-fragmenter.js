@@ -35,9 +35,11 @@
   ],
   "dependencies": {
     "@rdfjs/types": "*",
+    "@shexjs/parser": "1.0.0-alpha.26",
     "@types/async-lock": "^1.4.0",
     "async-lock": "^1.4.0",
     "componentsjs": "^5.0.0",
+    "jsonld-streaming-parser": "^3.3.0",
     "lru-cache": "^10.2.0",
     "mkdirp": "^3.0.1",
     "rdf-parse": "^2.0.0",

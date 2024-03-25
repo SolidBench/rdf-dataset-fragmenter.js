@@ -183,6 +183,94 @@ Blank nodes are not supported.
   }
 }
 ```
+#### Resource Object Fragmentation Shape
+
+A fragmentation strategy that groups triples by (subject) resources.
+It generates shapes and shape index files in the root of the iri container for each information type defined in the config. 
+The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format,
+`directory` must be the name of container of the subject and `name` is the name of the shape inside the `ShEx` schema.
+If the IRI of the shape is `<$>` then the IRI will be to the pod.
+
+An exemple of the `component.js` configuration is presented below.
+
+
+```json
+{
+  "fragmentationStrategy": { 
+        "@type": "FragmentationStrategyShape",
+        "tripleShapeTreeLocator": true,
+        "shapeConfig": {
+          "comments": {
+            "shape": "./shapes/comments.shexc",
+            "directory": "comments",
+            "name": "Comment"
+          },
+          "post": {
+            "shape": "./shapes/posts.shexc",
+            "directory": "posts",
+            "name": "Post"
+          },
+          "card": {
+            "shape": "./shapes/profile.shexc",
+            "directory": "profile",
+            "name": "Profile"
+          }
+        }
+      }
+}
+```
+A sample output file tree and its associated files is displayed below.
+
+```
+├── comments
+│   ├── 2012-08-10.nq
+│   └── 2012-08-17.nq
+├── comments_shape.nq
+├── noise
+│   ├── NOISE-12310.nq
+│   └── NOISE-9909.nq
+├── posts.nq
+├── posts_shape.nq
+├── profile
+│   └── card.nq
+├── profile_shape.nq
+├── settings
+│   └── publicTypeIndex.nq
+└── shapetree.nq
+```
+
+
+`http://localhost:3000/pods/00000000000000000768/profile_shape`
+(sample of the output)
+```nquad
+<http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_1829_49 .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+_:df_1829_51 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Schema> .
+_:df_1829_51 <http://www.w3.org/ns/shex#shapes> _:df_1829_50 .
+_:df_1829_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#NodeConstraint> .
+_:df_1829_0 <http://www.w3.org/ns/shex#nodeKind> <http://www.w3.org/ns/shex#iri> .
+_:df_1829_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#TripleConstraint> .
+_:df_1829_1 <http://www.w3.org/ns/shex#predicate> <http://www.w3.org/ns/pim/space#storage> .
+_:df_1829_1 <http://www.w3.org/ns/shex#valueExpr> _:df_1829
+
+```
+
+`http://localhost:3000/pods/00000000000000000768/shapetree`
+
+```nquad
+_:df_3_356 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/profile_shape> .
+_:df_3_356 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000238/profile/> .
+_:df_3_2013 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/comments_shape> .
+_:df_3_2013 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000238/comments/> .
+_:df_3_2921 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/posts_shape> .
+_:df_3_2921 <http://www.w3.org/ns/solid/terms#instance> <http://localhost:3000/pods/00000000000000000238/posts> .
+```
+`http://localhost:3000/pods/00000000000000000768/profile/card`
+```nquad
+<http://localhost:3000/pods/00000000000000000768/> <http://www.w3.org/ns/shapetrees#ShapeTreeLocator> <http://localhost:3000/pods/00000000000000000768/shapetree> .
+<http://localhost:3000/pods/00000000000000000768/profile/card#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Person> .
+```
 
 #### Exception Fragmentation Strategy
 
@@ -224,6 +312,45 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
     ]
   }
 }
+```
+
+#### Probability Generation Fragmentation Strategy
+
+A fragmentation strategy that ignore quads based on a probability.
+`generationProbability` is the probability for the quad to be handled by the `strategy`.
+The `strategy` must be a `FragmentationStrategyStreamAdapter`.
+When `partitionByResourceType` is the stategy will skip resource type of a container instead of working triple by triple.
+
+```json
+{
+  "fragmentationStrategy": { 
+        "@type": "FragmentationStrategyProbabilityQuadHandling",
+        "generationProbability": 33,
+        "partitionByResourceType": true,
+        "strategy": { 
+            "@type": "FragmentationStrategyShape",
+            "tripleShapeTreeLocator": true,
+            "shapeConfig": {
+              "comments": {
+                "shape": "./shapes/comments.shexc",
+                "directory": "comments",
+                "name": "Comment"
+              },
+              "post": {
+                "shape": "./shapes/posts.shexc",
+                "directory": "posts",
+                "name": "Post"
+              },
+              "card": {
+                "shape": "./shapes/profile.shexc",
+                "directory": "profile",
+                "name": "Profile"
+              }
+            }
+        }
+    }
+}
+
 ```
 
 ### Quad Sinks

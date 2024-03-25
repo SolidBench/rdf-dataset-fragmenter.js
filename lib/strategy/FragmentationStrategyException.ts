@@ -60,7 +60,7 @@ export class FragmentationStrategyException extends FragmentationStrategyStreamA
     this.state = undefined;
   }
 
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  public async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
     if (!this.state) {
       throw new Error('Illegal state: handleQuad can only be called via fragment');
     }

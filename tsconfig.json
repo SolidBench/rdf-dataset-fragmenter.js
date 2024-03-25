@@ -14,7 +14,8 @@
     "inlineSources": true,
     "declaration": true,
     "importHelpers": false,
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true
   },
   "include": [
     "index.ts",
