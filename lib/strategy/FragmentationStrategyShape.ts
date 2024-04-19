@@ -26,37 +26,57 @@ interface IShapeEntry {
   name: string;
 }
 
+type Storage = string;
+type ResourceType = string;
+
 export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapter {
   private readonly relativePath?: string;
   private readonly tripleShapeTreeLocator?: boolean;
-  private readonly shapeMap: Record<string, IShapeEntry>;
+  private readonly shapeMap: Record<ResourceType, IShapeEntry>;
+  private readonly contentOfStorage: Set<ResourceType>;
 
   private readonly irisHandled: Set<string> = new Set();
-  private readonly resourcesHandled: Set<string> = new Set();
 
-  public static readonly rdfTypeNode = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
-  public static readonly shapeTreeNode = DF.namedNode('http://www.w3.org/ns/shapetrees#ShapeTree');
-  public static readonly shapeTreeShapeNode = DF.namedNode('http://www.w3.org/ns/shapetrees#shape');
-  public static readonly shapeTreeLocator = DF.namedNode('http://www.w3.org/ns/shapetrees#ShapeTreeLocator');
-  public static readonly solidInstance = DF.namedNode('http://www.w3.org/ns/solid/terms#instance');
-  public static readonly solidInstanceContainer = DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
-  public static readonly shapeIndexFileName: string = 'shapeIndex';
+  // a map of the storage and the resource type handled
+  private contentHandledByPod: Map<Storage, Set<ResourceType>> = new Map();
+
+  public static readonly SHAPE_INDEX_FILE_NAME: string = 'shapeIndex';
+
+  public static readonly SHAPE_INDEX_PREFIX = 'https://shapeIndex.com#';
+
+  public static readonly RDF_TYPE_NODE = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+  public static readonly RDF_TRUE = DF.literal('true', DF.namedNode('http://www.w3.org/2001/XMLSchema#boolean'));
+
+  public static readonly SHAPE_INDEX_LOCATION_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}shapeIndexLocation`);
+  public static readonly SHAPE_INDEX_CLASS_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}ShapeIndex`);
+  public static readonly SHAPE_INDEX_ENTRY_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}entry`);
+  public static readonly SHAPE_INDEX_BIND_BY_SHAPE_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}bindByShape`);
+  public static readonly SHAPE_INDEX_DOMAIN_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}domain`);
+  public static readonly SHAPE_INDEX_IS_COMPLETE_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}isComplete`);
+
+  public static readonly SOLID_INSTANCE_NODE = DF.namedNode('http://www.w3.org/ns/solid/terms#instance');
+  public static readonly SOLID_INSTANCE_CONTAINER_NODE =
+    DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
+
 
   /**
-   * @param {Record<string, IShapeEntry>} shapeConfig - An object representing the a map like object
+   * @param {Record<ResourceType, IShapeEntry>} shapeConfig - An object representing the a map like object
    * where the values follow the interface IShapeEntry @range {json}
+   * @param {string[]} contentOfStorage - the content of a storage, they must match the
    * @param {string} relativePath - the relatif path of the IRI
    * @param {boolean|undefined} tripleShapeTreeLocator - indicate if a shape locator triple is generated
-   * @param {number|undefined} generationProbability - indicate if there is a probability [1, 100]
-   * to generate shape information on a specific resource in a container @range {float}
    */
-  public constructor(shapeConfig: Record<string, IShapeEntry>,
+  public constructor(
+    shapeConfig: Record<ResourceType, IShapeEntry>,
+    contentOfStorage: string[],
     relativePath?: string,
-    tripleShapeTreeLocator?: boolean) {
+    tripleShapeTreeLocator?: boolean,
+  ) {
     super();
     this.tripleShapeTreeLocator = tripleShapeTreeLocator;
     this.relativePath = relativePath;
     this.shapeMap = this.generateShapeMap(shapeConfig);
+    this.contentOfStorage = new Set(contentOfStorage);
   }
 
   /**
@@ -64,9 +84,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * @param {string} shapeFolder - directory containing the shape information
    * @returns {Record<string, IShapeEntry>} a map of the resource with their shape information
    */
-  private generateShapeMap(shapeConfig: object): Record<string, IShapeEntry> {
+  private generateShapeMap(shapeConfig: object): Record<ResourceType, IShapeEntry> {
     const shapeMap: Record<string, IShapeEntry> = {};
-    for (const [ dataType, shapeEntry ] of Object.entries(shapeConfig)) {
+    for (const [dataType, shapeEntry] of Object.entries(shapeConfig)) {
       shapeMap[dataType] = {
         shape: readFileSync((<IShapeEntry>shapeEntry).shape).toString(),
         directory: (<IShapeEntry>shapeEntry).directory,
@@ -93,7 +113,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
     // If iri already has been handled, we do nothing
     if (!this.irisHandled.has(iri)) {
-      for (const [ resourceIndex, { shape, directory, name }] of Object.entries(this.shapeMap)) {
+      for (const [resourceIndex, { shape, directory, name }] of Object.entries(this.shapeMap)) {
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
@@ -109,15 +129,24 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         if (positionContainer !== -1) {
           const podIRI = iri.slice(0, Math.max(0, positionContainer));
 
-          const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.shapeIndexFileName}`;
+          const shapeTreeIRI = `${podIRI}/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`;
 
           // We add a triple in each file to locate the shape index if it is enable
           if (this.tripleShapeTreeLocator === true) {
-            await FragmentationStrategyShape.generateShapeTreeLocator(quadSink, `${podIRI}/`, shapeTreeIRI, iri);
+            await FragmentationStrategyShape.generateShapeIndexLocationTriple(quadSink, `${podIRI}/`, shapeTreeIRI, iri);
             this.irisHandled.add(iri);
           }
 
-          if (!this.resourcesHandled.has(resourceId)) {
+          const contentHandled = this.contentHandledByPod.get(podIRI);
+
+          if (contentHandled === undefined || (!contentHandled?.has(resourceIndex) ?? true)) {
+            if (contentHandled === undefined) {
+              await FragmentationStrategyShape.instanciateShapeIndex(quadSink, shapeTreeIRI, podIRI);
+              this.contentHandledByPod.set(podIRI, new Set([resourceIndex]));
+            } else {
+              contentHandled.add(resourceIndex);
+            }
+
             await FragmentationStrategyShape.generateShapeIndexInformation(quadSink,
               resourceId,
               podIRI,
@@ -127,7 +156,14 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
               name,
               positionContainerResourceNotInRoot === -1);
             this.irisHandled.add(iri);
-            this.resourcesHandled.add(resourceId);
+
+            await FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex(
+              quadSink,
+              // it will not be undefined because we add the value if it is undefined
+              this.contentHandledByPod.get(podIRI)!,
+              this.contentOfStorage,
+              shapeTreeIRI
+            );
             return;
           }
         }
@@ -160,7 +196,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     // hence when the resource is not in the root the content iri must be different.
     const contentIri = isInRootOfPod ? resourceId : `${podIRI}/${directory}/`;
     await FragmentationStrategyShape.generateShape(quadSink, shapeIRI, shape);
-    await FragmentationStrategyShape.generateShapetreeTriples(quadSink,
+    await FragmentationStrategyShape.generateShapeIndexEntry(quadSink,
       shapeTreeIRI,
       shapeIRI,
       isInRootOfPod,
@@ -168,19 +204,19 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   }
 
   /**
-   * Generate a triple to locate a shapetree file and push it into a quad sink
+   * Generate a triple to locate a shape tree index file and push it into a quad sink
    * @param {IQuadSink} quadSink - a quad sink
    * @param {string} podIRI - the iri of the pod
    * @param {string} shapeTreeIRI - the iri of the shapetree
    * @param {string} iri - the targeted iri where the quad will be pushed
    */
-  public static async generateShapeTreeLocator(quadSink: IQuadSink,
+  public static async generateShapeIndexLocationTriple(quadSink: IQuadSink,
     podIRI: string,
     shapeTreeIRI: string,
     iri: string): Promise<void> {
     const shapeTreeIndicator = DF.quad(
       DF.namedNode(podIRI),
-      this.shapeTreeLocator,
+      this.SHAPE_INDEX_LOCATION_NODE,
       DF.namedNode(shapeTreeIRI),
     );
     await quadSink.push(iri, shapeTreeIndicator);
@@ -192,30 +228,81 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * The triples generated are not compliante with the shapetree specification because we are in the process
    * of creating a shape index method inspired from the type index and shapetree specification.
    * @param {IQuadSink} quadSink - a quad sink
-   * @param {string} shapeTreeIRI - the iri of the shapetree
+   * @param {string} shapeIndexIri - the iri of the shapetree
    * @param {string} shapeIRI - the iri of the target shape
    * @param {boolean} isInRootOfPod - indicate if the resource is at the root of the pod
    * @param {string} contentIri - the iri of the target resource
    */
-  public static async generateShapetreeTriples(quadSink: IQuadSink,
-    shapeTreeIRI: string,
+  public static async generateShapeIndexEntry(quadSink: IQuadSink,
+    shapeIndexIri: string,
     shapeIRI: string,
     isInRootOfPod: boolean,
     contentIri: string): Promise<void> {
-    const blankNode = DF.blankNode();
-    const shape = DF.quad(
-      blankNode,
-      this.shapeTreeShapeNode,
+    const shapeIndexNode = DF.namedNode(shapeIndexIri);
+    const currentEntry = DF.blankNode();
+
+    const entryTypeDefinition = DF.quad(
+      shapeIndexNode,
+      this.SHAPE_INDEX_ENTRY_NODE,
+      currentEntry,
+    );
+    const bindByShape = DF.quad(
+      currentEntry,
+      this.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
       DF.namedNode(shapeIRI),
     );
+
     // We need to indicate if the shape index target a single file or if it is a container that is targeted
     const target = DF.quad(
-      blankNode,
-      isInRootOfPod ? this.solidInstance : this.solidInstanceContainer,
+      currentEntry,
+      isInRootOfPod ? this.SOLID_INSTANCE_NODE : this.SOLID_INSTANCE_CONTAINER_NODE,
       DF.namedNode(contentIri),
     );
-    await quadSink.push(shapeTreeIRI, shape);
-    await quadSink.push(shapeTreeIRI, target);
+    await quadSink.push(shapeIndexIri, entryTypeDefinition);
+    await quadSink.push(shapeIndexIri, bindByShape);
+    await quadSink.push(shapeIndexIri, target);
+  }
+
+  public static async instanciateShapeIndex(quadSink: IQuadSink, shapeIndexIri: string, podIRI: string): Promise<void> {
+    const shapeIndexNode = DF.namedNode(shapeIndexIri);
+    const typeDefinition = DF.quad(
+      shapeIndexNode,
+      FragmentationStrategyShape.RDF_TYPE_NODE,
+      FragmentationStrategyShape.SHAPE_INDEX_CLASS_NODE,
+    );
+
+    const domain = DF.quad(
+      shapeIndexNode,
+      FragmentationStrategyShape.SHAPE_INDEX_DOMAIN_NODE,
+      DF.namedNode(podIRI),
+    );
+
+    await quadSink.push(shapeIndexIri, typeDefinition);
+    await quadSink.push(shapeIndexIri, domain);
+  }
+
+  public static async setTheCompletenessOfTheShapeIndex(
+    quadSink: IQuadSink,
+    handledResources: Set<ResourceType>,
+    expectedResources: Set<ResourceType>,
+    shapeIndexIri: string): Promise<void> {
+    // we check if all the resource has been handled
+    if (handledResources.size !== expectedResources.size) {
+      return;
+    }
+    for (const val of handledResources) {
+      if (!expectedResources.has(val)) {
+        return;
+      }
+    }
+    // all the resource has been handled so we indicate it with a triple
+    const isComplete = DF.quad(
+      DF.namedNode(shapeIndexIri),
+      this.SHAPE_INDEX_IS_COMPLETE_NODE,
+      this.RDF_TRUE
+    );
+
+    await quadSink.push(shapeIndexIri, isComplete);
   }
 
   /**
@@ -241,7 +328,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         skipContextValidation: true,
       });
       jsonldParser
-        .on('data', async(quad: RDF.Quad) => {
+        .on('data', async (quad: RDF.Quad) => {
           quads.push(quad);
         })
         // We ignore this because it is difficult to provide a valid ShEx document that
@@ -251,7 +338,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
         .on('error', /* istanbul ignore next */(error: any) => {
           reject(error);
         })
-        .on('end', async() => {
+        .on('end', async () => {
           for (const quad of quads) {
             await quadSink.push(shapeIRI, quad);
           }
