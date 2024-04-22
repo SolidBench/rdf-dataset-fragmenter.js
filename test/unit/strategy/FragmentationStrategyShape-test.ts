@@ -13,6 +13,87 @@ jest.mock('fs/promises');
 describe('FragmentationStrategyShape', () => {
   let sink: any;
 
+  describe('constructor', () => {
+    beforeEach(() => {
+      (<jest.Mock>readFileSync).mockImplementation(
+        (val: string) => {
+          return {
+            toString() {
+              switch (val) {
+                case 'comments.shexc':
+                  return 'comments';
+                case 'posts.shexc':
+                  return 'posts';
+              }
+            },
+          };
+        },
+      );
+    });
+
+    it('should construct', () => {
+      const relativePath = undefined;
+      const tripleShapeTreeLocator = true;
+      const shapeConfig = {
+        posts: {
+          shapes: [ 'posts.shexc' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+      };
+      const contentOfStorage = [ 'comments', 'posts', 'card', 'settings', 'noise' ];
+      expect(new FragmentationStrategyShape(
+        shapeConfig,
+        contentOfStorage,
+        relativePath,
+        tripleShapeTreeLocator,
+      )).toBeDefined();
+    });
+
+    it('should throw if no shape are defined for a resource', () => {
+      const relativePath = undefined;
+      const tripleShapeTreeLocator = true;
+      const shapeConfig = {
+        posts: {
+          shapes: [ 'posts.shexc' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+        comments: {
+          shapes: [],
+          directory: 'comments',
+          name: 'Comment',
+        },
+      };
+      const contentOfStorage = [ 'comments', 'posts', 'card', 'settings', 'noise' ];
+      expect(() => new FragmentationStrategyShape(
+        shapeConfig,
+        contentOfStorage,
+        relativePath,
+        tripleShapeTreeLocator,
+      )).toThrow('every resource type defined should have at least one entry');
+    });
+
+    it('should throw content is define in a storage', () => {
+      const relativePath = undefined;
+      const tripleShapeTreeLocator = true;
+      const shapeConfig: any = {
+        posts: {
+          shapes: [ 'posts.shexc' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+      };
+      const contentOfStorage: any = [];
+      expect(() => new FragmentationStrategyShape(
+        shapeConfig,
+        contentOfStorage,
+        relativePath,
+        tripleShapeTreeLocator,
+      )).toThrow('there should be at least one content type in the resource');
+    });
+  });
+
   describe('generateShape', () => {
     beforeEach(() => {
       sink = {
@@ -342,37 +423,34 @@ describe('FragmentationStrategyShape', () => {
       expect(sink.push).toHaveBeenLastCalledWith(shapeIndexIri, isComplete);
     });
   });
-  /**
-   * @todo test `setTheCompletenessOfTheShapeIndex`
-   * @todo test  `instanciateShapeIndex`
-   */
+
   describe('fragment', () => {
     let strategy: FragmentationStrategyShape;
     const relativePath = undefined;
     const tripleShapeTreeLocator = true;
-    const shapeConfig = {
+    const shapeConfig: any = {
       comments: {
-        shape: 'comments.shexc',
+        shapes: [ 'comments.shexc' ],
         directory: 'comments',
         name: 'Comment',
       },
       posts: {
-        shape: 'posts.shexc',
+        shapes: [ 'posts.shexc' ],
         directory: 'posts',
         name: 'Post',
       },
       card: {
-        shape: 'profile.shexc',
+        shapes: [ 'profile.shexc' ],
         directory: 'profile',
         name: 'Profile',
       },
       settings: {
-        shape: 'settings.shexc',
+        shapes: [ 'settings.shexc' ],
         directory: 'settings',
         name: 'Setting',
       },
       noise: {
-        shape: 'noise.shexc',
+        shapes: [ 'noise.shexc' ],
         directory: 'noise',
         name: 'Noise',
       },
@@ -1417,6 +1495,102 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenNthCalledWith(6,
         sink,
         new Set([ 'settings' ]),
+        new Set(contentOfStorage),
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
+    });
+
+    it('should handle multiple shape in a resource', async() => {
+      const shapeConfigMultiple = {
+        posts:
+        {
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+      };
+      strategy = new FragmentationStrategyShape(
+        shapeConfigMultiple,
+        contentOfStorage,
+        relativePath,
+        tripleShapeTreeLocator,
+      );
+
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/posts/2011-10-13#687194891562'),
+          DF.namedNode('boo'),
+          DF.namedNode('cook'),
+        ),
+      ];
+      const spy = jest.spyOn(Math, 'random')
+        .mockReturnValueOnce(0)
+        .mockReturnValueOnce(1);
+
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      expect(spy).toHaveBeenCalledTimes(2);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(2);
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        'comments');
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
+        'posts');
+
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(2);
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(1,
+        sink,
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        false,
+        'http://localhost:3000/pods/00000000000000000267/posts/');
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(2,
+        sink,
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
+        false,
+        'http://localhost:3000/pods/000000000000000002671/posts/');
+
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenCalledTimes(2);
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562');
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/',
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002671/posts/2011-10-13#687194891562');
+
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenCalledTimes(2);
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenNthCalledWith(1,
+        sink,
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/00000000000000000267');
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenNthCalledWith(2,
+        sink,
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002671');
+
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenCalledTimes(2);
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenNthCalledWith(1,
+        sink,
+        new Set([ 'posts' ]),
+        new Set(contentOfStorage),
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenNthCalledWith(2,
+        sink,
+        new Set([ 'posts' ]),
         new Set(contentOfStorage),
         `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
     });

@@ -15,7 +15,7 @@ interface IShapeEntry {
   /**
    * @description the ShExC string
    */
-  shape: string;
+  shapes: string[];
   /**
    * @description the directory targeted by the shape
    */
@@ -82,6 +82,10 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     tripleShapeTreeLocator?: boolean,
   ) {
     super();
+    if (contentOfStorage.length === 0) {
+      throw new Error('there should be at least one content type in the resource');
+    }
+
     this.tripleShapeTreeLocator = tripleShapeTreeLocator;
     this.relativePath = relativePath;
     this.shapeMap = this.generateShapeMap(shapeConfig);
@@ -90,14 +94,21 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
   /**
    * Generate a map of the resource type and the shape template
-   * @param {Record<ResourceType, IShapeEntry>} shapeConfig - A map of the shape path
+   * @param {Record<ResourceType, IShapeEntry[]>} shapeConfig - A map of the shape path
    * @returns {Record<string, IShapeEntry>} a map of the resource with their shape temple
    */
   private generateShapeMap(shapeConfig: object): Record<ResourceType, IShapeEntry> {
     const shapeMap: Record<string, IShapeEntry> = {};
     for (const [ dataType, shapeEntry ] of Object.entries(shapeConfig)) {
+      if (shapeEntry.shapes.length === 0) {
+        throw new Error('every resource type defined should have at least one entry');
+      }
+      const shapes = [];
+      for (const shape of shapeEntry.shapes) {
+        shapes.push(readFileSync(shape).toString());
+      }
       shapeMap[dataType] = {
-        shape: readFileSync((<IShapeEntry>shapeEntry).shape).toString(),
+        shapes,
         directory: (<IShapeEntry>shapeEntry).directory,
         name: (<IShapeEntry>shapeEntry).name,
       };
@@ -122,7 +133,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const iri = FragmentationStrategySubject.generateIri(quad, this.relativePath);
     // If iri already has been handled, we do nothing
     if (!this.irisHandled.has(iri)) {
-      for (const [ resourceIndex, { shape, directory, name }] of Object.entries(this.shapeMap)) {
+      for (const [ resourceIndex, { shapes, directory, name: shapeName }] of Object.entries(this.shapeMap)) {
         // Find the position of the first character of the container
         const positionContainerResourceNotInRoot = iri.indexOf(`/${directory}/`);
         const positionContainerResourceInRoot = iri.indexOf(`/${resourceIndex}`);
@@ -149,6 +160,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
           let contentHandled = this.contentHandledByPod.get(podIRI);
 
           if (contentHandled === undefined || !contentHandled.has(resourceIndex)) {
+            const randomIndex = Math.floor(Math.random() * (shapes.length - 1));
+            const shape = shapes[randomIndex];
+
             if (contentHandled === undefined) {
               await FragmentationStrategyShape.instanciateShapeIndex(quadSink, shapeTreeIRI, podIRI);
               this.contentHandledByPod.set(podIRI, new Set([ resourceIndex ]));
@@ -164,7 +178,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
               shapeTreeIRI,
               directory,
               shape,
-              name,
+              shapeName,
               positionContainerResourceNotInRoot === -1);
 
             contentHandled = this.contentHandledByPod.get(podIRI);
