@@ -14,6 +14,7 @@ describe('FragmentationStrategyShape', () => {
   let sink: any;
 
   describe('constructor', () => {
+    const podIri = 'http://myFunkyPod.com';
     beforeEach(() => {
       (<jest.Mock>readFileSync).mockImplementation(
         (val: string) => {
@@ -40,14 +41,32 @@ describe('FragmentationStrategyShape', () => {
           directory: 'posts',
           name: 'Post',
         },
+        comments: {
+          shapes: [ 'comments.shexc' ],
+          directory: 'comments',
+          name: 'Comment',
+        },
       };
+      const expectedKeys = new Set([ 'Post', 'Comment' ]);
+      const expectedIri = new Map([
+        [ 'Post', `${podIri}/posts_shape#Post` ],
+        [ 'Comment', `${podIri}/comments_shape#Comment` ],
+      ]);
       const contentOfStorage = [ 'comments', 'posts', 'card', 'settings', 'noise' ];
-      expect(new FragmentationStrategyShape(
+      const strategy = new FragmentationStrategyShape(
         shapeConfig,
         contentOfStorage,
         relativePath,
         tripleShapeTreeLocator,
-      )).toBeDefined();
+      );
+
+      expect(strategy).toBeDefined();
+      expect(Object.keys(strategy.shapeIriMap).length).toBe(2);
+
+      for (const [ key, func ] of Object.entries(strategy.shapeIriMap)) {
+        expect(expectedKeys.has(key)).toBe(true);
+        expect(func(podIri)).toBe(expectedIri.get(key));
+      }
     });
 
     it('should throw if no shape are defined for a resource', () => {
@@ -119,7 +138,7 @@ describe('FragmentationStrategyShape', () => {
       }
   `;
 
-      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', shexc);
+      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', {}, shexc, '');
       expect(sink.push).toHaveBeenCalledTimes(81);
     });
 
@@ -141,7 +160,7 @@ describe('FragmentationStrategyShape', () => {
       }
   `;
 
-      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', shexc);
+      await FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', {}, shexc, '');
       expect(sink.push).toHaveBeenCalledTimes(81);
     });
 
@@ -163,15 +182,21 @@ describe('FragmentationStrategyShape', () => {
                                     ldbcvoc:isLocatedIn IRI ? ;
                                 }`;
 
-      await expect(FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', shexc)).rejects.toBeDefined();
+      await expect(FragmentationStrategyShape.generateShape(sink, 'http://foo.ca/', {}, shexc, ''))
+        .rejects.toBeDefined();
       expect(sink.push).toHaveBeenCalledTimes(0);
     });
   });
 
   describe('generateShapeIndexEntry', () => {
-    const shapeIndexIRI = 'foo';
     const shapeIRI = 'bar';
     const contentIri = 'boo';
+    const podIri = 'pod';
+    const shapeIndexIri = 'foo';
+    const shapeName = 'shapeName';
+    const directory = 'directory';
+    const shape = 'shape';
+    const shapeIriMap = {};
 
     beforeEach(() => {
       sink = {
@@ -182,7 +207,7 @@ describe('FragmentationStrategyShape', () => {
     it(`should add into the sink quads refering to the entry of the shape index given the resource is not at the root of the storage`, async() => {
       const isInRootOfStorage = false;
       await FragmentationStrategyShape.generateShapeIndexEntry(sink,
-        shapeIndexIRI,
+        shapeIndexIri,
         shapeIRI,
         isInRootOfStorage,
         contentIri);
@@ -190,18 +215,18 @@ describe('FragmentationStrategyShape', () => {
       expect(sink.push).toHaveBeenCalledTimes(3);
       const calls: any[] = sink.push.mock.calls;
 
-      expect(calls[0][0]).toBe(shapeIndexIRI);
-      expect((<RDF.Quad>calls[0][1]).subject).toStrictEqual(DF.namedNode(shapeIndexIRI));
+      expect(calls[0][0]).toBe(shapeIndexIri);
+      expect((<RDF.Quad>calls[0][1]).subject).toStrictEqual(DF.namedNode(shapeIndexIri));
       expect((<RDF.Quad>calls[0][1]).predicate).toStrictEqual(FragmentationStrategyShape.SHAPE_INDEX_ENTRY_NODE);
       const entry = (<RDF.Quad>calls[0][1]).object;
 
-      expect(calls[1][0]).toBe(shapeIndexIRI);
+      expect(calls[1][0]).toBe(shapeIndexIri);
       expect((<RDF.Quad>calls[1][1]).subject).toStrictEqual(entry);
       expect((<RDF.Quad>calls[1][1]).predicate)
         .toStrictEqual(FragmentationStrategyShape.SHAPE_INDEX_BIND_BY_SHAPE_NODE);
       expect((<RDF.Quad>calls[1][1]).object).toStrictEqual(DF.namedNode(shapeIRI));
 
-      expect(calls[2][0]).toBe(shapeIndexIRI);
+      expect(calls[2][0]).toBe(shapeIndexIri);
       expect((<RDF.Quad>calls[2][1]).subject).toStrictEqual(entry);
       expect((<RDF.Quad>calls[2][1]).predicate).toStrictEqual(FragmentationStrategyShape.SOLID_INSTANCE_CONTAINER_NODE);
       expect((<RDF.Quad>calls[2][1]).object).toStrictEqual(DF.namedNode(contentIri));
@@ -210,7 +235,7 @@ describe('FragmentationStrategyShape', () => {
     it(`should add into the sink quads refering to the entry of the shape index given the resource is at the root of the storage`, async() => {
       const isNotInRootOfPod = true;
       await FragmentationStrategyShape.generateShapeIndexEntry(sink,
-        shapeIndexIRI,
+        shapeIndexIri,
         shapeIRI,
         isNotInRootOfPod,
         contentIri);
@@ -218,18 +243,18 @@ describe('FragmentationStrategyShape', () => {
       expect(sink.push).toHaveBeenCalledTimes(3);
       const calls: any[] = sink.push.mock.calls;
 
-      expect(calls[0][0]).toBe(shapeIndexIRI);
-      expect((<RDF.Quad>calls[0][1]).subject).toStrictEqual(DF.namedNode(shapeIndexIRI));
+      expect(calls[0][0]).toBe(shapeIndexIri);
+      expect((<RDF.Quad>calls[0][1]).subject).toStrictEqual(DF.namedNode(shapeIndexIri));
       expect((<RDF.Quad>calls[0][1]).predicate).toStrictEqual(FragmentationStrategyShape.SHAPE_INDEX_ENTRY_NODE);
       const entry = (<RDF.Quad>calls[0][1]).object;
 
-      expect(calls[1][0]).toBe(shapeIndexIRI);
+      expect(calls[1][0]).toBe(shapeIndexIri);
       expect((<RDF.Quad>calls[1][1]).subject).toStrictEqual(entry);
       expect((<RDF.Quad>calls[1][1]).predicate)
         .toStrictEqual(FragmentationStrategyShape.SHAPE_INDEX_BIND_BY_SHAPE_NODE);
       expect((<RDF.Quad>calls[1][1]).object).toStrictEqual(DF.namedNode(shapeIRI));
 
-      expect(calls[2][0]).toBe(shapeIndexIRI);
+      expect(calls[2][0]).toBe(shapeIndexIri);
       expect((<RDF.Quad>calls[2][1]).subject).toStrictEqual(entry);
       expect((<RDF.Quad>calls[2][1]).predicate).toStrictEqual(FragmentationStrategyShape.SOLID_INSTANCE_NODE);
       expect((<RDF.Quad>calls[2][1]).object).toStrictEqual(DF.namedNode(contentIri));
@@ -263,8 +288,9 @@ describe('FragmentationStrategyShape', () => {
 
   describe('generateShapeIndexEntryInformation', () => {
     const podIRI = 'http://localhost:3000/pods/00000000000000000065';
-    const shapeTreeIRI = 'boo';
-    const shapePath = 'bar';
+    const shapeIndexIri = 'boo';
+    const shape = 'bar';
+    const shapeName = 'shapeName';
 
     const originalImplementationgenerateShapeIndexEntry = FragmentationStrategyShape.generateShapeIndexEntry;
     const originalImplementationGenerateShape = FragmentationStrategyShape.generateShape;
@@ -288,16 +314,18 @@ describe('FragmentationStrategyShape', () => {
     it(`should call the generateShape and the generateShapeIndexEntry when the iri is in a container in the pod.
      It should also add the iri into the resoucesHandle and irisHandled sets.`, async() => {
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/posts';
-      const folder = 'posts';
+      const directory = 'posts';
       const name = 'bar';
+      const shapeIriMap: any = { [shapeName]: () => `${podIRI}/${directory}_shape#${name}` };
 
       await FragmentationStrategyShape.generateShapeIndexEntryInformation(sink,
         resourceId,
         podIRI,
-        shapeTreeIRI,
-        folder,
-        shapePath,
-        name,
+        shapeIndexIri,
+        shapeName,
+        directory,
+        shape,
+        shapeIriMap,
         false);
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
@@ -305,8 +333,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(
         1,
         sink,
-        shapeTreeIRI,
-        `${podIRI}/${folder}_shape#${name}`,
+        shapeIndexIri,
+        `${podIRI}/${directory}_shape#${name}`,
         false,
         'http://localhost:3000/pods/00000000000000000065/posts/',
       );
@@ -315,16 +343,18 @@ describe('FragmentationStrategyShape', () => {
     it(`should call the generateShape and the generateShapeIndexEntry when the iri is in the root of the pod.
      It should also add the iri into the resoucesHandled and the irisHandled sets.`, async() => {
       const resourceId = 'http://localhost:3000/pods/00000000000000000065/profile';
-      const folder = 'profile';
+      const directory = 'profile';
       const name = 'bar';
+      const shapeIriMap: any = { [shapeName]: () => `${podIRI}/${directory}_shape#${name}` };
 
       await FragmentationStrategyShape.generateShapeIndexEntryInformation(sink,
         resourceId,
         podIRI,
-        shapeTreeIRI,
-        folder,
-        shapePath,
-        name,
+        shapeIndexIri,
+        shapeName,
+        directory,
+        shape,
+        shapeIriMap,
         true);
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(1);
@@ -332,8 +362,8 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(
         1,
         sink,
-        shapeTreeIRI,
-        `${podIRI}/${folder}_shape#${name}`,
+        shapeIndexIri,
+        `${podIRI}/${directory}_shape#${name}`,
         true,
         'http://localhost:3000/pods/00000000000000000065/profile',
       );
@@ -421,6 +451,86 @@ describe('FragmentationStrategyShape', () => {
       );
       expect(sink.push).toHaveBeenCalledTimes(1);
       expect(sink.push).toHaveBeenLastCalledWith(shapeIndexIri, isComplete);
+    });
+  });
+
+  describe('transformShapeTemplateIntoShape', () => {
+    const shapeIri = 'http://example.qc.ca/Forme';
+    const podIri = 'http://example.qc.ca/';
+    const shapeIriMap = {
+      foo(podIriParam: string) { return `${podIriParam}/foo`; },
+      bar(podIriParam: string) { return `${podIriParam}/bar`; },
+    };
+
+    it('should return the template if it have no variable', () => {
+      const shexc = `
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+      PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
+
+      <#Post> {
+          ldbcvoc:id xsd:long {1} ;
+          ldbcvoc:imageFile xsd:string * ;
+          ldbcvoc:locationIP xsd:string {1} ;
+          ldbcvoc:browserUsed xsd:string {1} ;
+          ldbcvoc:creationDate xsd:dateTime {1} ;
+          ldbcvoc:hasCreator IRI {1} ;
+          schema:seeAlso IRI * ;
+          ldbcvoc:isLocatedIn IRI ? ;
+      }
+  `;
+
+      const resp = FragmentationStrategyShape.transformShapeTemplateIntoShape(
+        shexc,
+        shapeIri,
+        podIri,
+        shapeIriMap,
+      );
+      expect(resp).toBe(shexc);
+    });
+
+    it('should parse the template', () => {
+      const shexc = `
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+      PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
+
+      <$> {
+          ldbcvoc:id <{:foo}> {1} ;
+          ldbcvoc:imageFile <{:foo}> * ;
+          ldbcvoc:locationIP <{:bar}> {1} ;
+          ldbcvoc:browserUsed xsd:string {1} ;
+          ldbcvoc:creationDate xsd:dateTime {1} ;
+          ldbcvoc:hasCreator <{:bar}> {1} ;
+          schema:seeAlso IRI * ;
+          ldbcvoc:isLocatedIn IRI ? ;
+      }
+  `;
+
+      const expectedShexc = `
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+      PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
+
+      <${shapeIri}> {
+          ldbcvoc:id <${`${podIri}/foo`}> {1} ;
+          ldbcvoc:imageFile <${`${podIri}/foo`}> * ;
+          ldbcvoc:locationIP <${`${podIri}/bar`}> {1} ;
+          ldbcvoc:browserUsed xsd:string {1} ;
+          ldbcvoc:creationDate xsd:dateTime {1} ;
+          ldbcvoc:hasCreator <${`${podIri}/bar`}> {1} ;
+          schema:seeAlso IRI * ;
+          ldbcvoc:isLocatedIn IRI ? ;
+      }
+  `;
+
+      const resp = FragmentationStrategyShape.transformShapeTemplateIntoShape(
+        shexc,
+        shapeIri,
+        podIri,
+        shapeIriMap,
+      );
+      expect(resp).toBe(expectedShexc);
     });
   });
 
@@ -546,7 +656,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -606,8 +718,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
-
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -664,8 +777,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
-
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -728,8 +842,9 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+          strategy.shapeIriMap,
           'posts',
-
+          'http://localhost:3000/pods/00000000000000000267',
         );
 
         expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -789,8 +904,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
-
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -834,8 +950,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
-
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -896,8 +1013,9 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+          strategy.shapeIriMap,
           'posts',
-
+          'http://localhost:3000/pods/00000000000000000267',
         );
 
         expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -953,8 +1071,9 @@ describe('FragmentationStrategyShape', () => {
         expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
           sink,
           'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+          strategy.shapeIriMap,
           'posts',
-
+          'http://localhost:3000/pods/00000000000000000267',
         );
 
         expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -1025,7 +1144,9 @@ describe('FragmentationStrategyShape', () => {
           expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(i,
             sink,
             `${pods[i - 1]}/posts_shape#Post`,
-            'posts');
+            strategy.shapeIriMap,
+            'posts',
+            `${pods[i - 1]}`);
           expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(i,
             sink,
             `${pods[i - 1]}/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
@@ -1077,8 +1198,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
-
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -1123,8 +1245,9 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledWith(
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
         'posts',
-
+        'http://localhost:3000/pods/00000000000000000267',
       );
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(1);
@@ -1218,20 +1341,27 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
         sink,
         'http://localhost:3000/pods/00000000000000000267/profile_shape#Profile',
-        'profile');
+        strategy.shapeIriMap,
+        'profile',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
-        'posts');
+        strategy.shapeIriMap,
+        'posts',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(3,
         sink,
         'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
-        'posts');
-
+        strategy.shapeIriMap,
+        'posts',
+        'http://localhost:3000/pods/000000000000000002671');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(4,
         sink,
         'http://localhost:3000/pods/000000000000000002671/comments_shape#Comment',
-        'comments');
+        strategy.shapeIriMap,
+        'comments',
+        'http://localhost:3000/pods/000000000000000002671');
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(1,
         sink,
@@ -1361,27 +1491,39 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
         sink,
         'http://localhost:3000/pods/00000000000000000267/profile_shape#Profile',
-        'profile');
+        strategy.shapeIriMap,
+        'profile',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
-        'posts');
+        strategy.shapeIriMap,
+        'posts',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(3,
         sink,
         'http://localhost:3000/pods/00000000000000000267/comments_shape#Comment',
-        'comments');
+        strategy.shapeIriMap,
+        'comments',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(4,
         sink,
         'http://localhost:3000/pods/00000000000000000267/noise_shape#Noise',
-        'noise');
+        strategy.shapeIriMap,
+        'noise',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(5,
         sink,
         'http://localhost:3000/pods/00000000000000000267/settings_shape#Setting',
-        'settings');
+        strategy.shapeIriMap,
+        'settings',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(6,
         sink,
         'http://localhost:3000/pods/000000000000000002671/settings_shape#Setting',
-        'settings');
+        strategy.shapeIriMap,
+        'settings',
+        'http://localhost:3000/pods/000000000000000002671');
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(1,
         sink,
@@ -1540,11 +1682,15 @@ describe('FragmentationStrategyShape', () => {
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
         sink,
         'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
-        'comments');
+        strategy.shapeIriMap,
+        'comments',
+        'http://localhost:3000/pods/00000000000000000267');
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
         sink,
         'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
-        'posts');
+        strategy.shapeIriMap,
+        'posts',
+        'http://localhost:3000/pods/000000000000000002671');
 
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(2);
       expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(1,
