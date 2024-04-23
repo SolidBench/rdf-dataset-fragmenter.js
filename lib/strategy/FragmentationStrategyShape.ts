@@ -64,6 +64,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
 
   public static readonly RDF_TYPE_NODE = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
   public static readonly RDF_TRUE = DF.literal('true', DF.namedNode('http://www.w3.org/2001/XMLSchema#boolean'));
+  public static readonly RDF_STRING_TYPE = DF.namedNode('http://www.w3.org/2001/XMLSchema#string');
 
   public static readonly SHAPE_INDEX_LOCATION_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}shapeIndexLocation`);
   public static readonly SHAPE_INDEX_CLASS_NODE = DF.namedNode(`${FragmentationStrategyShape.SHAPE_INDEX_PREFIX}ShapeIndex`);
@@ -339,7 +340,7 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
     const domain = DF.quad(
       shapeIndexNode,
       FragmentationStrategyShape.SHAPE_INDEX_DOMAIN_NODE,
-      DF.namedNode(`${podIRI}/.*`),
+      DF.literal(`${podIRI}/.*`, this.RDF_STRING_TYPE),
     );
 
     await quadSink.push(shapeIndexIri, typeDefinition);

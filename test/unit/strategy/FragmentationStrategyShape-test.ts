@@ -388,7 +388,7 @@ describe('FragmentationStrategyShape', () => {
       const expectedDomain = DF.quad(
         shapeIndexNode,
         FragmentationStrategyShape.SHAPE_INDEX_DOMAIN_NODE,
-        DF.namedNode('bar/.*'),
+        DF.literal('bar/.*', FragmentationStrategyShape.RDF_STRING_TYPE),
       );
 
       expect(sink.push).toHaveBeenCalledTimes(2);
