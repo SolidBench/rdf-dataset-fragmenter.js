@@ -183,6 +183,110 @@ Blank nodes are not supported.
   }
 }
 ```
+#### Resource Object Fragmentation Shape
+
+A fragmentation strategy that group’s triples by (subject) resources.
+It generates shapes and shape index files in the root of the iri container for each resource type defined in the config. 
+The `shape` must be a a list of path to shape template following the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format
+(the templating parameters are define below),
+`directory` must be the name of a container of the subject and `name` is the name of the shape inside the `ShEx` schema.
+If the IRI of the shape is `$` then the IRI will be tied to the current container.
+You can refer to another shape in the same container by using `{:ShapeName}` for example
+`ldbcvoc:id <{:Comment}> ;` where `Comment` is the `name` of a shape define
+in the config.
+When multiple shapes are defined inside a resource type then for each container
+a random one is selected.
+For reproducibility a seed for the selection of the shape template
+*can* be provided using the parameter `randomSeed`.
+
+An exemple of the `component.js` configuration is presented below.
+
+
+```json
+{
+  "fragmentationStrategy": { 
+        "@type": "FragmentationStrategyShape",
+        "tripleShapeTreeLocator": true,
+        "randomSeed":0,
+        "shapeConfig": {
+          "comments": {
+            "shapes": ["./shapes/comments.shexc", "./shapes/comments_open.shexc"],
+            "directory": "comments",
+            "name": "Comment"
+          },
+          "post": {
+            "shapes": ["./shapes/posts.shexc"],
+            "directory": "posts",
+            "name": "Post"
+          },
+          "card": {
+            "shapes": ["./shapes/profile.shexc", "./shapes/profile_loose.shexc" ],
+            "directory": "profile",
+            "name": "Profile"
+          }
+        }
+      }
+}
+```
+A sample output file tree and its associated files is displayed below.
+
+```
+├── comments
+│   ├── 2012-08-10.nq
+│   └── 2012-08-17.nq
+├── comments_shape.nq
+├── noise
+│   ├── NOISE-12310.nq
+│   └── NOISE-9909.nq
+├── posts.nq
+├── posts_shape.nq
+├── profile
+│   └── card.nq
+├── profile_shape.nq
+├── settings
+│   └── publicTypeIndex.nq
+└── shapeIndex.nq
+```
+
+
+`http://localhost:3000/pods/00000000000000000768/profile_shape`
+(sample of the output)
+```nquad
+<http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_1829_49 .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+_:df_1829_51 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Schema> .
+_:df_1829_51 <http://www.w3.org/ns/shex#shapes> _:df_1829_50 .
+_:df_1829_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#NodeConstraint> .
+_:df_1829_0 <http://www.w3.org/ns/shex#nodeKind> <http://www.w3.org/ns/shex#iri> .
+_:df_1829_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#TripleConstraint> .
+_:df_1829_1 <http://www.w3.org/ns/shex#predicate> <http://www.w3.org/ns/pim/space#storage> .
+_:df_1829_1 <http://www.w3.org/ns/shex#valueExpr> _:df_1829
+
+```
+
+`http://localhost:3000/pods/00000000000000000768/shapeIndex`
+
+```nquad
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://shapeIndex.com#ShapeIndex> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#domain> "http://localhost:3000/pods/00000000000000000065/.*"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1018 .
+_:df_3_1018 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/profile_shape#Profile> .
+_:df_3_1018 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/profile/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1082 .
+_:df_3_1082 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/posts_shape#Post> .
+_:df_3_1082 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/posts/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_4148 .
+_:df_3_4148 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/comments_shape#Comment> .
+_:df_3_4148 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/comments/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#isComplete> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+
+```
+`http://localhost:3000/pods/00000000000000000768/profile/card`
+```nquad
+<http://localhost:3000/pods/00000000000000000768/> <http://www.w3.org/ns/shapetrees#ShapeTreeLocator> <http://localhost:3000/pods/00000000000000000768/shapetree> .
+<http://localhost:3000/pods/00000000000000000768/profile/card#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/Person> .
+```
 
 #### Exception Fragmentation Strategy
 
@@ -224,6 +328,48 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
     ]
   }
 }
+```
+
+#### Probability Generation Fragmentation Strategy
+
+A fragmentation strategy that ignore quads based on a probability.
+`generationProbability` is the probability for the quad to be handled by the `strategy`.
+The `strategy` must be a `FragmentationStrategyStreamAdapter`.
+When `partitionByResourceType` is `true` the stategy will skip resource type of a container instead of working triple by triple.
+For reproducibility a seed *can* be provided using the parameter `randomSeed`.
+
+```json
+{
+  "fragmentationStrategy": { 
+        "@type": "FragmentationStrategyProbabilityQuadHandling",
+        "generationProbability": 33,
+        "partitionByResourceType": true,
+        "randomSeed":0,
+        "strategy": { 
+        "@type": "FragmentationStrategyShape",
+        "tripleShapeTreeLocator": true,
+        "randomSeed":0,
+        "shapeConfig": {
+          "comments": {
+            "shapes": ["./shapes/comments.shexc", "./shapes/comments_open.shexc"],
+            "directory": "comments",
+            "name": "Comment"
+          },
+          "post": {
+            "shapes": ["./shapes/posts.shexc"],
+            "directory": "posts",
+            "name": "Post"
+          },
+          "card": {
+            "shapes": ["./shapes/profile.shexc", "./shapes/profile_loose.shexc" ],
+            "directory": "profile",
+            "name": "Profile"
+          }
+        }
+      }
+    }
+}
+
 ```
 
 ### Quad Sinks
