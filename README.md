@@ -351,17 +351,17 @@ For reproducibility a seed *can* be provided using the parameter `randomSeed`.
         "randomSeed":0,
         "shapeConfig": {
           "comments": {
-            "shape": ["./shapes/comments.shexc", "./shapes/comments_open.shexc"],
+            "shapes": ["./shapes/comments.shexc", "./shapes/comments_open.shexc"],
             "directory": "comments",
             "name": "Comment"
           },
           "post": {
-            "shape": ["./shapes/posts.shexc"],
+            "shapes": ["./shapes/posts.shexc"],
             "directory": "posts",
             "name": "Post"
           },
           "card": {
-            "shape": ["./shapes/profile.shexc", "./shapes/profile_loose.shexc" ],
+            "shapes": ["./shapes/profile.shexc", "./shapes/profile_loose.shexc" ],
             "directory": "profile",
             "name": "Profile"
           }
