@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import type * as RDF from '@rdfjs/types';
 import * as ShexParser from '@shexjs/parser';
 import { JsonLdParser } from 'jsonld-streaming-parser';
+import prand from 'pure-rand';
 import { DataFactory } from 'rdf-data-factory';
 import type { IQuadSink } from '../io/IQuadSink';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
@@ -43,6 +44,11 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
   private readonly irisHandled: Set<string> = new Set();
 
   /**
+   * A random generator
+   */
+  private randomGenerator: prand.RandomGenerator;
+
+  /**
    * A map of the shape name with a function to generate a shape Iri
    */
   public readonly shapeIriMap: Record<string, (podIri: string) => string>;
@@ -76,16 +82,24 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
    * @param {string[]} contentOfStorage - The content of a storage
    * @param {string} relativePath - the relatif path of the IRI
    * @param {boolean|undefined} tripleShapeTreeLocator - indicate if a shape locator triple is generated
+   * @param {string|undefined} randomSeed - the random seed for the selection of the shape template
    */
   public constructor(
     shapeConfig: Record<string, IShapeEntry>,
     contentOfStorage: string[],
     relativePath?: string,
     tripleShapeTreeLocator?: boolean,
+    randomSeed?: number,
   ) {
     super();
     if (contentOfStorage.length === 0) {
       throw new Error('there should be at least one content type in the resource');
+    }
+    if (randomSeed === undefined) {
+      const seed = Date.now() * Math.random();
+      this.randomGenerator = prand.xoroshiro128plus(seed);
+    } else {
+      this.randomGenerator = prand.xoroshiro128plus(randomSeed);
     }
 
     this.tripleShapeTreeLocator = tripleShapeTreeLocator;
@@ -175,7 +189,9 @@ export class FragmentationStrategyShape extends FragmentationStrategyStreamAdapt
           let contentHandled = this.contentHandledByPod.get(podIRI);
 
           if (contentHandled === undefined || !contentHandled.has(resourceIndex)) {
-            const randomIndex = Math.floor(Math.random() * (shapes.length - 1));
+            const [ randomIndex, newGenerator ] =
+              prand.uniformIntDistribution(0, shapes.length - 1, this.randomGenerator);
+            this.randomGenerator = newGenerator;
             const shape = shapes[randomIndex];
 
             if (contentHandled === undefined) {

@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import type * as RDF from '@rdfjs/types';
+import prand from 'pure-rand';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategyShape } from '../../../lib/strategy/FragmentationStrategyShape';
 
@@ -191,12 +192,7 @@ describe('FragmentationStrategyShape', () => {
   describe('generateShapeIndexEntry', () => {
     const shapeIRI = 'bar';
     const contentIri = 'boo';
-    const podIri = 'pod';
     const shapeIndexIri = 'foo';
-    const shapeName = 'shapeName';
-    const directory = 'directory';
-    const shape = 'shape';
-    const shapeIriMap = {};
 
     beforeEach(() => {
       sink = {
@@ -612,7 +608,7 @@ describe('FragmentationStrategyShape', () => {
     });
 
     afterEach(() => {
-      jest.resetAllMocks();
+      jest.restoreAllMocks();
     });
 
     afterAll(() => {
@@ -1670,14 +1666,14 @@ describe('FragmentationStrategyShape', () => {
           DF.namedNode('cook'),
         ),
       ];
-      const spy = jest.spyOn(Math, 'random')
-        .mockReturnValueOnce(0)
-        .mockReturnValueOnce(1);
+
+      const spy = jest.spyOn(prand, 'uniformIntDistribution')
+        .mockImplementationOnce(() => { return <any>[ 0, this ]; })
+        .mockImplementationOnce(() => { return <any>[ 1, this ]; });
 
       await strategy.fragment(streamifyArray([ ...quads ]), sink);
 
       expect(spy).toHaveBeenCalledTimes(2);
-
       expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(2);
       expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
         sink,
@@ -1739,6 +1735,133 @@ describe('FragmentationStrategyShape', () => {
         new Set([ 'posts' ]),
         new Set(contentOfStorage),
         `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
+    });
+
+    it('should handle multiple shape in a resource predictably when using a seed', async() => {
+      const shapeConfigMultiple = {
+        posts:
+        {
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+      };
+      strategy = new FragmentationStrategyShape(
+        shapeConfigMultiple,
+        contentOfStorage,
+        relativePath,
+        tripleShapeTreeLocator,
+        0,
+      );
+
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562'),
+          DF.namedNode('foo'),
+          DF.namedNode('bar'),
+        ),
+
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002671/posts/2011-10-13#687194891562'),
+          DF.namedNode('boo'),
+          DF.namedNode('cook'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/000000000000000002672/posts/2011-10-13#687194891562'),
+          DF.namedNode('boo'),
+          DF.namedNode('cook'),
+        ),
+      ];
+
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenCalledTimes(3);
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        strategy.shapeIriMap,
+        'posts',
+        'http://localhost:3000/pods/00000000000000000267');
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
+        strategy.shapeIriMap,
+        'posts',
+        'http://localhost:3000/pods/000000000000000002671');
+      expect(FragmentationStrategyShape.generateShape).toHaveBeenNthCalledWith(3,
+        sink,
+        'http://localhost:3000/pods/000000000000000002672/posts_shape#Post',
+        strategy.shapeIriMap,
+        'comments',
+        'http://localhost:3000/pods/000000000000000002672');
+
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenCalledTimes(3);
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(1,
+        sink,
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/00000000000000000267/posts_shape#Post',
+        false,
+        'http://localhost:3000/pods/00000000000000000267/posts/');
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(2,
+        sink,
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002671/posts_shape#Post',
+        false,
+        'http://localhost:3000/pods/000000000000000002671/posts/');
+      expect(FragmentationStrategyShape.generateShapeIndexEntry).toHaveBeenNthCalledWith(3,
+        sink,
+        `http://localhost:3000/pods/000000000000000002672/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002672/posts_shape#Post',
+        false,
+        'http://localhost:3000/pods/000000000000000002672/posts/');
+
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenCalledTimes(3);
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenNthCalledWith(1,
+        sink,
+        'http://localhost:3000/pods/00000000000000000267/',
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/00000000000000000267/posts/2011-10-13#687194891562');
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenNthCalledWith(2,
+        sink,
+        'http://localhost:3000/pods/000000000000000002671/',
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002671/posts/2011-10-13#687194891562');
+      expect(FragmentationStrategyShape.generateShapeIndexLocationTriple).toHaveBeenNthCalledWith(3,
+        sink,
+        'http://localhost:3000/pods/000000000000000002672/',
+        `http://localhost:3000/pods/000000000000000002672/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002672/posts/2011-10-13#687194891562');
+
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenCalledTimes(3);
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenNthCalledWith(1,
+        sink,
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/00000000000000000267');
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenNthCalledWith(2,
+        sink,
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002671');
+      expect(FragmentationStrategyShape.instanciateShapeIndex).toHaveBeenNthCalledWith(3,
+        sink,
+        `http://localhost:3000/pods/000000000000000002672/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`,
+        'http://localhost:3000/pods/000000000000000002672');
+
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenCalledTimes(3);
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenNthCalledWith(1,
+        sink,
+        new Set([ 'posts' ]),
+        new Set(contentOfStorage),
+        `http://localhost:3000/pods/00000000000000000267/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenNthCalledWith(2,
+        sink,
+        new Set([ 'posts' ]),
+        new Set(contentOfStorage),
+        `http://localhost:3000/pods/000000000000000002671/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
+      expect(FragmentationStrategyShape.setTheCompletenessOfTheShapeIndex).toHaveBeenNthCalledWith(3,
+        sink,
+        new Set([ 'posts' ]),
+        new Set(contentOfStorage),
+        `http://localhost:3000/pods/000000000000000002672/${FragmentationStrategyShape.SHAPE_INDEX_FILE_NAME}`);
     });
   });
 });
