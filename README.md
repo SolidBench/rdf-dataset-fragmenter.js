@@ -185,11 +185,19 @@ Blank nodes are not supported.
 ```
 #### Resource Object Fragmentation Shape
 
-A fragmentation strategy that groups triples by (subject) resources.
-It generates shapes and shape index files in the root of the iri container for each information type defined in the config. 
-The `shape` must be a path to the shape in the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format,
-`directory` must be the name of container of the subject and `name` is the name of the shape inside the `ShEx` schema.
-If the IRI of the shape is `<$>` then the IRI will be to the pod.
+A fragmentation strategy that group’s triples by (subject) resources.
+It generates shapes and shape index files in the root of the iri container for each resource type defined in the config. 
+The `shape` must be a a list of path to shape template following the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format
+(the templating parameters are define below),
+`directory` must be the name of a container of the subject and `name` is the name of the shape inside the `ShEx` schema.
+If the IRI of the shape is `$` then the IRI will be tied to the current container.
+You can refer to another shape in the same container by using `{:ShapeName}` for example
+`ldbcvoc:id <{:Comment}> ;` where `Comment` is the `name` of a shape define
+in the config.
+When multiple shapes are defined inside a resource type then for each container
+a random one is selected.
+For reproducibility a seed for the selection of the shape template
+*can* be provided using the parameter `randomSeed`.
 
 An exemple of the `component.js` configuration is presented below.
 
@@ -199,19 +207,20 @@ An exemple of the `component.js` configuration is presented below.
   "fragmentationStrategy": { 
         "@type": "FragmentationStrategyShape",
         "tripleShapeTreeLocator": true,
+        "randomSeed":0,
         "shapeConfig": {
           "comments": {
-            "shape": "./shapes/comments.shexc",
+            "shapes": ["./shapes/comments.shexc", "./shapes/comments_open.shexc"],
             "directory": "comments",
             "name": "Comment"
           },
           "post": {
-            "shape": "./shapes/posts.shexc",
+            "shapes": ["./shapes/posts.shexc"],
             "directory": "posts",
             "name": "Post"
           },
           "card": {
-            "shape": "./shapes/profile.shexc",
+            "shapes": ["./shapes/profile.shexc", "./shapes/profile_loose.shexc" ],
             "directory": "profile",
             "name": "Profile"
           }
@@ -236,7 +245,7 @@ A sample output file tree and its associated files is displayed below.
 ├── profile_shape.nq
 ├── settings
 │   └── publicTypeIndex.nq
-└── shapetree.nq
+└── shapeIndex.nq
 ```
 
 
@@ -256,15 +265,22 @@ _:df_1829_1 <http://www.w3.org/ns/shex#valueExpr> _:df_1829
 
 ```
 
-`http://localhost:3000/pods/00000000000000000768/shapetree`
+`http://localhost:3000/pods/00000000000000000768/shapeIndex`
 
 ```nquad
-_:df_3_356 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/profile_shape> .
-_:df_3_356 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000238/profile/> .
-_:df_3_2013 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/comments_shape> .
-_:df_3_2013 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000238/comments/> .
-_:df_3_2921 <http://www.w3.org/ns/shapetrees#shape> <http://localhost:3000/pods/00000000000000000238/posts_shape> .
-_:df_3_2921 <http://www.w3.org/ns/solid/terms#instance> <http://localhost:3000/pods/00000000000000000238/posts> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://shapeIndex.com#ShapeIndex> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#domain> "http://localhost:3000/pods/00000000000000000065/.*"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1018 .
+_:df_3_1018 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/profile_shape#Profile> .
+_:df_3_1018 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/profile/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1082 .
+_:df_3_1082 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/posts_shape#Post> .
+_:df_3_1082 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/posts/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_4148 .
+_:df_3_4148 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/comments_shape#Comment> .
+_:df_3_4148 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/comments/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#isComplete> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+
 ```
 `http://localhost:3000/pods/00000000000000000768/profile/card`
 ```nquad
@@ -319,7 +335,8 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 A fragmentation strategy that ignore quads based on a probability.
 `generationProbability` is the probability for the quad to be handled by the `strategy`.
 The `strategy` must be a `FragmentationStrategyStreamAdapter`.
-When `partitionByResourceType` is the stategy will skip resource type of a container instead of working triple by triple.
+When `partitionByResourceType` is `true` the stategy will skip resource type of a container instead of working triple by triple.
+For reproducibility a seed *can* be provided using the parameter `randomSeed`.
 
 ```json
 {
@@ -327,27 +344,29 @@ When `partitionByResourceType` is the stategy will skip resource type of a conta
         "@type": "FragmentationStrategyProbabilityQuadHandling",
         "generationProbability": 33,
         "partitionByResourceType": true,
+        "randomSeed":0,
         "strategy": { 
-            "@type": "FragmentationStrategyShape",
-            "tripleShapeTreeLocator": true,
-            "shapeConfig": {
-              "comments": {
-                "shape": "./shapes/comments.shexc",
-                "directory": "comments",
-                "name": "Comment"
-              },
-              "post": {
-                "shape": "./shapes/posts.shexc",
-                "directory": "posts",
-                "name": "Post"
-              },
-              "card": {
-                "shape": "./shapes/profile.shexc",
-                "directory": "profile",
-                "name": "Profile"
-              }
-            }
+        "@type": "FragmentationStrategyShape",
+        "tripleShapeTreeLocator": true,
+        "randomSeed":0,
+        "shapeConfig": {
+          "comments": {
+            "shape": ["./shapes/comments.shexc", "./shapes/comments_open.shexc"],
+            "directory": "comments",
+            "name": "Comment"
+          },
+          "post": {
+            "shape": ["./shapes/posts.shexc"],
+            "directory": "posts",
+            "name": "Post"
+          },
+          "card": {
+            "shape": ["./shapes/profile.shexc", "./shapes/profile_loose.shexc" ],
+            "directory": "profile",
+            "name": "Profile"
+          }
         }
+      }
     }
 }
 
