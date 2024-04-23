@@ -1,4 +1,5 @@
 import type * as RDF from '@rdfjs/types';
+import prand from 'pure-rand';
 import type { IQuadSink } from '../io/IQuadSink';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
 import { FragmentationStrategySubject } from './FragmentationStrategySubject';
@@ -6,9 +7,13 @@ import { FragmentationStrategySubject } from './FragmentationStrategySubject';
 export class FragmentationStrategyProbabilityQuadHandling extends FragmentationStrategyStreamAdapter {
   private readonly generationProbability: number;
   private readonly strategy: FragmentationStrategyStreamAdapter;
-  private readonly partitionByResourceType?: boolean;
+  private readonly partitionByResourceType: boolean;
   private readonly resourceHasBeenSkipped: Set<string> = new Set();
   private readonly relativePath?: string;
+  /**
+   * A random generator
+   */
+  private randomGenerator: prand.RandomGenerator;
   /**
      * @param {FragmentationStrategyStreamAdapter} strategy - the strategy handling the quads
      * @param {number} generationProbability - The probability of the quad to be handled by the strategy
@@ -16,15 +21,22 @@ export class FragmentationStrategyProbabilityQuadHandling extends FragmentationS
   public constructor(strategy: FragmentationStrategyStreamAdapter,
     generationProbability: number,
     partitionByResourceType?: boolean,
-    relativePath?: string) {
+    relativePath?: string,
+    randomSeed?: number) {
     super();
     this.strategy = strategy;
     this.generationProbability = generationProbability;
-    this.partitionByResourceType = partitionByResourceType;
+    this.partitionByResourceType = partitionByResourceType ?? false;
     this.relativePath = relativePath;
     if (this.generationProbability !== undefined &&
       (this.generationProbability > 100 || this.generationProbability < 0)) {
       throw new Error('The probability to generate shape information should be between 0 and 100');
+    }
+    if (randomSeed === undefined) {
+      const seed = Date.now() * Math.random();
+      this.randomGenerator = prand.xoroshiro128plus(seed);
+    } else {
+      this.randomGenerator = prand.xoroshiro128plus(randomSeed);
     }
   }
 
@@ -34,7 +46,10 @@ export class FragmentationStrategyProbabilityQuadHandling extends FragmentationS
      * @returns {boolean} indicate if the shape information should be generated
      */
   private shouldGenerate(): boolean {
-    return Math.random() * 100 <= this.generationProbability;
+    const [ randomIndex, newGenerator ] =
+      prand.uniformIntDistribution(0, 100, this.randomGenerator);
+    this.randomGenerator = newGenerator;
+    return randomIndex <= this.generationProbability;
   }
 
   /**
