@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.6.0"></a>
+## [v2.6.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.5.1...v2.6.0) - 2024-04-24
+
+### Added
+* [Add constant fragmentation strategy](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/8e45de861865e86fa67d6eb6609874ebde456543)
+
 <a name="v2.5.1"></a>
 ## [v2.5.1](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.5.0...v2.5.1) - 2024-03-25
 
