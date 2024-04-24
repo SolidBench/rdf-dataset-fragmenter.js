@@ -225,7 +225,17 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
   }
 }
 ```
+#### Constant Fragmentation Strategy
+A fragmentation stratety that put all the quads in one resources defined by the config.
 
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationConstant",
+    "locationIri": "http://localhost:3000/datadump"
+  }
+}
+```
 ### Quad Sinks
 
 A quad sink is able to direct a stream of quads as output from the fragmentation process.
