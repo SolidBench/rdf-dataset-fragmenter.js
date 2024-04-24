@@ -10,21 +10,21 @@ describe('FragmentationConstant', () => {
   let sink: any;
   describe('constructor', () => {
     it('should construct', () => {
-      const locationIri = 'bar';
+      const path = 'bar';
 
-      const strategy = new FragmentationConstant(locationIri);
+      const strategy = new FragmentationConstant(path);
 
       expect(strategy).toBeDefined();
-      expect(strategy.locationIri).toBe(locationIri);
+      expect(strategy.path).toBe(path);
     });
   });
 
   describe('fragment', () => {
-    const locationIri = 'bar';
+    const path = 'bar';
     let strategy: any;
 
     beforeEach(() => {
-      strategy = new FragmentationConstant(locationIri);
+      strategy = new FragmentationConstant(path);
       sink = {
         push: jest.fn(),
       };
@@ -63,7 +63,7 @@ describe('FragmentationConstant', () => {
 
       for (const [ i, quad ] of quads.entries()) {
         expect(sink.push).toHaveBeenNthCalledWith(i + 1,
-          strategy.locationIri,
+          strategy.path,
           quad);
       }
     });

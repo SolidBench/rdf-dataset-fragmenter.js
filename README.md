@@ -232,7 +232,7 @@ A fragmentation stratety that delegates all quads towards a single path.
 {
   "fragmentationStrategy": {
     "@type": "FragmentationConstant",
-    "locationIri": "http://localhost:3000/datadump"
+    "path": "http://localhost:3000/datadump"
   }
 }
 ```

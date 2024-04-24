@@ -6,17 +6,17 @@ import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStrea
  * A fragmentation strategy that delegates all quads towards a single path.
  */
 export class FragmentationConstant extends FragmentationStrategyStreamAdapter {
-  public readonly locationIri: string;
+  public readonly path: string;
 
   /**
-   * @param {string} locationIri - the iri of the resource where the quads going to be materialized
+   * @param {string} path - the iri of the resource where the quads going to be materialized
    */
-  public constructor(locationIri: string) {
+  public constructor(path: string) {
     super();
-    this.locationIri = locationIri;
+    this.path = path;
   }
 
   protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
-    await quadSink.push(this.locationIri, quad);
+    await quadSink.push(this.path, quad);
   }
 }
