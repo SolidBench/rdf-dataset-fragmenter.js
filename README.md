@@ -226,7 +226,7 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 }
 ```
 #### Constant Fragmentation Strategy
-A fragmentation stratety that put all the quads in one resources defined by the config.
+A fragmentation stratety that delegates all quads towards a single path.
 
 ```json
 {
