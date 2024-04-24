@@ -3,7 +3,7 @@ import type { IQuadSink } from '../io/IQuadSink';
 import { FragmentationStrategyStreamAdapter } from './FragmentationStrategyStreamAdapter';
 
 /**
- * A fragmentation strategy that places quads into one file.
+ * A fragmentation strategy that delegates all quads towards a single path.
  */
 export class FragmentationConstant extends FragmentationStrategyStreamAdapter {
   public readonly locationIri: string;
