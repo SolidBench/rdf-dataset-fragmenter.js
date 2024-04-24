@@ -9,8 +9,7 @@ export class FragmentationConstant extends FragmentationStrategyStreamAdapter {
   public readonly locationIri: string;
 
   /**
-   *
-   * @param locationIri - the iri of the resource where the quads going to be materialized
+   * @param {string} locationIri - the iri of the resource where the quads going to be materialized
    */
   public constructor(locationIri: string) {
     super();
