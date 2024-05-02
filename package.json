@@ -36,6 +36,7 @@
   "dependencies": {
     "@rdfjs/types": "*",
     "@types/async-lock": "^1.4.0",
+    "@types/bloem": "^0.2.0",
     "async-lock": "^1.4.0",
     "bloem": "^0.2.0",
     "componentsjs": "^5.0.0",
@@ -49,7 +50,6 @@
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^2.0.0",
-    "@types/bloem": "^0.2.0",
     "@types/jest": "^29.0.0",
     "arrayify-stream": "^2.0.0",
     "componentsjs-generator": "^3.0.0",
