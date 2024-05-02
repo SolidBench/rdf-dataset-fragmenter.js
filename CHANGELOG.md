@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.7.1"></a>
+## [v2.7.1](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.7.0...v2.7.1) - 2024-05-02
+
+### Fixed
+* [Move @types/bloem from devDependencies to dependencies](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/0f77125a86522caba985823fa8387e47dba83448)
+
 <a name="v2.7.0"></a>
 ## [v2.7.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.6.0...v2.7.0) - 2024-05-02
 
