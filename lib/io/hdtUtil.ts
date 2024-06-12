@@ -30,8 +30,10 @@ export async function pullHdtCppDockerImage(): Promise<void> {
         });
     });
 }
-
-export async function deleteHtdCppDockerImage(){
+/**
+ * Delete the rfdhdt/hdt-cpp docker image
+ */
+export async function deleteHtdCppDockerImage(): Promise<void> {
     const docker: Docker = new Docker();
     await docker.getImage(RDF_HDT_IMAGE_REPO).remove();
 }
