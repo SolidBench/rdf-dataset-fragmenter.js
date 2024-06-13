@@ -127,7 +127,9 @@ describe('QuadSinkHdt', () => {
         close: jest.fn(),
       };
       (<any>sink).fileWriter = fileWriter;
+      jest.clearAllMocks();
     });
+
     it('should close produce the HDT file upon closing', async() => {
       await sink.push('http://example.org/1/file.ttl', quad);
       await sink.push('http://example.org/1/file:3000.ttl', quad);
@@ -162,6 +164,7 @@ describe('QuadSinkHdt', () => {
           'http://example.org/2/': '/path/to/folder2/',
         },
       }, false);
+      (<any>sink).fileWriter = fileWriter;
 
       await sink.push('http://example.org/1/file.ttl', quad);
       await sink.push('http://example.org/1/file:3000.ttl', quad);
