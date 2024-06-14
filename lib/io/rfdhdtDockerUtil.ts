@@ -1,6 +1,6 @@
+import * as fs from 'fs';
 import * as Path from 'path';
 import type * as Docker from 'dockerode';
-import * as fs from 'fs';
 
 const SUPPORTED_FORMAT = new Map([
   [ '.nq', 'nquad' ],
@@ -9,6 +9,8 @@ const SUPPORTED_FORMAT = new Map([
   [ '.xml', 'rdfxml' ],
   [ '.n3', 'n3' ],
 ]);
+
+const ERROR_STEAM_FILE = fs.createWriteStream('./error_log_docker_rfdhdt');
 
 const RDF_HDT_IMAGE_REPO = 'rfdhdt/hdt-cpp';
 
@@ -77,7 +79,10 @@ export async function convertToHdt(docker: Docker, inputFilePath: string): Promi
     },
     Tty: false,
   };
-  const data = await docker.run(RDF_HDT_IMAGE_REPO, command, [ fs.createWriteStream('/dev/null'), process.stderr ], createOption);
+  const data = await docker.run(RDF_HDT_IMAGE_REPO,
+    command,
+    [ fs.createWriteStream('/dev/null'), ERROR_STEAM_FILE ],
+    createOption);
   const [ output ] = data;
   if (output.StatusCode === 1) {
     throw new Error('was not able to finish the task. Check the terminal log for more information.');
