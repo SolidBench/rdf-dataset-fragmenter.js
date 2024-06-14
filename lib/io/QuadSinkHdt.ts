@@ -21,7 +21,6 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   public async close(): Promise<void> {
-    await super.close();
     const docker: Docker = new Docker();
     await pullHdtCppDockerImage(docker);
 
@@ -31,5 +30,7 @@ export class QuadSinkHdt extends QuadSinkFile {
         await fs.rm(file);
       }
     }
+
+    await super.close();
   }
 }
