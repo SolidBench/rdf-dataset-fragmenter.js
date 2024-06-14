@@ -19,7 +19,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     const path = Path.join('./', this.getFilePath(iri));
     await super.push(iri, quad);
 
-    if ((await fs.stat(path)).isFile()) {
+    if (path.includes(this.fileExtension ?? '.donotmatch!!')) {
       this.files.push(path);
     }
   }

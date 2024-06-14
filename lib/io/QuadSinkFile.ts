@@ -12,7 +12,7 @@ export class QuadSinkFile implements IQuadSink {
   private readonly iriToPath: Record<string, string>;
   private readonly fileWriter: ParallelFileWriter;
   private readonly log: boolean;
-  private readonly fileExtension?: string;
+  protected readonly fileExtension?: string;
 
   private counter = 0;
 

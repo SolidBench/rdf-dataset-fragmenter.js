@@ -34,6 +34,7 @@ describe('QuadSinkHdt', () => {
           'http://example.org/1/': '/path/to/folder1/',
           'http://example.org/2/': '/path/to/folder2/',
         },
+        fileExtension: '.ttl',
       });
       quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
@@ -45,17 +46,10 @@ describe('QuadSinkHdt', () => {
         close: jest.fn(),
       };
       (<any>sink).fileWriter = fileWriter;
-      (<jest.Mock>fs.stat).mockImplementation((path: string) => {
-        return {
-          isFile() {
-            return path.includes('.');
-          },
-        };
-      });
     });
 
     it('should write a quad to an IRI available in the mapping', async() => {
-      await sink.push('http://example.org/1/file.ttl', quad);
+      await sink.push('http://example.org/1/file', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
@@ -63,7 +57,7 @@ describe('QuadSinkHdt', () => {
     });
 
     it('should escape illegal directory names', async() => {
-      await sink.push('http://example.org/1/file:3000.ttl', quad);
+      await sink.push('http://example.org/1/file:3000', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
@@ -71,6 +65,24 @@ describe('QuadSinkHdt', () => {
     });
 
     it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
+      sink = new QuadSinkHdt({
+        outputFormat: 'application/n-quads',
+        iriToPath: {
+          'http://example.org/1/': '/path/to/folder1/',
+          'http://example.org/2/': '/path/to/folder2/',
+        },
+      });
+      (<any>sink).fileWriter = fileWriter;
+      await sink.push('http://example.org/1/file', quad);
+      expect(fileWriter.getWriteStream)
+        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
+      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
+      expect((<any>sink).files).toStrictEqual([ ]);
+    });
+
+    it(`should write a quad to an IRI available in the mapping without
+       extension with a file extension define in the sink`, async() => {
+      jest.spyOn(<any>sink, 'getFilePath').mockReturnValue('/path/to/folder1/file');
       await sink.push('http://example.org/1/file', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
@@ -103,7 +115,7 @@ describe('QuadSinkHdt', () => {
     });
 
     it('should remove the hash from the IRI', async() => {
-      await sink.push('http://example.org/1/file.ttl#me', quad);
+      await sink.push('http://example.org/1/file#me', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
@@ -123,6 +135,7 @@ describe('QuadSinkHdt', () => {
           'http://example.org/1/': '/path/to/folder1/',
           'http://example.org/2/': '/path/to/folder2/',
         },
+        fileExtension: '.ttl',
       });
       quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
@@ -145,9 +158,8 @@ describe('QuadSinkHdt', () => {
     });
 
     it('should close produce the HDT file upon closing', async() => {
-      await sink.push('http://example.org/1/file.ttl', quad);
-      await sink.push('http://example.org/1/file:3000.ttl', quad);
       await sink.push('http://example.org/1/file', quad);
+      await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
 
       const expectedFiles = [
@@ -176,12 +188,12 @@ describe('QuadSinkHdt', () => {
           'http://example.org/1/': '/path/to/folder1/',
           'http://example.org/2/': '/path/to/folder2/',
         },
+        fileExtension: '.ttl',
       }, false);
       (<any>sink).fileWriter = fileWriter;
 
-      await sink.push('http://example.org/1/file.ttl', quad);
-      await sink.push('http://example.org/1/file:3000.ttl', quad);
       await sink.push('http://example.org/1/file', quad);
+      await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
 
       const expectedFiles = [
