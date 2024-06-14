@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import * as Path from 'path';
 import type * as RDF from '@rdfjs/types';
 import Docker = require('dockerode');
 import type { IQuadSinkFileOptions } from './QuadSinkFile';
@@ -15,8 +16,9 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
-    const path = this.getFilePath(iri);
+    const path = Path.join('./', this.getFilePath(iri));
     await super.push(iri, quad);
+
     if ((await fs.stat(path)).isFile()) {
       this.files.push(path);
     }

@@ -59,7 +59,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ '/path/to/folder1/file.ttl' ]);
+      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file.ttl' ]);
     });
 
     it('should escape illegal directory names', async() => {
@@ -67,7 +67,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ '/path/to/folder1/file_3000.ttl' ]);
+      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file_3000.ttl' ]);
     });
 
     it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
@@ -93,7 +93,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file$.nq', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ '/path/to/folder1/file$.nq' ]);
+      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file$.nq' ]);
     });
 
     it('should error on an IRI not available in the mapping', async() => {
@@ -107,7 +107,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ '/path/to/folder1/file.ttl' ]);
+      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file.ttl' ]);
     });
   });
 
@@ -151,8 +151,8 @@ describe('QuadSinkHdt', () => {
       await sink.close();
 
       const expectedFiles = [
-        '/path/to/folder1/file.ttl',
-        '/path/to/folder1/file_3000.ttl',
+        'path/to/folder1/file.ttl',
+        'path/to/folder1/file_3000.ttl',
       ];
 
       expect((<any>sink).files).toStrictEqual(expectedFiles);
@@ -185,8 +185,8 @@ describe('QuadSinkHdt', () => {
       await sink.close();
 
       const expectedFiles = [
-        '/path/to/folder1/file.ttl',
-        '/path/to/folder1/file_3000.ttl',
+        'path/to/folder1/file.ttl',
+        'path/to/folder1/file_3000.ttl',
       ];
 
       expect((<any>sink).files).toStrictEqual(expectedFiles);
