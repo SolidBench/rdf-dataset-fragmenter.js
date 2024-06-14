@@ -33,7 +33,7 @@ export class QuadSinkHdt extends QuadSinkFile {
    * @param {number} counter - counter of the number of files transformed
    * @param {boolean} newLine - add a new line after the logging
    */
-  private attemptLogHdtConversion(counter: number, newLine = false): void {
+  private attemptLogHdtTransformation(counter: number, newLine = false): void {
     if (this.log) {
       readline.clearLine(process.stdout, 0);
       readline.cursorTo(process.stdout, 0);
@@ -57,13 +57,13 @@ export class QuadSinkHdt extends QuadSinkFile {
       pool.push(this.transformToHdt(docker, file));
       if (pool.length === this.hdtConversionOpPoolSize) {
         await Promise.all(pool);
-        this.attemptLogHdtConversion(i);
+        this.attemptLogHdtTransformation(i);
         pool = [];
       }
       i++;
     }
     await Promise.all(pool);
-    this.attemptLogHdtConversion(i, true);
+    this.attemptLogHdtTransformation(i, true);
   }
 
   private async transformToHdt(docker: Docker, file: string): Promise<void> {
