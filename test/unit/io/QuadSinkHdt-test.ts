@@ -3,7 +3,7 @@ import * as readline from 'readline';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { QuadSinkHdt } from '../../../lib/io/QuadSinkHdt';
-import { pullHdtCppDockerImage, convertToHdt } from '../../../lib/io/rfdhdtDockerUtil';
+import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
 
 const DF = new DataFactory();
 
@@ -171,11 +171,11 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
       expect(fs.rm).toHaveBeenCalledTimes(2);
       expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(convertToHdt).toHaveBeenCalledTimes(2);
+      expect(transformToHdt).toHaveBeenCalledTimes(2);
       let i = 1;
       for (const file of expectedFiles) {
         expect(fs.rm).toHaveBeenNthCalledWith(i, file);
-        expect((<jest.Mock>convertToHdt).mock.calls[i - 1][1]).toEqual(file);
+        expect((<jest.Mock>transformToHdt).mock.calls[i - 1][1]).toEqual(file);
         i++;
       }
     });
@@ -205,10 +205,10 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
       expect(fs.rm).toHaveBeenCalledTimes(0);
       expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(convertToHdt).toHaveBeenCalledTimes(2);
+      expect(transformToHdt).toHaveBeenCalledTimes(2);
       let i = 1;
       for (const file of expectedFiles) {
-        expect((<jest.Mock>convertToHdt).mock.calls[i - 1][1]).toEqual(file);
+        expect((<jest.Mock>transformToHdt).mock.calls[i - 1][1]).toEqual(file);
         i++;
       }
     });
@@ -265,19 +265,19 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
       expect(fs.rm).toHaveBeenCalledTimes(2);
       expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(convertToHdt).toHaveBeenCalledTimes(2);
+      expect(transformToHdt).toHaveBeenCalledTimes(2);
       let i = 1;
       for (const file of expectedFiles) {
         expect(fs.rm).toHaveBeenNthCalledWith(i, file);
-        expect((<jest.Mock>convertToHdt).mock.calls[i - 1][1]).toEqual(file);
+        expect((<jest.Mock>transformToHdt).mock.calls[i - 1][1]).toEqual(file);
         i++;
       }
 
       expect(spyStdoutWrite).toHaveBeenCalledTimes(6);
 
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(3, `\rfiles converted to HDT:0 out of 2`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(4, `\rfiles converted to HDT:1 out of 2`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(5, `\rfiles converted to HDT:2 out of 2`);
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(3, `\rfiles transformed to HDT:0 out of 2`);
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(4, `\rfiles transformed to HDT:1 out of 2`);
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(5, `\rfiles transformed to HDT:2 out of 2`);
       expect(spyStdoutWrite).toHaveBeenNthCalledWith(6, `\n`);
     });
   });

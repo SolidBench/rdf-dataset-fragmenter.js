@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as Docker from 'dockerode';
-import { pullHdtCppDockerImage, convertToHdt } from '../../../lib/io/rfdhdtDockerUtil';
+import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
 
 describe('rfdhdtDockerUtil', () => {
   describe('pullImage', () => {
@@ -23,7 +23,7 @@ describe('rfdhdtDockerUtil', () => {
     });
   });
 
-  describe('convertToHdt', () => {
+  describe('transformToHdt', () => {
     beforeAll(async() => {
       const docker: Docker = new Docker();
       await pullHdtCppDockerImage(docker);
@@ -40,13 +40,13 @@ describe('rfdhdtDockerUtil', () => {
       const docker: any = jest.fn();
       const inputFilePath = 'foo.abc';
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      expect(convertToHdt(docker, inputFilePath)).rejects.toStrictEqual(new Error(`format .abc not support by rfdhdt/hdt-cpp`));
+      expect(transformToHdt(docker, inputFilePath)).rejects.toStrictEqual(new Error(`format .abc not support by rfdhdt/hdt-cpp`));
     });
 
     it('should produce the hdt file given an nt file', async() => {
       const docker: Docker = new Docker();
       const inputFilePath = './test/unit/io/rdf_files/test.nt';
-      await convertToHdt(docker, inputFilePath);
+      await transformToHdt(docker, inputFilePath);
 
       expect((await fs.stat('./test/unit/io/rdf_files/test.hdt')).isFile()).toBe(true);
       expect((await fs.stat('./test/unit/io/rdf_files/test.hdt.index.v1-1')).isFile()).toBe(true);
@@ -57,9 +57,9 @@ describe('rfdhdtDockerUtil', () => {
       jest.spyOn(docker, 'run').mockResolvedValueOnce([{ StatusCode: 1 }]);
       const inputFilePath = './test/unit/io/rdf_files/test.nt';
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      expect(convertToHdt(docker, inputFilePath))
+      expect(transformToHdt(docker, inputFilePath))
         .rejects
-        .toStrictEqual(new Error('was not able to finish the task. Check the terminal log for more information.'));
+        .toStrictEqual(new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.'));
     });
   });
 });

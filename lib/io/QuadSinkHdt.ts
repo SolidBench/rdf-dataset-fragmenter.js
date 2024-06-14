@@ -21,9 +21,9 @@ export class QuadSinkHdt extends QuadSinkFile {
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
     const path = Path.join('./', this.getFilePath(iri));
     await super.push(iri, quad);
-    
-    // add files with the defined extension to the list to be transformed
-    if (this.fileExtension!==undefined && path.includes(this.fileExtension)) {
+
+    // Add files with the defined extension to the list to be transformed
+    if (this.fileExtension !== undefined && path.includes(this.fileExtension.replace('$', ''))) {
       this.files.add(path);
     }
   }
@@ -31,7 +31,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   /**
    * Log the number of files transformed into HDT
    * @param {number} counter - counter of the number of files transformed
-   * @param {boolean} newLine - add a new line after the logging 
+   * @param {boolean} newLine - add a new line after the logging
    */
   private attemptLogHdtConversion(counter: number, newLine = false): void {
     if (this.log) {
@@ -45,16 +45,16 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   public async close(): Promise<void> {
-    // close the streaming of file
+    // Close the streaming of file
     await super.close();
     const docker: Docker = new Docker();
-    // pull the docker if it is not available in the system
+    // Pull the docker if it is not available in the system
     await pullHdtCppDockerImage(docker);
 
     let i = 0;
     let pool: Promise<void>[] = [];
     for (const file of this.files) {
-      pool.push(this.convertToHdt(docker, file));
+      pool.push(this.transformToHdt(docker, file));
       if (pool.length === this.hdtConversionOpPoolSize) {
         await Promise.all(pool);
         this.attemptLogHdtConversion(i);
@@ -66,7 +66,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     this.attemptLogHdtConversion(i, true);
   }
 
-  private async convertToHdt(docker: Docker, file: string): Promise<void> {
+  private async transformToHdt(docker: Docker, file: string): Promise<void> {
     await transformToHdt(docker, file);
     if (this.deleteSourceFiles) {
       await fs.rm(file);
