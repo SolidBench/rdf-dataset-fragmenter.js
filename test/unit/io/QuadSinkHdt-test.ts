@@ -22,6 +22,10 @@ describe('QuadSinkHdt', () => {
   let spyClearLine: any;
   let spyCursorTo: any;
 
+  afterAll(async() => {
+    await fs.rm('./error_log_docker_rfdhdt');
+  });
+
   describe('push', () => {
     beforeEach(() => {
       spyStdoutWrite = jest.spyOn(process.stdout, 'write');

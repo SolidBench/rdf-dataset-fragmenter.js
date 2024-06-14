@@ -3,6 +3,10 @@ import * as Docker from 'dockerode';
 import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
 
 describe('rfdhdtDockerUtil', () => {
+  afterAll(async() => {
+    await fs.rm('./error_log_docker_rfdhdt');
+  });
+
   describe('pullImage', () => {
     it('should pull with a real docker instance', async() => {
       const docker: Docker = new Docker();
