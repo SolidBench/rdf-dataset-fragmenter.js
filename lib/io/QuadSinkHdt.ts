@@ -30,7 +30,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     if (this.log && (counter % 1_000 === 0 || newLine)) {
       readline.clearLine(process.stdout, 0);
       readline.cursorTo(process.stdout, 0);
-      process.stdout.write(`\rfile converted to HDT:${counter}\n Currently converting: ${file}`);
+      process.stdout.write(`\rfile converted to HDT:${counter}\ncurrently converting: ${file}`);
       if (newLine) {
         process.stdout.write(`\n`);
       }
