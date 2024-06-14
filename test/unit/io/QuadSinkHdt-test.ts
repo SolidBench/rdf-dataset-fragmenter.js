@@ -45,6 +45,13 @@ describe('QuadSinkHdt', () => {
         close: jest.fn(),
       };
       (<any>sink).fileWriter = fileWriter;
+      (<jest.Mock>fs.stat).mockImplementation((path: string) => {
+        return {
+          isFile() {
+            return path.includes('.');
+          },
+        };
+      });
     });
 
     it('should write a quad to an IRI available in the mapping', async() => {
@@ -68,7 +75,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ '/path/to/folder1/file' ]);
+      expect((<any>sink).files).toStrictEqual([ ]);
     });
 
     it('should write a quad to an IRI available in the mapping without extension with fileExtension', async() => {
@@ -127,6 +134,13 @@ describe('QuadSinkHdt', () => {
         close: jest.fn(),
       };
       (<any>sink).fileWriter = fileWriter;
+      (<jest.Mock>fs.stat).mockImplementation((path: string) => {
+        return {
+          isFile() {
+            return path.includes('.');
+          },
+        };
+      });
       jest.clearAllMocks();
     });
 
@@ -139,14 +153,13 @@ describe('QuadSinkHdt', () => {
       const expectedFiles = [
         '/path/to/folder1/file.ttl',
         '/path/to/folder1/file_3000.ttl',
-        '/path/to/folder1/file',
       ];
 
       expect((<any>sink).files).toStrictEqual(expectedFiles);
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
-      expect(fs.rm).toHaveBeenCalledTimes(3);
+      expect(fs.rm).toHaveBeenCalledTimes(2);
       expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(convertToHdt).toHaveBeenCalledTimes(3);
+      expect(convertToHdt).toHaveBeenCalledTimes(2);
       let i = 1;
       for (const file of expectedFiles) {
         expect(fs.rm).toHaveBeenNthCalledWith(i, file);
@@ -174,14 +187,13 @@ describe('QuadSinkHdt', () => {
       const expectedFiles = [
         '/path/to/folder1/file.ttl',
         '/path/to/folder1/file_3000.ttl',
-        '/path/to/folder1/file',
       ];
 
       expect((<any>sink).files).toStrictEqual(expectedFiles);
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
       expect(fs.rm).toHaveBeenCalledTimes(0);
       expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(convertToHdt).toHaveBeenCalledTimes(3);
+      expect(convertToHdt).toHaveBeenCalledTimes(2);
       let i = 1;
       for (const file of expectedFiles) {
         expect((<jest.Mock>convertToHdt).mock.calls[i - 1][1]).toEqual(file);

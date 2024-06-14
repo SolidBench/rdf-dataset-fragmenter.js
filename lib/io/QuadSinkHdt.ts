@@ -17,7 +17,9 @@ export class QuadSinkHdt extends QuadSinkFile {
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
     const path = this.getFilePath(iri);
     await super.push(iri, quad);
-    this.files.push(path);
+    if ((await fs.stat(path)).isFile()) {
+      this.files.push(path);
+    }
   }
 
   public async close(): Promise<void> {
