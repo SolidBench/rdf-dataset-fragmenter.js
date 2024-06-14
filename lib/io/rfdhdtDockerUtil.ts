@@ -81,7 +81,7 @@ export async function convertToHdt(docker: Docker, inputFilePath: string): Promi
   };
   const data = await docker.run(RDF_HDT_IMAGE_REPO,
     command,
-    [ fs.createWriteStream('/dev/null'), ERROR_STEAM_FILE ],
+    [ ERROR_STEAM_FILE, ERROR_STEAM_FILE ],
     createOption);
   const [ output ] = data;
   if (output.StatusCode === 1) {
