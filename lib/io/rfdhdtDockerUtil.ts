@@ -1,5 +1,6 @@
 import * as Path from 'path';
 import type * as Docker from 'dockerode';
+import * as fs from 'fs';
 
 const SUPPORTED_FORMAT = new Map([
   [ '.nq', 'nquad' ],
@@ -76,7 +77,7 @@ export async function convertToHdt(docker: Docker, inputFilePath: string): Promi
     },
     Tty: false,
   };
-  const data = await docker.run(RDF_HDT_IMAGE_REPO, command, [ process.stdout, process.stderr ], createOption);
+  const data = await docker.run(RDF_HDT_IMAGE_REPO, command, [ fs.createWriteStream('/dev/null'), process.stderr ], createOption);
   const [ output ] = data;
   if (output.StatusCode === 1) {
     throw new Error('was not able to finish the task. Check the terminal log for more information.');
