@@ -309,6 +309,39 @@ Options:
 * `"fileExtension"`: An optional extension to add to resulting files.
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
 
+#### HDT Quad Sink
+
+A quad sink that writes to files using an IRI to local file system path mapping and then converts the files into an [HDT document](https://www.rdfhdt.org/what-is-hdt/). 
+The implementation uses the [docker](https://www.docker.com/) image [HDT-Docker](https://github.com/rdfhdt/hdt-docker) of the [hdt-cpp](https://github.com/rdfhdt/hdt-cpp) library.
+The docker operations to acquire the image and execute the transformations into HDT are performed by the sink. 
+
+**Can be very slow if there are multiple files generated**
+
+```json
+{
+  "quadSink": {
+    "@type": "QuadSinkHdt",
+    "log": true,
+    "outputFormat": "application/n-quads",
+    "fileExtension": "$.nq",
+    "iriToPath": {
+      "http://example.org/base/": "output/base/",
+      "http://example.org/other/": "output/other/"
+    },
+    "hdtConversionOpPoolSize": 5,
+    "deleteSourceFiles": true
+  }
+}
+```
+
+Options:
+* `"log"`: If a quad counter should be shown to show the current progress.
+* `"outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
+* `"fileExtension"`: An optional extension to add to resulting files.
+* `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
+* `"hdtConversionOpPoolSize"`: The number of concurrent HDT conversion operations.
+* `"deleteSourceFiles"`: If the sink should delete the source RDF file after the conversion into HDT.
+
 #### Composite Quad Sink
 
 A quad sink that combines multiple quad sinks.
