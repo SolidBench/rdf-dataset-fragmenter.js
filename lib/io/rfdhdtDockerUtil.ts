@@ -18,6 +18,7 @@ const RDF_HDT_IMAGE_REPO = 'rfdhdt/hdt-cpp';
  * Pull the rfdhdt/hdt-cpp with docker
  * equivalent of the docker command
  * docker pull rfdhdt/hdt-cpp
+ * @param {Docker} docker - docker instance
  */
 export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
   return new Promise(async(resolve, reject) => {
@@ -43,13 +44,14 @@ export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
 }
 
 /**
- * Convert an ntriple document into an HDT using the rfdhdt/hdt-cpp docker image
+ * Transform an RDF document into an HDT using the rfdhdt/hdt-cpp docker image
  * Equivalent to the docker command
  * docker run -it --rm -v "$(pwd)":{inputFileFolder} rfdhdt/hdt-cpp /
  * rdf2hdt -i -p -v -f ntriples {inputFilePath} {outputFilePath}
- * @param {string} inputFilePath -the path of the file to convert
+ * @param {Docker} - docker instance
+ * @param {string} inputFilePath - the path of the file to be transformed
  */
-export async function convertToHdt(docker: Docker, inputFilePath: string): Promise<void> {
+export async function transformToHdt(docker: Docker, inputFilePath: string): Promise<void> {
   const parsedPath = Path.parse(inputFilePath);
 
   const outputFolder = parsedPath.dir;
@@ -85,6 +87,6 @@ export async function convertToHdt(docker: Docker, inputFilePath: string): Promi
     createOption);
   const [ output ] = data;
   if (output.StatusCode === 1) {
-    throw new Error('was not able to finish the task. Check the terminal log for more information.');
+    throw new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.');
   }
 }
