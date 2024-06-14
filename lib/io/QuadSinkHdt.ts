@@ -28,7 +28,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   private attemptLogHdtConversion(counter: number, newLine = false): void {
-    if (this.log || newLine) {
+    if (this.log) {
       readline.clearLine(process.stdout, 0);
       readline.cursorTo(process.stdout, 0);
       process.stdout.write(`\rfiles converted to HDT:${counter} out of ${this.files.size}`);
@@ -43,7 +43,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     const docker: Docker = new Docker();
     // To avoid the logging of the handled quads collide with the logging of the pulling of the docker image
     await pullHdtCppDockerImage(docker);
-    process.stdout.write('\n');
+
     let i = 0;
     let pool: Promise<void>[] = [];
     for (const file of this.files) {
@@ -56,7 +56,7 @@ export class QuadSinkHdt extends QuadSinkFile {
       i++;
     }
     await Promise.all(pool);
-    this.attemptLogHdtConversion(i);
+    this.attemptLogHdtConversion(i, true);
   }
 
   private async convertToHdt(docker: Docker, file: string): Promise<void> {

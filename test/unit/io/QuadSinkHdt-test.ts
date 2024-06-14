@@ -213,4 +213,72 @@ describe('QuadSinkHdt', () => {
       }
     });
   });
+
+  describe('logger', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      spyStdoutWrite = jest.spyOn(process.stdout, 'write');
+      spyClearLine = jest.spyOn(readline, 'clearLine');
+      spyCursorTo = jest.spyOn(readline, 'cursorTo');
+
+      sink = new QuadSinkHdt({
+        outputFormat: 'application/n-quads',
+        iriToPath: {
+          'http://example.org/1/': '/path/to/folder1/',
+          'http://example.org/2/': '/path/to/folder2/',
+        },
+        fileExtension: '.ttl',
+        log: true,
+      }, 1);
+      quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
+
+      writeStream = {
+        write: jest.fn(),
+      };
+      fileWriter = {
+        getWriteStream: jest.fn(() => writeStream),
+        close: jest.fn(),
+      };
+      (<any>sink).fileWriter = fileWriter;
+      (<jest.Mock>fs.stat).mockImplementation((path: string) => {
+        return {
+          isFile() {
+            return path.includes('.');
+          },
+        };
+      });
+      jest.clearAllMocks();
+    });
+
+    it('should log when a pool is executed', async() => {
+      await sink.push('http://example.org/1/file', quad);
+      await sink.push('http://example.org/1/file:3000', quad);
+
+      await sink.close();
+
+      const expectedFiles = new Set([
+        'path/to/folder1/file.ttl',
+        'path/to/folder1/file_3000.ttl',
+      ]);
+
+      expect((<any>sink).files).toStrictEqual(expectedFiles);
+      expect(fileWriter.close).toHaveBeenNthCalledWith(1);
+      expect(fs.rm).toHaveBeenCalledTimes(2);
+      expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
+      expect(convertToHdt).toHaveBeenCalledTimes(2);
+      let i = 1;
+      for (const file of expectedFiles) {
+        expect(fs.rm).toHaveBeenNthCalledWith(i, file);
+        expect((<jest.Mock>convertToHdt).mock.calls[i - 1][1]).toEqual(file);
+        i++;
+      }
+
+      expect(spyStdoutWrite).toHaveBeenCalledTimes(6);
+
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(3, `\rfiles converted to HDT:0 out of 2`);
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(4, `\rfiles converted to HDT:1 out of 2`);
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(5, `\rfiles converted to HDT:2 out of 2`);
+      expect(spyStdoutWrite).toHaveBeenNthCalledWith(6, `\n`);
+    });
+  });
 });
