@@ -1,12 +1,11 @@
 import * as fs from 'fs/promises';
 import * as Path from 'path';
+import * as readline from 'readline';
 import type * as RDF from '@rdfjs/types';
 import * as Docker from 'dockerode';
 import type { IQuadSinkFileOptions } from './QuadSinkFile';
 import { QuadSinkFile } from './QuadSinkFile';
 import { convertToHdt, pullHdtCppDockerImage } from './rfdhdtDockerUtil';
-import * as readline from 'readline';
-
 
 export class QuadSinkHdt extends QuadSinkFile {
   private readonly files: Set<string> = new Set();
@@ -42,7 +41,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   public async close(): Promise<void> {
     await super.close();
     const docker: Docker = new Docker();
-    // to avoid the logging of the handled quads collide with the logging of the pulling of the docker image
+    // To avoid the logging of the handled quads collide with the logging of the pulling of the docker image
     await pullHdtCppDockerImage(docker);
     process.stdout.write('\n');
     let i = 0;
@@ -58,10 +57,9 @@ export class QuadSinkHdt extends QuadSinkFile {
     }
     await Promise.all(pool);
     this.attemptLogHdtConversion(i);
-    
   }
 
-  private async convertToHdt(docker: Docker, file: string) {
+  private async convertToHdt(docker: Docker, file: string): Promise<void> {
     await convertToHdt(docker, file);
     if (this.deletedSourceFiles) {
       await fs.rm(file);

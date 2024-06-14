@@ -136,7 +136,7 @@ describe('QuadSinkHdt', () => {
           'http://example.org/2/': '/path/to/folder2/',
         },
         fileExtension: '.ttl',
-      },1);
+      }, 1);
       quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
       writeStream = {
@@ -162,7 +162,7 @@ describe('QuadSinkHdt', () => {
       await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
 
-      const expectedFiles =  new Set([
+      const expectedFiles = new Set([
         'path/to/folder1/file.ttl',
         'path/to/folder1/file_3000.ttl',
       ]);
