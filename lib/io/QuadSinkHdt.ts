@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as Path from 'path';
 import type * as RDF from '@rdfjs/types';
-import Docker = require('dockerode');
+import * as Docker from 'dockerode';
 import type { IQuadSinkFileOptions } from './QuadSinkFile';
 import { QuadSinkFile } from './QuadSinkFile';
 import { convertToHdt, pullHdtCppDockerImage } from './rfdhdtDockerUtil';
@@ -9,12 +9,14 @@ import * as readline from 'readline';
 
 
 export class QuadSinkHdt extends QuadSinkFile {
-  private readonly files: string[] = [];
+  private readonly files: Set<string> = new Set();
   private readonly deletedSourceFiles: boolean;
+  private readonly hdtConversionPoolSize: number;
 
-  public constructor(options: IQuadSinkFileOptions, deleteSourceFile = true) {
+  public constructor(options: IQuadSinkFileOptions, hdtConversionPoolSize = 5, deleteSourceFile = true) {
     super(options);
     this.deletedSourceFiles = deleteSourceFile;
+    this.hdtConversionPoolSize = hdtConversionPoolSize;
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
@@ -22,15 +24,15 @@ export class QuadSinkHdt extends QuadSinkFile {
     await super.push(iri, quad);
 
     if (path.includes(this.fileExtension ?? '.donotmatch!!')) {
-      this.files.push(path);
+      this.files.add(path);
     }
   }
 
-  private attemptLogHdtConversion(file:string, counter:number, newLine = false): void {
-    if (this.log && (counter % 1_000 === 0 || newLine)) {
+  private attemptLogHdtConversion(counter: number, newLine = false): void {
+    if (this.log || newLine) {
       readline.clearLine(process.stdout, 0);
       readline.cursorTo(process.stdout, 0);
-      process.stdout.write(`\rfile converted to HDT:${counter}\ncurrently converting: ${file}`);
+      process.stdout.write(`\rfiles converted to HDT:${counter} out of ${this.files.size}`);
       if (newLine) {
         process.stdout.write(`\n`);
       }
@@ -38,18 +40,31 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   public async close(): Promise<void> {
+    await super.close();
     const docker: Docker = new Docker();
+    // to avoid the logging of the handled quads collide with the logging of the pulling of the docker image
     await pullHdtCppDockerImage(docker);
-    let i =0;
+    process.stdout.write('\n');
+    let i = 0;
+    let pool: Promise<void>[] = [];
     for (const file of this.files) {
-      this.attemptLogHdtConversion(file, i);
-      await convertToHdt(docker, file);
-      if (this.deletedSourceFiles) {
-        await fs.rm(file);
+      pool.push(this.convertToHdt(docker, file));
+      if (pool.length === this.hdtConversionPoolSize) {
+        await Promise.all(pool);
+        this.attemptLogHdtConversion(i);
+        pool = [];
       }
       i++;
     }
+    await Promise.all(pool);
+    this.attemptLogHdtConversion(i);
+    
+  }
 
-    await super.close();
+  private async convertToHdt(docker: Docker, file: string) {
+    await convertToHdt(docker, file);
+    if (this.deletedSourceFiles) {
+      await fs.rm(file);
+    }
   }
 }

@@ -53,7 +53,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file.ttl' ]);
+      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file.ttl' ]));
     });
 
     it('should escape illegal directory names', async() => {
@@ -61,7 +61,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file_3000.ttl' ]);
+      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file_3000.ttl' ]));
     });
 
     it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
@@ -77,7 +77,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ ]);
+      expect((<any>sink).files).toStrictEqual(new Set());
     });
 
     it(`should write a quad to an IRI available in the mapping without
@@ -87,7 +87,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ ]);
+      expect((<any>sink).files).toStrictEqual(new Set());
     });
 
     it('should write a quad to an IRI available in the mapping without extension with fileExtension', async() => {
@@ -105,13 +105,13 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file$.nq', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file$.nq' ]);
+      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file$.nq' ]));
     });
 
     it('should error on an IRI not available in the mapping', async() => {
       await expect(sink.push('http://example.org/3/file.ttl', quad)).rejects
         .toThrow(new Error('No IRI mapping found for http://example.org/3/file.ttl'));
-      expect((<any>sink).files).toStrictEqual([]);
+      expect((<any>sink).files).toStrictEqual(new Set());
     });
 
     it('should remove the hash from the IRI', async() => {
@@ -119,7 +119,7 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual([ 'path/to/folder1/file.ttl' ]);
+      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file.ttl' ]));
     });
   });
 
@@ -136,7 +136,7 @@ describe('QuadSinkHdt', () => {
           'http://example.org/2/': '/path/to/folder2/',
         },
         fileExtension: '.ttl',
-      });
+      },1);
       quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
       writeStream = {
@@ -162,10 +162,10 @@ describe('QuadSinkHdt', () => {
       await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
 
-      const expectedFiles = [
+      const expectedFiles =  new Set([
         'path/to/folder1/file.ttl',
         'path/to/folder1/file_3000.ttl',
-      ];
+      ]);
 
       expect((<any>sink).files).toStrictEqual(expectedFiles);
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
@@ -189,17 +189,17 @@ describe('QuadSinkHdt', () => {
           'http://example.org/2/': '/path/to/folder2/',
         },
         fileExtension: '.ttl',
-      }, false);
+      }, 5, false);
       (<any>sink).fileWriter = fileWriter;
 
       await sink.push('http://example.org/1/file', quad);
       await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
 
-      const expectedFiles = [
+      const expectedFiles = new Set([
         'path/to/folder1/file.ttl',
         'path/to/folder1/file_3000.ttl',
-      ];
+      ]);
 
       expect((<any>sink).files).toStrictEqual(expectedFiles);
       expect(fileWriter.close).toHaveBeenNthCalledWith(1);
