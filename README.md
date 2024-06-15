@@ -315,7 +315,7 @@ A quad sink that writes to files using an IRI to local file system path mapping 
 The implementation uses the [docker](https://www.docker.com/) image [HDT-Docker](https://github.com/rdfhdt/hdt-docker) of the [hdt-cpp](https://github.com/rdfhdt/hdt-cpp) library.
 The docker operations to acquire the image and execute the transformations into HDT are performed by the sink. 
 
-**Can be very slow if there are multiple files generated**
+**Can be very slow if there are multiple files (in the range of 10,000) generated**
 
 ```json
 {
