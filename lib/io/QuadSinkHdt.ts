@@ -45,10 +45,10 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   public async close(): Promise<void> {
-    // Close the streaming of file
+    // Close the streaming of files
     await super.close();
     const docker: Docker = new Docker();
-    // Pull the docker if it is not available in the system
+    // Pull the docker image if it is not available in the system
     await pullHdtCppDockerImage(docker);
 
     let i = 0;
