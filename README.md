@@ -64,7 +64,7 @@ The important parts in this config file are:
 * `"quadSource"`: The source from which RDF triples/quads should be read from.
 * `"fragmentationStrategy"`: The strategy that will be employed for fragmentation.
 * `"quadSink"`: The target into which fragmented RDF triples/quads will be written from.
-* `"quadSource"`: Optional transformations over the quad stream.
+* `"transformers"`: Optional transformations over the quad stream.
 
 In this example, the config file will read from the `"path/to/dataset.ttl"` file,
 employ subject-based fragmentation, and will write into files in the `"output/"` directory.
@@ -228,7 +228,7 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
 
 #### Constant Fragmentation Strategy
 
-A fragmentation stratety that delegates all quads towards a single path.
+A fragmentation strategy that delegates all quads towards a single path.
 
 ```json
 {
