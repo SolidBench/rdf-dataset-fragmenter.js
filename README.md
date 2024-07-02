@@ -329,7 +329,8 @@ The docker operations to acquire the image and execute the transformations into 
       "http://example.org/other/": "output/other/"
     },
     "poolSize": 1,
-    "deleteSourceFiles": false
+    "deleteSourceFiles": false,
+    "errorFileDockerRfdhdt": "./error_log_docker_rfdhdt"
   }
 }
 ```
@@ -339,8 +340,9 @@ Options:
 * `"outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
 * `"fileExtension"`: An optional extension to add to resulting files.
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
-* `"poolSize"`: The number of concurrent HDT conversion operations. By the default one.
+* `"poolSize"`: The number of concurrent HDT conversion operations. By the default `1`.
 * `"deleteSourceFiles"`: If the sink should delete the source RDF file after the conversion into HDT.
+* `"errorFileDockerRfdhdt"`: File where the error of HDT-Docker will be outputed. By default `"./error_log_docker_rfdhdt"`.
 
 #### Composite Quad Sink
 

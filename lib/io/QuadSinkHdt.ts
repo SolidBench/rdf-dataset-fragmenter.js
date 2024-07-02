@@ -1,3 +1,5 @@
+import type { WriteStream } from 'fs';
+import { createWriteStream } from 'fs';
 import * as fs from 'fs/promises';
 import * as Path from 'path';
 import * as readline from 'readline';
@@ -11,11 +13,18 @@ export class QuadSinkHdt extends QuadSinkFile {
   private readonly files: Set<string> = new Set();
   private readonly deleteSourceFiles: boolean;
   private readonly hdtConversionOpPoolSize: number;
+  private readonly errorFileDockerRfdhdt: WriteStream;
 
-  public constructor(options: IQuadSinkFileOptions, poolSize = 1, deleteSourceFiles = false) {
+  public constructor(
+    options: IQuadSinkFileOptions,
+    poolSize = 1,
+    deleteSourceFiles = false,
+    errorFileDockerRfdhdt = './error_log_docker_rfdhdt',
+  ) {
     super(options);
     this.deleteSourceFiles = deleteSourceFiles;
     this.hdtConversionOpPoolSize = poolSize;
+    this.errorFileDockerRfdhdt = createWriteStream(errorFileDockerRfdhdt);
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
@@ -67,7 +76,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   }
 
   private async transformToHdt(docker: Docker, file: string): Promise<void> {
-    await transformToHdt(docker, file);
+    await transformToHdt(docker, file, this.errorFileDockerRfdhdt);
     if (this.deleteSourceFiles) {
       await fs.rm(file);
     }

@@ -1,16 +1,14 @@
-import * as fs from 'fs';
+import type * as fs from 'fs';
 import * as Path from 'path';
 import type * as Docker from 'dockerode';
 
 const SUPPORTED_FORMATS = new Map([
-  ['.nq', 'nquad'],
-  ['.nt', 'ntriples'],
-  ['.ttl', 'turtle'],
-  ['.xml', 'rdfxml'],
-  ['.n3', 'n3'],
+  [ '.nq', 'nquad' ],
+  [ '.nt', 'ntriples' ],
+  [ '.ttl', 'turtle' ],
+  [ '.xml', 'rdfxml' ],
+  [ '.n3', 'n3' ],
 ]);
-
-const ERROR_STEAM_FILE = fs.createWriteStream('./error_log_docker_rfdhdt');
 
 const RDF_HDT_IMAGE_REPO = 'rfdhdt/hdt-cpp';
 
@@ -21,7 +19,7 @@ const RDF_HDT_IMAGE_REPO = 'rfdhdt/hdt-cpp';
  * @param {Docker} docker - docker instance
  */
 export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
     const stream = await docker.pull(RDF_HDT_IMAGE_REPO, {});
 
     const onFinished = (err: any): undefined => {
@@ -51,7 +49,11 @@ export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
  * @param {Docker} - docker instance
  * @param {string} inputFilePath - the path of the file to be transformed
  */
-export async function transformToHdt(docker: Docker, inputFilePath: string): Promise<void> {
+export async function transformToHdt(
+  docker: Docker,
+  inputFilePath: string,
+  errorStreamFile: fs.WriteStream,
+): Promise<void> {
   const parsedPath = Path.parse(inputFilePath);
 
   const outputFolder = parsedPath.dir;
@@ -83,9 +85,9 @@ export async function transformToHdt(docker: Docker, inputFilePath: string): Pro
   };
   const data = await docker.run(RDF_HDT_IMAGE_REPO,
     command,
-    [ERROR_STEAM_FILE, ERROR_STEAM_FILE],
+    [ errorStreamFile, errorStreamFile ],
     createOption);
-  const [output] = data;
+  const [ output ] = data;
   if (output.StatusCode === 1) {
     throw new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.');
   }
