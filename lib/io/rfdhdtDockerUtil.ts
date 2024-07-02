@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import type * as Docker from 'dockerode';
 
-const SUPPORTED_FORMAT = new Map([
+const SUPPORTED_FORMATS = new Map([
   ['.nq', 'nquad'],
   ['.nt', 'ntriples'],
   ['.ttl', 'turtle'],
@@ -58,7 +58,7 @@ export async function transformToHdt(docker: Docker, inputFilePath: string): Pro
   const filename = parsedPath.name;
   const fileExtension = parsedPath.ext;
 
-  const format = SUPPORTED_FORMAT.get(fileExtension);
+  const format = SUPPORTED_FORMATS.get(fileExtension);
   if (format === undefined) {
     throw new Error(`format ${fileExtension} not support by rfdhdt/hdt-cpp`);
   }
