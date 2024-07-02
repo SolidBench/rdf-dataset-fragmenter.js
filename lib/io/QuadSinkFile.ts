@@ -11,8 +11,8 @@ export class QuadSinkFile implements IQuadSink {
   private readonly outputFormat: string;
   private readonly iriToPath: Record<string, string>;
   private readonly fileWriter: ParallelFileWriter;
-  private readonly log: boolean;
-  private readonly fileExtension?: string;
+  protected readonly log: boolean;
+  protected readonly fileExtension?: string;
 
   private counter = 0;
 
@@ -39,6 +39,12 @@ export class QuadSinkFile implements IQuadSink {
   }
 
   protected getFilePath(iri: string): string {
+    // Remove hash fragment
+    const posHash = iri.indexOf('#');
+    if (posHash >= 0) {
+      iri = iri.slice(0, posHash);
+    }
+
     // Find base path from the first matching baseIRI
     let path: string | undefined;
     for (const [ baseIRI, basePath ] of Object.entries(this.iriToPath)) {
@@ -71,12 +77,6 @@ export class QuadSinkFile implements IQuadSink {
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
     this.counter++;
     this.attemptLog();
-
-    // Remove hash fragment
-    const posHash = iri.indexOf('#');
-    if (posHash >= 0) {
-      iri = iri.slice(0, posHash);
-    }
 
     const path = this.getFilePath(iri);
     const os = await this.getFileStream(path);
