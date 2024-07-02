@@ -3,11 +3,11 @@ import * as Path from 'path';
 import type * as Docker from 'dockerode';
 
 const SUPPORTED_FORMAT = new Map([
-  [ '.nq', 'nquad' ],
-  [ '.nt', 'ntriples' ],
-  [ '.ttl', 'turtle' ],
-  [ '.xml', 'rdfxml' ],
-  [ '.n3', 'n3' ],
+  ['.nq', 'nquad'],
+  ['.nt', 'ntriples'],
+  ['.ttl', 'turtle'],
+  ['.xml', 'rdfxml'],
+  ['.n3', 'n3'],
 ]);
 
 const ERROR_STEAM_FILE = fs.createWriteStream('./error_log_docker_rfdhdt');
@@ -21,22 +21,22 @@ const RDF_HDT_IMAGE_REPO = 'rfdhdt/hdt-cpp';
  * @param {Docker} docker - docker instance
  */
 export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
-  return new Promise(async(resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const stream = await docker.pull(RDF_HDT_IMAGE_REPO, {});
 
     const onFinished = (err: any): undefined => {
       if (err === undefined || err === null) {
         resolve();
       } else {
-        // eslint-disable-next-line no-console
-        console.info(err);
+        process.stderr.write(JSON.stringify(err));
+        process.stderr.write(`\n`);
         reject(err);
       }
     };
 
     const onProgress = (event: any): undefined => {
-      // eslint-disable-next-line no-console
-      console.info(event);
+      process.stdout.write(JSON.stringify(event));
+      process.stdout.write(`\n`);
     };
 
     docker.modem.followProgress(stream, onFinished, onProgress);
@@ -83,9 +83,9 @@ export async function transformToHdt(docker: Docker, inputFilePath: string): Pro
   };
   const data = await docker.run(RDF_HDT_IMAGE_REPO,
     command,
-    [ ERROR_STEAM_FILE, ERROR_STEAM_FILE ],
+    [ERROR_STEAM_FILE, ERROR_STEAM_FILE],
     createOption);
-  const [ output ] = data;
+  const [output] = data;
   if (output.StatusCode === 1) {
     throw new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.');
   }
