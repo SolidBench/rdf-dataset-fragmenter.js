@@ -22,7 +22,7 @@ describe('QuadSinkHdt', () => {
   let spyClearLine: any;
   let spyCursorTo: any;
 
-  afterAll(async() => {
+  afterAll(async () => {
     await fs.rm('./error_log_docker_rfdhdt');
   });
 
@@ -52,23 +52,23 @@ describe('QuadSinkHdt', () => {
       (<any>sink).fileWriter = fileWriter;
     });
 
-    it('should write a quad to an IRI available in the mapping', async() => {
+    it('should write a quad to an IRI available in the mapping', async () => {
       await sink.push('http://example.org/1/file', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file.ttl' ]));
+      expect((<any>sink).files).toStrictEqual(new Set(['path/to/folder1/file.ttl']));
     });
 
-    it('should escape illegal directory names', async() => {
+    it('should escape illegal directory names', async () => {
       await sink.push('http://example.org/1/file:3000', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file_3000.ttl' ]));
+      expect((<any>sink).files).toStrictEqual(new Set(['path/to/folder1/file_3000.ttl']));
     });
 
-    it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
+    it('should write a quad to an IRI available in the mapping without extension without fileExtension', async () => {
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',
         iriToPath: {
@@ -85,7 +85,7 @@ describe('QuadSinkHdt', () => {
     });
 
     it(`should write a quad to an IRI available in the mapping without
-       extension with a file extension define in the sink`, async() => {
+       extension with a file extension define in the sink`, async () => {
       jest.spyOn(<any>sink, 'getFilePath').mockReturnValue('/path/to/folder1/file');
       await sink.push('http://example.org/1/file', quad);
       expect(fileWriter.getWriteStream)
@@ -94,7 +94,7 @@ describe('QuadSinkHdt', () => {
       expect((<any>sink).files).toStrictEqual(new Set());
     });
 
-    it('should write a quad to an IRI available in the mapping without extension with fileExtension', async() => {
+    it('should write a quad to an IRI available in the mapping without extension with fileExtension', async () => {
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',
         iriToPath: {
@@ -109,21 +109,21 @@ describe('QuadSinkHdt', () => {
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file$.nq', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file$.nq' ]));
+      expect((<any>sink).files).toStrictEqual(new Set(['path/to/folder1/file$.nq']));
     });
 
-    it('should error on an IRI not available in the mapping', async() => {
+    it('should error on an IRI not available in the mapping', async () => {
       await expect(sink.push('http://example.org/3/file.ttl', quad)).rejects
         .toThrow(new Error('No IRI mapping found for http://example.org/3/file.ttl'));
       expect((<any>sink).files).toStrictEqual(new Set());
     });
 
-    it('should remove the hash from the IRI', async() => {
+    it('should remove the hash from the IRI', async () => {
       await sink.push('http://example.org/1/file#me', quad);
       expect(fileWriter.getWriteStream)
         .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
       expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file.ttl' ]));
+      expect((<any>sink).files).toStrictEqual(new Set(['path/to/folder1/file.ttl']));
     });
   });
 
@@ -140,7 +140,7 @@ describe('QuadSinkHdt', () => {
           'http://example.org/2/': '/path/to/folder2/',
         },
         fileExtension: '.ttl',
-      }, 1);
+      }, 1, true);
       quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
       writeStream = {
@@ -161,7 +161,7 @@ describe('QuadSinkHdt', () => {
       jest.clearAllMocks();
     });
 
-    it('should close produce the HDT file upon closing', async() => {
+    it('should close produce the HDT file upon closing', async () => {
       await sink.push('http://example.org/1/file', quad);
       await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
@@ -185,7 +185,7 @@ describe('QuadSinkHdt', () => {
     });
 
     it(`should close produce the HDT file upon closing 
-            and not delete the source file when the flag is activated`, async() => {
+            and not delete the source file when the flag is activated`, async () => {
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',
         iriToPath: {
@@ -233,7 +233,7 @@ describe('QuadSinkHdt', () => {
         },
         fileExtension: '.ttl',
         log: true,
-      }, 1);
+      }, 1, true);
       quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
 
       writeStream = {
@@ -254,7 +254,7 @@ describe('QuadSinkHdt', () => {
       jest.clearAllMocks();
     });
 
-    it('should log when a pool is executed', async() => {
+    it('should log when a pool is executed', async () => {
       await sink.push('http://example.org/1/file', quad);
       await sink.push('http://example.org/1/file:3000', quad);
 

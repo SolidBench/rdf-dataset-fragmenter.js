@@ -329,7 +329,7 @@ The docker operations to acquire the image and execute the transformations into 
       "http://example.org/other/": "output/other/"
     },
     "poolSize": 5,
-    "deleteSourceFiles": true
+    "deleteSourceFiles": false
   }
 }
 ```

@@ -12,7 +12,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   private readonly deleteSourceFiles: boolean;
   private readonly hdtConversionOpPoolSize: number;
 
-  public constructor(options: IQuadSinkFileOptions, poolSize = 5, deleteSourceFiles = true) {
+  public constructor(options: IQuadSinkFileOptions, poolSize = 5, deleteSourceFiles = false) {
     super(options);
     this.deleteSourceFiles = deleteSourceFiles;
     this.hdtConversionOpPoolSize = poolSize;
