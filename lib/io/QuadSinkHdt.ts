@@ -12,10 +12,10 @@ export class QuadSinkHdt extends QuadSinkFile {
   private readonly deleteSourceFiles: boolean;
   private readonly hdtConversionOpPoolSize: number;
 
-  public constructor(options: IQuadSinkFileOptions, hdtConversionOpPoolSize = 5, deleteSourceFiles = true) {
+  public constructor(options: IQuadSinkFileOptions, poolSize = 5, deleteSourceFiles = true) {
     super(options);
     this.deleteSourceFiles = deleteSourceFiles;
-    this.hdtConversionOpPoolSize = hdtConversionOpPoolSize;
+    this.hdtConversionOpPoolSize = poolSize;
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
