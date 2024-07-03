@@ -64,7 +64,7 @@ The important parts in this config file are:
 * `"quadSource"`: The source from which RDF triples/quads should be read from.
 * `"fragmentationStrategy"`: The strategy that will be employed for fragmentation.
 * `"quadSink"`: The target into which fragmented RDF triples/quads will be written from.
-* `"quadSource"`: Optional transformations over the quad stream.
+* `"transformers"`: Optional transformations over the quad stream.
 
 In this example, the config file will read from the `"path/to/dataset.ttl"` file,
 employ subject-based fragmentation, and will write into files in the `"output/"` directory.
@@ -370,6 +370,58 @@ For reproducibility a seed *can* be provided using the parameter `randomSeed`.
     }
 }
 
+#### Constant Fragmentation Strategy
+
+A fragmentation strategy that delegates all quads towards a single path.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationConstant",
+    "path": "http://localhost:3000/datadump"
+  }
+}
+```
+
+#### VoID Description Fragmentation Strategy
+
+Fragmentation strategy that generates partial dataset descriptions
+using the standard [VoID vocabulary](https://www.w3.org/TR/void/).
+The dataset URIs are determined based on quad subject values using regular expressions.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryVoID",
+    "datasetPatterns": [
+      "^(.*\\/pods\\/[0-9]+\\/)"
+    ]
+  }
+}
+```
+
+
+#### Bloom Filter Fragmentation Strategy
+
+Fragmentation strategy that generates Bloom filters to capture co-occurrence of resources and properties,
+using the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership).
+The filters are generated per-dataset, where the dataset URI is determined based on quad subject values using regular expressions.
+After generation, the summaries can be re-mapped to a different document URI.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryBloom",
+    "hashBits": 256,
+    "hashCount": 4,
+    "datasetPatterns": [
+      "^(.+\\/pods\\/[0-9]+\\/)"
+    ],
+    "locationPatterns": [
+      "^(.+\\/pods\\/[0-9]+\\/)"
+    ]
+  }
+}
 ```
 
 ### Quad Sinks
@@ -585,11 +637,12 @@ A quad transformer that that replaces (parts of) IRIs, deterministically distrib
   "transformers": [
     {
       "@type": "QuadTransformerDistributeIri",
-      "searchRegex": "^http://www.ldbc.eu",
-      "replacementStrings": [ 
-        "http://localhost:3000/www.ldbc.eu",
-        "http://localhost:3030/www.ldbc.eu",
-        "http://localhost:3060/www.ldbc.eu"
+      "searchRegex": "^http://www.ldbc.eu/data/pers([0-9]*)$",
+      "replacementStrings": [
+        "https://a.example.com/users$1/profile/card#me",
+        "https://b.example.com/users$1/profile/card#me",
+        "https://c.example.com/users$1/profile/card#me",
+        "https://d.example.com/users$1/profile/card#me"
       ]
     }
   ]
@@ -599,23 +652,6 @@ A quad transformer that that replaces (parts of) IRIs, deterministically distrib
 This requires at least one group-based replacement, of which the first group must match a number.
 
 The matched number is used to choose one of the `replacementStrings` in a deterministic way: `replacementStrings[number % replacementStrings.length]`
-
-```json
-{
-  "transformers": [
-    {
-      "@type": "QuadTransformerDistributeIri",
-      "searchRegex": "^http://www.ldbc.eu/data/pers([0-9]*)$",
-      "replacementStrings": [
-        "https://one.example.com/users$1/profile/card#me",
-        "https://two.example.com/users$1/profile/card#me",
-        "https://three.example.com/users$1/profile/card#me",
-        "https://four.example.com/users$1/profile/card#me"
-      ]
-    }
-  ]
-}
-```
 
 Options:
 * `"searchRegex"`: The regex to search for. A group is identified via `()` in the search regex. There must be at least one group. The first group must match a number.

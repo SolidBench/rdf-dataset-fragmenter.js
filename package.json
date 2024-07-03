@@ -1,6 +1,6 @@
 {
   "name": "rdf-dataset-fragmenter",
-  "version": "2.5.1",
+  "version": "2.7.1",
   "description": "Fragments an RDF dataset into multiple parts",
   "keywords": [
     "rdf",
@@ -37,7 +37,9 @@
     "@rdfjs/types": "*",
     "@shexjs/parser": "1.0.0-alpha.26",
     "@types/async-lock": "^1.4.0",
+    "@types/bloem": "^0.2.0",
     "async-lock": "^1.4.0",
+    "bloem": "^0.2.0",
     "componentsjs": "^5.0.0",
     "jsonld-streaming-parser": "^3.3.0",
     "lru-cache": "^10.2.0",
@@ -104,5 +106,6 @@
     "validate": "yarn ls",
     "prepare": "yarn run build",
     "version": "manual-git-changelog onversion"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }

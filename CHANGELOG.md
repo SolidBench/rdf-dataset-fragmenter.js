@@ -1,6 +1,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.7.1"></a>
+## [v2.7.1](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.7.0...v2.7.1) - 2024-05-02
+
+### Fixed
+* [Move @types/bloem from devDependencies to dependencies](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/0f77125a86522caba985823fa8387e47dba83448)
+
+<a name="v2.7.0"></a>
+## [v2.7.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.6.0...v2.7.0) - 2024-05-02
+
+### Added
+* [Add dataset summary fragmentation strategies for Bloom and VoID](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/f7173877ef4b146765728c57b5e7a996db0a476e)
+
+<a name="v2.6.0"></a>
+## [v2.6.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.5.1...v2.6.0) - 2024-04-24
+
+### Added
+* [Add constant fragmentation strategy](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/8e45de861865e86fa67d6eb6609874ebde456543)
+
 <a name="v2.5.1"></a>
 ## [v2.5.1](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.5.0...v2.5.1) - 2024-03-25
 
