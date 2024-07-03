@@ -74,7 +74,7 @@ export class ConcurentPromiseManager<T> {
     }));
 
     const [ result, index ] = await Promise.race(operations);
-    this.operationQueue = this.operationQueue.filter((_, i) => i === index);
+    this.operationQueue = this.operationQueue.filter((_, i) => i !== index);
 
     return {
       result,
