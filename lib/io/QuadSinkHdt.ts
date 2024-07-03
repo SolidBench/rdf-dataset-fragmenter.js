@@ -5,6 +5,7 @@ import * as Path from 'path';
 import * as readline from 'readline';
 import type * as RDF from '@rdfjs/types';
 import * as Docker from 'dockerode';
+import { ConcurentPromiseManager } from './ConcurentPromiseManager';
 import type { IQuadSinkFileOptions } from './QuadSinkFile';
 import { QuadSinkFile } from './QuadSinkFile';
 import { transformToHdt, pullHdtCppDockerImage } from './rfdhdtDockerUtil';
@@ -12,8 +13,8 @@ import { transformToHdt, pullHdtCppDockerImage } from './rfdhdtDockerUtil';
 export class QuadSinkHdt extends QuadSinkFile {
   private readonly files: Set<string> = new Set();
   private readonly deleteSourceFiles: boolean;
-  private readonly hdtConversionOpPoolSize: number;
   private readonly errorFileDockerRfdhdt: WriteStream;
+  private readonly hdtConcurrentTransformationManager: ConcurentPromiseManager<void>;
 
   public constructor(
     options: IQuadSinkFileOptions,
@@ -23,7 +24,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   ) {
     super(options);
     this.deleteSourceFiles = deleteSourceFiles;
-    this.hdtConversionOpPoolSize = poolSize;
+    this.hdtConcurrentTransformationManager = new ConcurentPromiseManager(poolSize, []);
     this.errorFileDockerRfdhdt = createWriteStream(errorFileDockerRfdhdt);
   }
 
@@ -61,17 +62,14 @@ export class QuadSinkHdt extends QuadSinkFile {
     await pullHdtCppDockerImage(docker);
 
     let i = 0;
-    let pool: Promise<void>[] = [];
     for (const file of this.files) {
-      pool.push(this.transformToHdt(docker, file));
-      if (pool.length === this.hdtConversionOpPoolSize) {
-        await Promise.all(pool);
+      await this.hdtConcurrentTransformationManager.push(file, this.transformToHdt(docker, file));
+      if (i % this.hdtConcurrentTransformationManager.poolSize === 0) {
         this.attemptLogHdtTransformation(i);
-        pool = [];
       }
       i++;
     }
-    await Promise.all(pool);
+    await this.hdtConcurrentTransformationManager.waitUntilQueueEmpty();
     this.attemptLogHdtTransformation(i, true);
   }
 
