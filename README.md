@@ -256,7 +256,6 @@ The dataset URIs are determined based on quad subject values using regular expre
 }
 ```
 
-
 #### Bloom Filter Fragmentation Strategy
 
 Fragmentation strategy that generates Bloom filters to capture co-occurrence of resources and properties,
