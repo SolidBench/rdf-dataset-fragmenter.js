@@ -1,7 +1,9 @@
 node_modules
 .idea
-lerna-debug.log
-yarn-error.log
+.husky/_
+
+*.log
+
 **/lib/**/*.js
 **/lib/**/*.js.map
 **/lib/**/*.d.ts
@@ -11,9 +13,7 @@ yarn-error.log
 **/bin/**/*.js
 **/bin/**/*.js.map
 **/bin/**/*.d.ts
-**/index.js
-**/index.js.map
-**/index.d.ts
+
 coverage
 documentation
 .eslintcache
