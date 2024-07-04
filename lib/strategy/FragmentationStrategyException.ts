@@ -1,5 +1,5 @@
-import type { Readable } from 'stream';
-import { PassThrough } from 'stream';
+import type { Readable } from 'node:stream';
+import { PassThrough } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
 import type { IQuadMatcher } from '../quadmatcher/IQuadMatcher';
@@ -60,7 +60,7 @@ export class FragmentationStrategyException extends FragmentationStrategyStreamA
     this.state = undefined;
   }
 
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  protected async handleQuad(quad: RDF.Quad): Promise<void> {
     if (!this.state) {
       throw new Error('Illegal state: handleQuad can only be called via fragment');
     }

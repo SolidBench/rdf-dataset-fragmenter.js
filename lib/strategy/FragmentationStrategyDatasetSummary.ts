@@ -37,7 +37,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
     return mappings;
   }
 
-  protected async handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void> {
+  protected async handleQuad(quad: RDF.Quad): Promise<void> {
     if (quad.subject.termType === 'NamedNode') {
       const datasets = this.subjectToDatasets(quad.subject.value);
       for (const dataset of datasets) {

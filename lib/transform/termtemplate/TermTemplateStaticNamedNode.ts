@@ -16,7 +16,7 @@ export class TermTemplateStaticNamedNode implements ITermTemplate {
     this.valueTerm = DF.namedNode(value);
   }
 
-  public getTerm(quad: RDF.Quad): RDF.Term {
+  public getTerm(): RDF.Term {
     return this.valueTerm;
   }
 }

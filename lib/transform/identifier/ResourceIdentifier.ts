@@ -101,12 +101,10 @@ export class ResourceIdentifier<T> {
   ): boolean {
     let atLeastOne = false;
     if (quad.subject.termType === 'NamedNode' && this.resourceMapping[quad.subject.value]) {
-      // eslint-disable-next-line callback-return
       callback(this.resourceMapping[quad.subject.value], 'subject');
       atLeastOne = true;
     }
     if (quad.object.termType === 'NamedNode' && this.resourceMapping[quad.object.value]) {
-      // eslint-disable-next-line callback-return
       callback(this.resourceMapping[quad.object.value], 'object');
       atLeastOne = true;
     }
@@ -129,7 +127,7 @@ export class ResourceIdentifier<T> {
   public onEnd(): void {
     // After processing is done, check if buffer is clear
     if (Object.keys(this.buffer).length > 0) {
-      throw new Error(`Detected non-finalized resources in the buffer: ${Object.keys(this.buffer)}`);
+      throw new Error(`Detected non-finalized resources in the buffer: ${JSON.stringify(Object.keys(this.buffer))}`);
     }
   }
 }

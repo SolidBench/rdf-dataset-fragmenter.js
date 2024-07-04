@@ -1,5 +1,5 @@
-import type { Readable } from 'stream';
-import { PassThrough } from 'stream';
+import type { Readable } from 'node:stream';
+import { PassThrough } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSource } from './IQuadSource';
 
@@ -22,7 +22,6 @@ export class QuadSourceComposite implements IQuadSource {
       const stream = source.getQuads();
       stream.pipe(concat, { end: false });
       stream.on('error', error => concat.emit('error', error));
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
       stream.on('end', () => {
         if (++endedStreams === this.sources.length) {
           concat.end();

@@ -1,5 +1,5 @@
-import * as readline from 'readline';
-import type { Writable } from 'stream';
+import * as readline from 'node:readline';
+import type { Writable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from './IQuadSink';
 import { ParallelFileWriter } from './ParallelFileWriter';
@@ -54,7 +54,7 @@ export class QuadSinkFile implements IQuadSink {
     }
 
     // Escape illegal directory names
-    path = path.replace(/[*|"<>?:]/ug, '_');
+    path = path.replaceAll(/[*|"<>?:]/ug, '_');
 
     // Add file extension if we don't have one yet
     if (this.fileExtension && !/\.[a-z]$/iu.test(this.fileExtension)) {

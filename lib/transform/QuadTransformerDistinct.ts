@@ -18,7 +18,7 @@ export class QuadTransformerDistinct implements IQuadTransformer {
 
   public transform(quad: RDF.Quad, allowedComponent?: 'subject' | 'object'): RDF.Quad[] {
     return this.transformer.transform(quad)
-      .filter(quadOut => {
+      .filter((quadOut) => {
         // Always let through quads that equal the incoming quad
         if (quadOut.equals(quad)) {
           return true;

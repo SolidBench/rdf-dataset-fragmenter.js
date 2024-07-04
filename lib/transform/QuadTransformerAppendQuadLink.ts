@@ -11,6 +11,7 @@ const DF = new DataFactory();
  * A quad transformer that appends a link to matching quads.
  */
 export class QuadTransformerAppendQuadLink implements IQuadTransformer {
+  // eslint-disable-next-line ts/naming-convention
   private static readonly RDF_TYPE = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
 
   private readonly matcher: IQuadMatcher;
@@ -63,9 +64,9 @@ export class QuadTransformerAppendQuadLink implements IQuadTransformer {
 
     // Link from resource to target
     if (this.reverse) {
-      results.push(DF.quad(target, this.predicate, <any>newSubject));
+      results.push(DF.quad(target, this.predicate, <RDF.Quad_Object>newSubject));
     } else {
-      results.push(DF.quad(<any>newSubject, this.predicate, target));
+      results.push(DF.quad(<RDF.Quad_Subject>newSubject, this.predicate, target));
     }
 
     // Optionally define the type of the target

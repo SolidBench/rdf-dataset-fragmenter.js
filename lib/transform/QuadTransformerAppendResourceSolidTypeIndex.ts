@@ -11,6 +11,7 @@ const DF = new DataFactory();
  * A quad transformer that appends SCL policies to resources of the given type.
  */
 export class QuadTransformerAppendResourceSolidTypeIndex implements IQuadTransformer {
+  /* eslint-disable ts/naming-convention */
   public static readonly PREFIX_SOLID = 'http://www.w3.org/ns/solid/terms#';
   public static readonly IRI_SOLID_PUBLIC_TYPE_INDEX = DF.namedNode(`${QuadTransformerAppendResourceSolidTypeIndex.PREFIX_SOLID}publicTypeIndex`);
   public static readonly IRI_SOLID_TYPE_INDEX = DF.namedNode(`${QuadTransformerAppendResourceSolidTypeIndex.PREFIX_SOLID}TypeIndex`);
@@ -20,6 +21,7 @@ export class QuadTransformerAppendResourceSolidTypeIndex implements IQuadTransfo
   public static readonly IRI_SOLID_INSTANCE = DF.namedNode(`${QuadTransformerAppendResourceSolidTypeIndex.PREFIX_SOLID}instance`);
   public static readonly IRI_SOLID_INSTANCE_CONTAINER = DF.namedNode(`${QuadTransformerAppendResourceSolidTypeIndex.PREFIX_SOLID}instanceContainer`);
   public static readonly IRI_A = DF.namedNode(`http://www.w3.org/1999/02/22-rdf-syntax-ns#type`);
+  /* eslint-enable ts/naming-convention */
 
   public readonly resourceIdentifier: ResourceIdentifier<boolean>;
   private readonly typeIndex: string;
