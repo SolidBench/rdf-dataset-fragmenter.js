@@ -32,7 +32,7 @@ export class QuadTransformerDistributeIri extends QuadTransformerTerms {
         }
         const nr = Number.parseInt(match[1], 10);
         if (Number.isNaN(nr)) {
-          throw new Error(`The first capture group in 'searchRegex' must always match a number, but it matched "${match[1]}" instead.`);
+          throw new TypeError(`The first capture group in 'searchRegex' must always match a number, but it matched "${match[1]}" instead.`);
         }
         const value = term.value.replace(this.search, this.replacements[nr % this.replacements.length]);
         return DF.namedNode(value);

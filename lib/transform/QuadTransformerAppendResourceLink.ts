@@ -9,6 +9,7 @@ const DF = new DataFactory();
  * A quad transformer that appends a link to resources of the given type.
  */
 export class QuadTransformerAppendResourceLink extends QuadTransformerAppendResourceAdapter {
+  // eslint-disable-next-line ts/naming-convention
   private static readonly RDF_TYPE = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
 
   private readonly predicate: RDF.NamedNode;

@@ -1,11 +1,11 @@
-import * as fs from 'fs';
-import { dirname } from 'path';
-import { type Writable, PassThrough } from 'stream';
+import * as fs from 'node:fs';
+import { dirname } from 'node:path';
+import { type Writable, PassThrough } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
-import AsyncLock = require('async-lock');
+import * as AsyncLock from 'async-lock';
 import { LRUCache } from 'lru-cache';
 import { mkdirp } from 'mkdirp';
-import rdfSerializer from 'rdf-serialize';
+import { rdfSerializer } from 'rdf-serialize';
 
 /**
  * A parallel file writer enables the writing to an infinite number of files in parallel.
@@ -55,7 +55,7 @@ export class ParallelFileWriter {
       this.fileClosingPromises = [];
 
       // Open the file stream, and prepare the RDF serializer
-      const writeStream: RDF.Stream & Writable = <any> new PassThrough({ objectMode: true });
+      const writeStream: RDF.Stream & Writable = new PassThrough({ objectMode: true });
       const folder = dirname(path);
       await mkdirp(folder);
       const fileStream = fs.createWriteStream(path, { flags: 'a' });
@@ -72,7 +72,8 @@ export class ParallelFileWriter {
   public async close(): Promise<void> {
     const outputStreamPromises: Promise<any>[] = [];
 
-    this.cache.forEach(entry => {
+    // eslint-disable-next-line unicorn/no-array-for-each
+    this.cache.forEach((entry) => {
       // Wait asynchronously for the file stream associated with the current write stream to be close
       outputStreamPromises.push(
         new Promise((resolve, reject) => {
@@ -87,7 +88,7 @@ export class ParallelFileWriter {
     await Promise.all(outputStreamPromises);
   }
 
-  protected closeWriteEntry(_path: string, writeEntry: IWriteEntry): void {
+  protected closeWriteEntry(path: string, writeEntry: IWriteEntry): void {
     this.fileClosingPromises.push(new Promise((resolve, reject) => {
       writeEntry.fileStream.on('finish', resolve);
       writeEntry.fileStream.on('error', reject);

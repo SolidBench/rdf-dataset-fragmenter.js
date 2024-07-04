@@ -16,9 +16,11 @@ export interface IDatasetSummary {
 export abstract class DatasetSummary implements IDatasetSummary {
   protected readonly dataset: string;
 
+  /* eslint-disable ts/naming-convention */
   public static readonly RDF_TYPE = DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
   public static readonly XSD_INTEGER = DF.namedNode('http://www.w3.org/2001/XMLSchema#integer');
   public static readonly XSD_BASE64 = DF.namedNode('http://www.w3.org/2001/XMLSchema#base64Binary');
+  /* eslint-enable ts/naming-convention */
 
   public constructor(args: IDatasetSummaryArgs) {
     this.dataset = args.dataset;

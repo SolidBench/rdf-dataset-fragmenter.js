@@ -1,5 +1,5 @@
-import type { TransformCallback } from 'stream';
-import { Transform } from 'stream';
+import type { TransformCallback } from 'node:stream';
+import { Transform } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadTransformer } from './IQuadTransformer';
 
@@ -28,7 +28,7 @@ export class QuadTransformStream extends Transform {
     return quads;
   }
 
-  // eslint-disable-next-line no-undef
+  // eslint-disable-next-line ts/naming-convention
   public _transform(quad: RDF.Quad, encoding: BufferEncoding, callback: TransformCallback): void {
     for (const transformedQuad of this.runTransformers(quad)) {
       this.push(transformedQuad);
@@ -36,6 +36,7 @@ export class QuadTransformStream extends Transform {
     callback();
   }
 
+  // eslint-disable-next-line ts/naming-convention
   public _flush(callback: TransformCallback): void {
     for (const transformer of this.transformers) {
       if (transformer.end) {

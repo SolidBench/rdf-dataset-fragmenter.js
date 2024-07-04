@@ -1,4 +1,4 @@
-import type { Readable } from 'stream';
+import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from './io/IQuadSink';
 import type { IQuadSource } from './io/IQuadSource';
@@ -41,7 +41,7 @@ export class Fragmenter {
    */
   public async fragment(): Promise<void> {
     await this.fragmentationStrategy.fragment(
-      Fragmenter.getTransformedQuadStream(this.quadSource, this.transformers || []),
+      Fragmenter.getTransformedQuadStream(this.quadSource, this.transformers ?? []),
       this.quadSink,
     );
     await this.quadSink.close();

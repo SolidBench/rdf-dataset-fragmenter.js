@@ -6,9 +6,9 @@ import type { IQuadSink } from '../io/IQuadSink';
 /**
  * Buffers quads with blank nodes keys, and makes connections to non-blank node keys.
  */
-export class FragmentationBlankNodeBuffer<A extends QuadTermName, B extends QuadTermName> {
-  private readonly keyKey: A;
-  private readonly keyValue: B;
+export class FragmentationBlankNodeBuffer<TA extends QuadTermName, TB extends QuadTermName> {
+  private readonly keyKey: TA;
+  private readonly keyValue: TB;
   private readonly valueKeyLinks: Record<string, RDF.NamedNode[]> = {};
   private readonly pendingBlankKeyQuads: Record<string, RDF.Quad[]> = {};
   private readonly eagerFlushing: boolean;
@@ -18,7 +18,7 @@ export class FragmentationBlankNodeBuffer<A extends QuadTermName, B extends Quad
    * @param keyValue @ignored The quad term value that may have a connection to the key.
    * @param eagerFlushing @ignored If the pending quads in the buffer should be flushed as soon as possible.
    */
-  public constructor(keyKey: A, keyValue: B, eagerFlushing: boolean) {
+  public constructor(keyKey: TA, keyValue: TB, eagerFlushing: boolean) {
     this.keyKey = keyKey;
     this.keyValue = keyValue;
     this.eagerFlushing = eagerFlushing;

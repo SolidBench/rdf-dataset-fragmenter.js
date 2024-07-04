@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import type { WriteStream } from 'fs';
-import { dirname } from 'path';
+import * as fs from 'node:fs';
+import type { WriteStream } from 'node:fs';
+import { dirname } from 'node:path';
 import type * as RDF from '@rdfjs/types';
 import { mkdirp } from 'mkdirp';
 import { termToString } from 'rdf-string';
@@ -27,7 +27,7 @@ export class QuadSinkCsv implements IQuadSink {
   public close(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (this.fileStream) {
-        this.fileStream.close(error => {
+        this.fileStream.close((error) => {
           if (error) {
             return reject(error);
           }
@@ -47,7 +47,7 @@ export class QuadSinkCsv implements IQuadSink {
 
       // Open file stream
       this.fileStream = fs.createWriteStream(this.file);
-      await new Promise<void>(resolve => {
+      await new Promise<void>((resolve) => {
         this.fileStream!.on('open', () => {
           // Write CSV header
           this.fileStream!.write(`${this.columns.join(',')}\n`);
