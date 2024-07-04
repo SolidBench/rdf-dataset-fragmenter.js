@@ -39,7 +39,7 @@
     "build": "yarn run build:ts && yarn run build:components",
     "build:components": "componentsjs-generator -s lib -r rdfdf",
     "build:ts": "tsc",
-    "validate": "yarn ls",
+    "validate": "yarn list",
     "prepare": "husky",
     "version": "manual-git-changelog onversion"
   },
