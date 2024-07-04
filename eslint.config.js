@@ -10,4 +10,17 @@ module.exports = config([
       },
     },
   },
+  {
+    rules: {
+      'import/no-nodejs-modules': 'off',
+    },
+  },
+  {
+    files: [
+      'lib/**/*VoID*.ts',
+    ],
+    rules: {
+      'unicorn/filename-case': 'off',
+    },
+  },
 ]);
