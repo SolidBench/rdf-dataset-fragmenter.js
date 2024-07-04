@@ -9,10 +9,12 @@ import type { IFragmentationStrategy } from './IFragmentationStrategy';
  */
 export abstract class FragmentationStrategyStreamAdapter implements IFragmentationStrategy {
   public async fragment(quadStream: RDF.Stream & Readable, quadSink: IQuadSink): Promise<void> {
+    // eslint-disable-next-line ts/no-this-alias
+    const self = this;
     const transform = new Transform({
       objectMode: true,
       transform(quad: RDF.Quad, encoding: BufferEncoding, callback: TransformCallback) {
-        (<any> this).handleQuad(quad, quadSink).then(() => callback(), callback);
+        self.handleQuad(quad, quadSink).then(() => callback(), callback);
       },
     });
 

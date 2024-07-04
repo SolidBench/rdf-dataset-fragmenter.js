@@ -2,7 +2,9 @@ import * as fs from 'node:fs';
 import { dirname } from 'node:path';
 import { type Writable, PassThrough } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
-import * as AsyncLock from 'async-lock';
+
+// eslint-disable-next-line ts/no-require-imports
+import AsyncLock = require('async-lock');
 import { LRUCache } from 'lru-cache';
 import { mkdirp } from 'mkdirp';
 import { rdfSerializer } from 'rdf-serialize';
