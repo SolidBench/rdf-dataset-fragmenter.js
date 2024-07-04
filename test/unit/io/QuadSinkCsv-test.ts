@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import type { WriteStream } from 'fs';
+import * as fs from 'node:fs';
+import type { WriteStream } from 'node:fs';
 import type * as RDF from '@rdfjs/types';
 import { mkdirp } from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
@@ -8,7 +8,7 @@ import mocked = jest.mocked;
 
 const DF = new DataFactory();
 
-jest.mock('fs');
+jest.mock('node:fs');
 jest.mock('mkdirp');
 
 describe('QuadSinkCsv', () => {
@@ -29,7 +29,7 @@ describe('QuadSinkCsv', () => {
         return this;
       }),
       write: jest.fn(),
-      close: jest.fn().mockImplementation(cb => {
+      close: jest.fn().mockImplementation((cb) => {
         cb();
       }),
     };
@@ -70,16 +70,16 @@ describe('QuadSinkCsv', () => {
       await sink.push('path/to/file.csv', quad);
 
       await sink.close();
-      expect(mockWriteStream.close).toHaveBeenCalled();
+      expect(mockWriteStream.close).toHaveBeenCalledTimes(1);
     });
 
     it('should throw if an error occurs while closing', async() => {
       await sink.push('path/to/file.csv', quad);
 
-      mockWriteStream.close = jest.fn().mockImplementation(cb => {
-        cb(new Error('QuadSinkCsv close error'));
+      jest.spyOn(mockWriteStream, 'close').mockImplementation((cb) => {
+        cb!(new Error('QuadSinkCsv close error'));
       });
-      await expect(sink.close()).rejects.toThrowError('QuadSinkCsv close error');
+      await expect(sink.close()).rejects.toThrow('QuadSinkCsv close error');
     });
   });
 });

@@ -7,7 +7,7 @@ const streamifyString = require('streamify-string');
 
 const DF = new DataFactory();
 
-jest.mock('fs', () => ({
+jest.mock<typeof import('node:fs')>('node:fs', () => <any> ({
   createReadStream(filePath: string) {
     if (filePath === '/path/to/file.ttl') {
       return streamifyString(`<ex:s> <ex:p> <ex:o>.`);
@@ -26,7 +26,7 @@ describe('QuadSourceFile', () => {
   });
 
   it('should load quads from a file', async() => {
-    expect(await arrayifyStream(source.getQuads())).toEqualRdfQuadArray([
+    await expect(arrayifyStream(source.getQuads())).resolves.toEqualRdfQuadArray([
       DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
     ]);
   });

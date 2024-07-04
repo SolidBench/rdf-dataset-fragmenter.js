@@ -1,4 +1,3 @@
-import * as readline from 'readline';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { QuadSinkFile } from '../../../lib/io/QuadSinkFile';
@@ -6,7 +5,7 @@ import { QuadSinkFile } from '../../../lib/io/QuadSinkFile';
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');
-jest.mock('readline');
+jest.mock('node:readline');
 
 describe('QuadSinkFile', () => {
   let sink: QuadSinkFile;
@@ -15,13 +14,9 @@ describe('QuadSinkFile', () => {
   let fileWriter: any;
 
   let spyStdoutWrite: any;
-  let spyClearLine: any;
-  let spyCursorTo: any;
 
   beforeEach(() => {
     spyStdoutWrite = jest.spyOn(process.stdout, 'write');
-    spyClearLine = jest.spyOn(readline, 'clearLine');
-    spyCursorTo = jest.spyOn(readline, 'cursorTo');
   });
 
   describe('without logging', () => {

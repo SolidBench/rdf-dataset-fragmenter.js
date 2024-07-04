@@ -67,7 +67,7 @@ describe('QuadTransformerDistributeIri', () => {
             DF.namedNode('http://www.ldbc.eu/data/pers0495'),
             DF.namedNode('ex:p'),
             DF.literal('o'),
-          ))).toThrow();
+          ))).toThrow('The first capture group in \'searchRegex\' must always match a number');
         });
 
         it('should throw error when no regex groups', async() => {
@@ -80,7 +80,7 @@ describe('QuadTransformerDistributeIri', () => {
             DF.namedNode('http://www.ldbc.eu/data/pers0495'),
             DF.namedNode('ex:p'),
             DF.literal('o'),
-          ))).toThrow();
+          ))).toThrow('did not contain any groups, while QuadTransformerDistributeIri requires at least one');
         });
       });
     });

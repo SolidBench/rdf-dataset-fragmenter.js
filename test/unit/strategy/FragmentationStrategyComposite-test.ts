@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import arrayifyStream from 'arrayify-stream';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategyComposite } from '../../../lib/strategy/FragmentationStrategyComposite';
@@ -27,7 +27,7 @@ describe('FragmentationStrategyComposite', () => {
     };
     strategySub1 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve) => {
           stream.on('error', (error: any) => {
             error1 = error;
             resolve();
@@ -39,7 +39,7 @@ describe('FragmentationStrategyComposite', () => {
     };
     strategySub2 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve) => {
           stream.on('error', (error: any) => {
             error2 = error;
             resolve();
@@ -51,7 +51,7 @@ describe('FragmentationStrategyComposite', () => {
     };
     strategySub3 = {
       fragment: jest.fn((stream: any) => {
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve) => {
           stream.on('error', (error: any) => {
             error3 = error;
             resolve();
@@ -73,11 +73,11 @@ describe('FragmentationStrategyComposite', () => {
       await strategy.fragment(streamifyArray([]), sink);
       expect(sink.push).not.toHaveBeenCalled();
       expect(strategySub1.fragment).toHaveBeenCalledWith(expect.anything(), sink);
-      expect(await data1).toEqual([]);
+      await expect(data1).resolves.toEqual([]);
       expect(strategySub2.fragment).toHaveBeenCalledWith(expect.anything(), sink);
-      expect(await data2).toEqual([]);
+      await expect(data2).resolves.toEqual([]);
       expect(strategySub3.fragment).toHaveBeenCalledWith(expect.anything(), sink);
-      expect(await data3).toEqual([]);
+      await expect(data3).resolves.toEqual([]);
     });
 
     it('should handle a non-empty stream', async() => {
@@ -87,17 +87,17 @@ describe('FragmentationStrategyComposite', () => {
       ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
       expect(strategySub1.fragment).toHaveBeenCalledWith(expect.anything(), sink);
-      expect(await data1).toEqual([
+      await expect(data1).resolves.toEqual([
         DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p1'), DF.namedNode('ex:o1')),
         DF.quad(DF.namedNode('ex:s2'), DF.namedNode('ex:p2'), DF.namedNode('ex:o2')),
       ]);
       expect(strategySub2.fragment).toHaveBeenCalledWith(expect.anything(), sink);
-      expect(await data2).toEqual([
+      await expect(data2).resolves.toEqual([
         DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p1'), DF.namedNode('ex:o1')),
         DF.quad(DF.namedNode('ex:s2'), DF.namedNode('ex:p2'), DF.namedNode('ex:o2')),
       ]);
       expect(strategySub3.fragment).toHaveBeenCalledWith(expect.anything(), sink);
-      expect(await data3).toEqual([
+      await expect(data3).resolves.toEqual([
         DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p1'), DF.namedNode('ex:o1')),
         DF.quad(DF.namedNode('ex:s2'), DF.namedNode('ex:p2'), DF.namedNode('ex:o2')),
       ]);

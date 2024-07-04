@@ -165,7 +165,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             DF.namedNode('ex:s'),
             DF.namedNode('ex:vocabulary/id'),
             DF.literal('123'),
-          ))).toThrowError(`Illegal overwrite of identifier value on resource 'ex:s'`);
+          ))).toThrow(`Illegal overwrite of identifier value on resource 'ex:s'`);
         });
 
         it('should buffer the creator', async() => {
@@ -199,7 +199,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             DF.namedNode('ex:s'),
             DF.namedNode('ex:vocabulary/hasCreator'),
             DF.literal('ex:c'),
-          ))).toThrowError(`Expected target value of type NamedNode on resource 'ex:s'`);
+          ))).toThrow(`Expected target value of type NamedNode on resource 'ex:s'`);
         });
 
         it('should throw on duplicate creators', async() => {
@@ -212,7 +212,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
             DF.namedNode('ex:s'),
             DF.namedNode('ex:vocabulary/hasCreator'),
             DF.namedNode('ex:c'),
-          ))).toThrowError(`Illegal overwrite of target value on resource 'ex:s'`);
+          ))).toThrow(`Illegal overwrite of target value on resource 'ex:s'`);
         });
 
         it('should buffer other triples with the given subject', async() => {
@@ -275,7 +275,7 @@ describe('QuadTransformerRemapResourceIdentifier', () => {
         });
 
         it('should throw on end', async() => {
-          expect(() => transformer.end()).toThrowError(`Detected non-finalized resources in the buffer: ex:s`);
+          expect(() => transformer.end()).toThrow(`Detected non-finalized resources in the buffer: ex:s`);
         });
       });
 
