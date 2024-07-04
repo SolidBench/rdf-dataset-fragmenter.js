@@ -26,7 +26,9 @@ describe('DatasetSummaryCollectorBloom', () => {
   });
 
   it('should properly register quads', async() => {
-    quads.forEach(quad => collector.register(quad));
+    for (const quad of quads) {
+      collector.register(quad);
+    }
     const filters = collector.serialize().quads.filter(quad =>
       quad.predicate.value === DatasetSummaryBloom.MEM_PROP_BINARYREPRESENTATION.value &&
       quad.object.termType === 'Literal' &&
@@ -49,10 +51,13 @@ describe('DatasetSummaryCollectorBloom', () => {
   });
 
   it('should always produce rdf:type in the first quad for each subject', async() => {
-    quads.forEach(quad => collector.register(quad));
+    for (const quad of quads) {
+      collector.register(quad);
+    }
     const typedSubjects = new Set<string>();
     for (const quad of collector.serialize().quads) {
       if (!typedSubjects.has(quad.subject.value)) {
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(quad.predicate.value).toEqual(DatasetSummaryBloom.RDF_TYPE.value);
         typedSubjects.add(quad.subject.value);
       }

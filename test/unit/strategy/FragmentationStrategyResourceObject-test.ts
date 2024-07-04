@@ -37,7 +37,7 @@ describe('FragmentationStrategyResourceObject', () => {
         DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:hasMaliciousCreator'), DF.literal('ex:o')),
       ];
       await expect(strategy.fragment(streamifyArray([ ...quads ]), sink)).rejects
-        .toThrowError(`Expected target predicate value of type NamedNode on resource 'ex:s1', but got 'ex:o' (Literal)`);
+        .toThrow(`Expected target predicate value of type NamedNode on resource 'ex:s1', but got 'ex:o' (Literal)`);
     });
 
     it('should handle triples of a resource after target predicate', async() => {
@@ -142,7 +142,7 @@ describe('FragmentationStrategyResourceObject', () => {
     });
 
     it('should warn on resources without target predicate', async() => {
-      (<any> console).warn = jest.fn();
+      jest.spyOn(console, 'warn').mockImplementation();
       const quads = [
         DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:hasMaliciousCreator'), DF.namedNode('ex:o')),
         DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p2'), DF.namedNode('ex:o')),

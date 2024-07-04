@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import arrayifyStream from 'arrayify-stream';
 import { QuadSourceComposite } from '../../../lib/io/QuadSourceComposite';
 
@@ -34,7 +34,7 @@ describe('QuadSourceComposite', () => {
     });
 
     it('should produce an empty stream', async() => {
-      expect(await arrayifyStream(source.getQuads())).toEqual([]);
+      await expect(arrayifyStream(source.getQuads())).resolves.toEqual([]);
     });
   });
 
@@ -48,7 +48,7 @@ describe('QuadSourceComposite', () => {
     });
 
     it('should produce an empty stream', async() => {
-      expect(await arrayifyStream(source.getQuads())).toEqual([]);
+      await expect(arrayifyStream(source.getQuads())).resolves.toEqual([]);
     });
   });
 
@@ -62,7 +62,7 @@ describe('QuadSourceComposite', () => {
     });
 
     it('should produce an empty stream', async() => {
-      expect(await arrayifyStream(source.getQuads())).toEqual([
+      await expect(arrayifyStream(source.getQuads())).resolves.toEqual([
         'a',
         'b',
         'c',

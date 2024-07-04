@@ -54,8 +54,8 @@ describe('QuadTransformerCompositeSequential', () => {
     describe('end', () => {
       it('should end all subtransformers', async() => {
         transformer.end();
-        expect(subTransformer1.end).toHaveBeenCalled();
-        expect(subTransformer2.end).toHaveBeenCalled();
+        expect(subTransformer1.end).toHaveBeenCalledTimes(1);
+        expect(subTransformer2.end).toHaveBeenCalledTimes(1);
       });
     });
   });

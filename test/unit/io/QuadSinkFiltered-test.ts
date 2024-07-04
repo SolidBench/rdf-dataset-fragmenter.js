@@ -36,7 +36,7 @@ describe('QuadSinkFiltered', () => {
       it('should delegate to the two sinks', async() => {
         await sink.close();
 
-        expect(sinkInner.close).toHaveBeenCalled();
+        expect(sinkInner.close).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -62,7 +62,7 @@ describe('QuadSinkFiltered', () => {
       it('should delegate to the two sinks', async() => {
         await sink.close();
 
-        expect(sinkInner.close).toHaveBeenCalled();
+        expect(sinkInner.close).toHaveBeenCalledTimes(1);
       });
     });
   });

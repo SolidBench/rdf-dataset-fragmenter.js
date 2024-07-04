@@ -110,12 +110,14 @@ describe('QuadTransformerAppendResourceLink', () => {
     });
 
     it('should remove trailing slashes from the target', async() => {
-      transformer = new QuadTransformerAppendResourceLink('vocabulary/Person$',
+      transformer = new QuadTransformerAppendResourceLink(
+        'vocabulary/Person$',
         'ex:myp',
         '..',
         undefined,
         undefined,
-        true);
+        true,
+      );
       expect(transformer.transform(DF.quad(
         DF.namedNode('http://www.ldbc.eu/a/b'),
         DF.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),

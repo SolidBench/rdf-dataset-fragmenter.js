@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import { PassThrough } from 'stream';
+import * as fs from 'node:fs';
+import { PassThrough } from 'node:stream';
 import { mkdirp } from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import { ParallelFileWriter } from '../../../lib/io/ParallelFileWriter';
@@ -8,7 +8,7 @@ import mocked = jest.mocked;
 const DF = new DataFactory();
 const stringifyStream = require('stream-to-string');
 
-jest.mock('fs');
+jest.mock('node:fs');
 jest.mock('mkdirp');
 
 describe('ParallelFileWriter', () => {
@@ -41,7 +41,7 @@ describe('ParallelFileWriter', () => {
       const writeStream = await writer.getWriteStream('/path/to/file.ttl', 'text/turtle');
       writeStream.write(DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p1'), DF.namedNode('ex:o1')));
       writeStream.end();
-      expect(await stringifyStream(fileWriteStream)).toEqual(`<ex:s1> <ex:p1> <ex:o1>.\n`);
+      await expect(stringifyStream(fileWriteStream)).resolves.toBe(`<ex:s1> <ex:p1> <ex:o1>.\n`);
     });
 
     it('should return the same write stream on repeated calls', async() => {
@@ -113,17 +113,17 @@ describe('ParallelFileWriter', () => {
     expect(writeStream4.end).not.toHaveBeenCalled();
 
     // Check if the file has been written
-    expect(await stringifyStream(fileWriteStream1)).toEqual(`<ex:s1> <ex:p1> <ex:o1>.\n`);
+    await expect(stringifyStream(fileWriteStream1)).resolves.toBe(`<ex:s1> <ex:p1> <ex:o1>.\n`);
 
     // Close all remaining streams
     await writer.close();
-    expect(writeStream2.end).toHaveBeenCalled();
-    expect(writeStream3.end).toHaveBeenCalled();
-    expect(writeStream4.end).toHaveBeenCalled();
+    expect(writeStream2.end).toHaveBeenCalledTimes(1);
+    expect(writeStream3.end).toHaveBeenCalledTimes(1);
+    expect(writeStream4.end).toHaveBeenCalledTimes(1);
 
     // Check if the files has been written
-    expect(await stringifyStream(fileWriteStream2)).toEqual(`<ex:s2> <ex:p2> <ex:o2>.\n<ex:s2.2> <ex:p2.2> <ex:o2.2>.\n`);
-    expect(await stringifyStream(fileWriteStream3)).toEqual(`<ex:s3> <ex:p3> <ex:o3>.\n`);
-    expect(await stringifyStream(fileWriteStream4)).toEqual(`<ex:s4> <ex:p4> <ex:o4>.\n`);
+    await expect(stringifyStream(fileWriteStream2)).resolves.toBe(`<ex:s2> <ex:p2> <ex:o2>.\n<ex:s2.2> <ex:p2.2> <ex:o2.2>.\n`);
+    await expect(stringifyStream(fileWriteStream3)).resolves.toBe(`<ex:s3> <ex:p3> <ex:o3>.\n`);
+    await expect(stringifyStream(fileWriteStream4)).resolves.toBe(`<ex:s4> <ex:p4> <ex:o4>.\n`);
   });
 });

@@ -62,9 +62,11 @@ describe('FragmentationConstant', () => {
       expect(sink.push).toHaveBeenCalledTimes(quads.length);
 
       for (const [ i, quad ] of quads.entries()) {
-        expect(sink.push).toHaveBeenNthCalledWith(i + 1,
+        expect(sink.push).toHaveBeenNthCalledWith(
+          i + 1,
           strategy.path,
-          quad);
+          quad,
+        );
       }
     });
   });
