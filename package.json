@@ -50,6 +50,7 @@
     "async-lock": "^1.4.0",
     "bloem": "^0.2.0",
     "componentsjs": "^6.0.0",
+    "dockerode": "^4.0.2",
     "lru-cache": "^10.3.0",
     "mkdirp": "^3.0.1",
     "rdf-parse": "^3.0.0",
@@ -60,6 +61,7 @@
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^3.0.0",
+    "@types/dockerode": "^3.3.29",
     "@types/jest": "^29.0.0",
     "arrayify-stream": "^2.0.0",
     "componentsjs-generator": "^4.0.0",
