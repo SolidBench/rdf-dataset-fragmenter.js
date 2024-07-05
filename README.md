@@ -329,7 +329,7 @@ The docker operations to acquire the image and execute the transformations into 
     },
     "poolSize": 1,
     "deleteSourceFiles": false,
-    "errorFileDockerRfdhdt": "./error_log_docker_rfdhdt"
+    "errorFileDockerRfdhdt": "./error_log_docker_rfdhdt.txt"
   }
 }
 ```
