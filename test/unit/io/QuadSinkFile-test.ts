@@ -1,169 +1,182 @@
+import type { Writable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
+import type { IQuadSink } from '../../../lib/io/IQuadSink';
+import { ParallelFileWriter } from '../../../lib/io/ParallelFileWriter';
 import { QuadSinkFile } from '../../../lib/io/QuadSinkFile';
 
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');
-jest.mock('node:readline');
+
+interface IQuadSinkFile extends IQuadSink {
+  outputFormat: string;
+  iriToPath: Map<RegExp, string>;
+  fileWriter: ParallelFileWriter;
+  log: boolean;
+  fileExtension?: string;
+  counter: number;
+
+  attemptLog: (newLine: boolean) => void;
+  getFilePath: (iri: string) => string;
+  getFileStream: (path: string) => Promise<Writable>;
+  push: (iri: string, quad: RDF.Quad) => Promise<void>;
+  close: () => Promise<void>;
+}
 
 describe('QuadSinkFile', () => {
-  let sink: QuadSinkFile;
-  let quad: RDF.Quad;
-  let writeStream: any;
-  let fileWriter: any;
+  let sink: IQuadSinkFile;
 
-  let spyStdoutWrite: any;
+  const outputFormat = 'application/n-quads';
+  const iriToPath = {
+    '^http://example.org/1': '/path/to/folder1',
+    '^http://example.org/2': '/path/to/folder2',
+    '^http://example.org/23': '/path/to/folder23',
+  };
 
   beforeEach(() => {
-    spyStdoutWrite = jest.spyOn(process.stdout, 'write');
+    sink = <any> new QuadSinkFile({ outputFormat, iriToPath });
   });
 
-  describe('without logging', () => {
-    beforeEach(() => {
-      sink = new QuadSinkFile({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-      });
-      quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
-
-      writeStream = {
-        write: jest.fn(),
-      };
-      fileWriter = {
-        getWriteStream: jest.fn(() => writeStream),
-        close: jest.fn(),
-      };
-      (<any> sink).fileWriter = fileWriter;
+  describe('constructor', () => {
+    it('should assign default values', () => {
+      expect(sink.outputFormat).toBe(outputFormat);
+      expect(sink.fileExtension).toBeUndefined();
+      expect(sink.log).toBeFalsy();
+      expect(sink.fileWriter).toBeInstanceOf(ParallelFileWriter);
     });
 
-    describe('push', () => {
-      it('should write a quad to an IRI available in the mapping', async() => {
-        await sink.push('http://example.org/1/file.ttl', quad);
-        expect(fileWriter.getWriteStream)
-          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
-        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      });
-
-      it('should escape illegal directory names', async() => {
-        await sink.push('http://example.org/1/file:3000.ttl', quad);
-        expect(fileWriter.getWriteStream)
-          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
-        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      });
-
-      it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
-        await sink.push('http://example.org/1/file', quad);
-        expect(fileWriter.getWriteStream)
-          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
-        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      });
-
-      it('should write a quad to an IRI available in the mapping without extension with fileExtension', async() => {
-        sink = new QuadSinkFile({
-          outputFormat: 'application/n-quads',
-          iriToPath: {
-            'http://example.org/1/': '/path/to/folder1/',
-            'http://example.org/2/': '/path/to/folder2/',
-          },
-          fileExtension: '$.nq',
-        });
-        (<any> sink).fileWriter = fileWriter;
-
-        await sink.push('http://example.org/1/file', quad);
-        expect(fileWriter.getWriteStream)
-          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file$.nq', 'application/n-quads');
-        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      });
-
-      it('should error on an IRI not available in the mapping', async() => {
-        await expect(sink.push('http://example.org/3/file.ttl', quad)).rejects
-          .toThrow(new Error('No IRI mapping found for http://example.org/3/file.ttl'));
-      });
-
-      it('should remove the hash from the IRI', async() => {
-        await sink.push('http://example.org/1/file.ttl#me', quad);
-        expect(fileWriter.getWriteStream)
-          .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
-        expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      });
-    });
-
-    describe('close', () => {
-      it('should close the file writer', async() => {
-        await sink.close();
-        expect(fileWriter.close).toHaveBeenNthCalledWith(1);
-      });
+    it('should convert IRI mappings to RegExp', () => {
+      const expectedRegExpMapping = new Map(Object.entries(iriToPath).map(([ exp, sub ]) => [
+        new RegExp(exp, 'u'),
+        sub,
+      ]));
+      expect(sink.iriToPath).toEqual(expectedRegExpMapping);
     });
   });
 
-  describe('with logging', () => {
+  describe('attemptLog', () => {
     beforeEach(() => {
-      jest.resetAllMocks();
-      writeStream = {
-        write: jest.fn(),
-      };
-      fileWriter = {
-        getWriteStream: jest.fn(() => writeStream),
-        close: jest.fn(),
-      };
+      jest.spyOn(process.stdout, 'write');
     });
 
-    it('after construction', async() => {
-      new QuadSinkFile({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        log: true,
-      });
-      expect(spyStdoutWrite).toHaveBeenCalledTimes(1);
-      expect(spyStdoutWrite).toHaveBeenCalledWith(`\rHandled quads: 0K`);
+    it('should not write anything when logging is off', () => {
+      expect(process.stdout.write).not.toHaveBeenCalled();
+      sink.attemptLog(false);
+      sink.counter++;
+      sink.attemptLog(false);
+      sink.counter++;
+      sink.attemptLog(true);
+      expect(process.stdout.write).not.toHaveBeenCalled();
     });
 
-    it('after pushing 2001 times', async() => {
-      sink = new QuadSinkFile({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        log: true,
-      });
-      (<any> sink).fileWriter = fileWriter;
-      for (let i = 0; i <= 2_001; i++) {
-        await sink.push('http://example.org/1/a', <any> undefined);
-      }
-      expect(spyStdoutWrite).toHaveBeenCalledTimes(3);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(1, `\rHandled quads: 0K`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(2, `\rHandled quads: 1K`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(3, `\rHandled quads: 2K`);
+    it('should properly log at intervals of 1000 when logging is on', () => {
+      sink.log = true;
+      expect(process.stdout.write).not.toHaveBeenCalled();
+      sink.attemptLog(false);
+      expect(process.stdout.write).toHaveBeenCalledTimes(1);
+      expect(process.stdout.write).toHaveBeenNthCalledWith(1, '\rHandled quads: 0K');
+      sink.counter = 500;
+      sink.attemptLog(false);
+      expect(process.stdout.write).toHaveBeenCalledTimes(1);
+      sink.counter = 1_000;
+      sink.attemptLog(false);
+      expect(process.stdout.write).toHaveBeenCalledTimes(2);
+      expect(process.stdout.write).toHaveBeenNthCalledWith(2, '\rHandled quads: 1K');
+      sink.counter = 2_001;
+      sink.attemptLog(true);
+      expect(process.stdout.write).toHaveBeenCalledTimes(4);
+      expect(process.stdout.write).toHaveBeenNthCalledWith(3, '\rHandled quads: 2.001K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(4, '\n');
+    });
+  });
+
+  describe('getFilePath', () => {
+    it('should map IRIs with file extensions to paths', () => {
+      expect(sink.getFilePath('http://example.org/1/file.ttl')).toBe('/path/to/folder1/file.ttl');
     });
 
-    it('after pushing 2001 times and closing', async() => {
-      sink = new QuadSinkFile({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        log: true,
-      });
-      (<any> sink).fileWriter = fileWriter;
-      for (let i = 0; i <= 2_001; i++) {
-        await sink.push('http://example.org/1/a', <any> undefined);
-      }
+    it('should map IRIs without file extensions to paths', () => {
+      expect(sink.getFilePath('http://example.org/1/file')).toBe('/path/to/folder1/file');
+    });
+
+    it('should map IRIs without file extensions to paths with the specified fileExtension', () => {
+      sink.fileExtension = '$.nq';
+      expect(sink.getFilePath('http://example.org/1/file')).toBe('/path/to/folder1/file$.nq');
+      sink.fileExtension = undefined;
+    });
+
+    it('should escape illegal directory names', () => {
+      expect(sink.getFilePath('http://example.org/1/file:3000.ttl')).toBe('/path/to/folder1/file_3000.ttl');
+    });
+
+    it('should remove fragments from IRIs', () => {
+      expect(sink.getFilePath('http://example.org/1/file#abc')).toBe('/path/to/folder1/file');
+    });
+
+    it('should always pick the longest matching pattern', () => {
+      expect(sink.getFilePath('http://example.org/2/file')).toBe('/path/to/folder2/file');
+      expect(sink.getFilePath('http://example.org/23/file')).toBe('/path/to/folder23/file');
+    });
+
+    it('should throw an error when no mapping exists', () => {
+      const iri = 'http://example.org/3/file';
+      expect(() => sink.getFilePath(iri)).toThrow(`No IRI mapping found for ${iri}`);
+    });
+  });
+
+  describe('getFileStream', () => {
+    it('should get the file stream from fileWriter', async() => {
+      const path = '/path/to/folder1/file.ttl';
+      jest.spyOn(sink.fileWriter, 'getWriteStream').mockResolvedValue(<any> 'stream');
+      expect(sink.fileWriter.getWriteStream).not.toHaveBeenCalled();
+      await expect(sink.getFileStream(path)).resolves.toBe('stream');
+      expect(sink.fileWriter.getWriteStream).toHaveBeenCalledTimes(1);
+      expect(sink.fileWriter.getWriteStream).toHaveBeenNthCalledWith(1, path, sink.outputFormat);
+    });
+  });
+
+  describe('push', () => {
+    const iri = 'http://example.org/1/file';
+    const path = '/path/to/folder1/file';
+    const quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
+    let outputStream: Writable;
+
+    beforeEach(() => {
+      outputStream = <any> { write: jest.fn() };
+      jest.spyOn(sink, 'attemptLog').mockImplementation();
+      jest.spyOn(sink, 'getFilePath').mockReturnValue(path);
+      jest.spyOn(sink, 'getFileStream').mockResolvedValue(outputStream);
+    });
+
+    it('should increment the counter', async() => {
+      expect(sink.counter).toBe(0);
+      await expect(sink.push(iri, quad)).resolves.not.toThrow();
+      expect(sink.counter).toBe(1);
+    });
+
+    it('should properly process the quad', async() => {
+      expect(sink.attemptLog).not.toHaveBeenCalled();
+      expect(sink.getFilePath).not.toHaveBeenCalled();
+      expect(sink.getFileStream).not.toHaveBeenCalled();
+      expect(outputStream.write).not.toHaveBeenCalled();
+      await expect(sink.push(iri, quad)).resolves.not.toThrow();
+      expect(sink.attemptLog).toHaveBeenCalledTimes(1);
+      expect(sink.attemptLog).toHaveBeenNthCalledWith(1);
+      expect(sink.getFilePath).toHaveBeenCalledTimes(1);
+      expect(sink.getFilePath).toHaveBeenNthCalledWith(1, iri);
+      expect(sink.getFileStream).toHaveBeenCalledTimes(1);
+      expect(sink.getFileStream).toHaveBeenNthCalledWith(1, path);
+      expect(outputStream.write).toHaveBeenCalledTimes(1);
+      expect(outputStream.write).toHaveBeenNthCalledWith(1, quad);
+    });
+  });
+
+  describe('close', () => {
+    it('should close the file writer', async() => {
+      expect(sink.fileWriter.close).not.toHaveBeenCalled();
       await sink.close();
-      expect(spyStdoutWrite).toHaveBeenCalledTimes(5);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(1, `\rHandled quads: 0K`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(2, `\rHandled quads: 1K`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(3, `\rHandled quads: 2K`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(4, `\rHandled quads: 2.002K`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(5, `\n`);
+      expect(sink.fileWriter.close).toHaveBeenCalledTimes(1);
     });
   });
 });
