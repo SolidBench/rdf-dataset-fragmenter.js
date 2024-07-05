@@ -1,6 +1,6 @@
-import * as fs from 'fs/promises';
-import * as readline from 'readline';
+import * as fs from 'node:fs/promises';
 import type * as RDF from '@rdfjs/types';
+import * as Docker from 'dockerode';
 import { DataFactory } from 'rdf-data-factory';
 import { QuadSinkHdt } from '../../../lib/io/QuadSinkHdt';
 import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
@@ -8,9 +8,9 @@ import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDoc
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');
-jest.mock('readline');
+jest.mock('node:readline');
 jest.mock('../../../lib/io/rfdhdtDockerUtil');
-jest.mock('fs/promises');
+jest.mock('node:fs/promises');
 
 describe('QuadSinkHdt', () => {
   let sink: QuadSinkHdt;
@@ -19,8 +19,6 @@ describe('QuadSinkHdt', () => {
   let fileWriter: any;
 
   let spyStdoutWrite: any;
-  let spyClearLine: any;
-  let spyCursorTo: any;
 
   afterAll(async() => {
     await fs.rm('./error_log_docker_rfdhdt');
@@ -29,8 +27,6 @@ describe('QuadSinkHdt', () => {
   describe('push', () => {
     beforeEach(() => {
       spyStdoutWrite = jest.spyOn(process.stdout, 'write');
-      spyClearLine = jest.spyOn(readline, 'clearLine');
-      spyCursorTo = jest.spyOn(readline, 'cursorTo');
 
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',
@@ -130,8 +126,6 @@ describe('QuadSinkHdt', () => {
   describe('close', () => {
     beforeEach(() => {
       spyStdoutWrite = jest.spyOn(process.stdout, 'write');
-      spyClearLine = jest.spyOn(readline, 'clearLine');
-      spyCursorTo = jest.spyOn(readline, 'cursorTo');
 
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',
@@ -219,11 +213,13 @@ describe('QuadSinkHdt', () => {
   });
 
   describe('logger', () => {
+    beforeAll(async() => {
+      const docker: Docker = new Docker();
+      await pullHdtCppDockerImage(docker);
+    }, 120 * 1_000);
     beforeEach(() => {
       jest.resetAllMocks();
       spyStdoutWrite = jest.spyOn(process.stdout, 'write');
-      spyClearLine = jest.spyOn(readline, 'clearLine');
-      spyCursorTo = jest.spyOn(readline, 'cursorTo');
 
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',

@@ -1,5 +1,5 @@
-import { createWriteStream } from 'fs';
-import * as fs from 'fs/promises';
+import { createWriteStream } from 'node:fs';
+import * as fs from 'node:fs/promises';
 import * as Docker from 'dockerode';
 import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
 
@@ -25,7 +25,7 @@ describe('rfdhdtDockerUtil', () => {
         .mockImplementation((_stream, onFinished) => {
           onFinished(new Error('error'), []);
         });
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
       expect(pullHdtCppDockerImage(docker)).rejects.toStrictEqual(new Error('error'));
     });
   });
@@ -46,7 +46,7 @@ describe('rfdhdtDockerUtil', () => {
     it('should reject the promise given an unsupported file format', () => {
       const docker: any = jest.fn();
       const inputFilePath = 'foo.abc';
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
       expect(transformToHdt(docker, inputFilePath, ERROR_STEAM_FILE)).rejects.toStrictEqual(new Error(`format .abc not support by rfdhdt/hdt-cpp`));
     });
 
@@ -63,7 +63,7 @@ describe('rfdhdtDockerUtil', () => {
       const docker: Docker = new Docker();
       jest.spyOn(docker, 'run').mockResolvedValueOnce([{ StatusCode: 1 }]);
       const inputFilePath = './test/unit/io/rdf_files/test.nt';
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
       expect(transformToHdt(docker, inputFilePath, ERROR_STEAM_FILE))
         .rejects
         .toStrictEqual(new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.'));

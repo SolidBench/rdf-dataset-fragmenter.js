@@ -26,10 +26,12 @@ describe('ConcurentPromiseManager', () => {
         .mockReturnValueOnce(2);
 
       const manager = new ConcurentPromiseManager(poolSize, []);
-      await manager.push(expectedLabel, new Promise(resolve => { resolve(expectedResult); }));
+      await manager.push(expectedLabel, new Promise((resolve) => {
+        resolve(expectedResult);
+      }));
 
       expect(manager.size()).toBe(0);
-      expect(manager.results.length).toBe(1);
+      expect(manager.results).toHaveLength(1);
       expect(manager.results[0]).toStrictEqual(expectedOutputedResult);
     });
 
@@ -39,10 +41,12 @@ describe('ConcurentPromiseManager', () => {
       const poolSize = 2;
 
       const manager = new ConcurentPromiseManager(poolSize, []);
-      await manager.push(expectedLabel, new Promise(resolve => { resolve(expectedResult); }));
+      await manager.push(expectedLabel, new Promise((resolve) => {
+        resolve(expectedResult);
+      }));
 
       expect(manager.size()).toBe(1);
-      expect(manager.results.length).toBe(0);
+      expect(manager.results).toHaveLength(0);
     });
 
     it('should get a result when a the number of operation is equal to the poll size', async() => {
@@ -59,11 +63,15 @@ describe('ConcurentPromiseManager', () => {
 
       const manager = new ConcurentPromiseManager(poolSize, []);
       for (let i = 1; i < poolSize; i++) {
-        await manager.push(String(i), new Promise(resolve => { resolve(i); }));
+        await manager.push(String(i), new Promise((resolve) => {
+          resolve(i);
+        }));
         expect(manager.size()).toBe(i);
-        expect(manager.results.length).toBe(0);
+        expect(manager.results).toHaveLength(0);
       }
-      await manager.push(String(poolSize), new Promise(resolve => { resolve(poolSize); }));
+      await manager.push(String(poolSize), new Promise((resolve) => {
+        resolve(poolSize);
+      }));
       expect(manager.size()).toBe(poolSize - 1);
 
       const expectedOutputedResult: IResult<number> = {
@@ -73,7 +81,7 @@ describe('ConcurentPromiseManager', () => {
         endingTime: 7,
       };
 
-      expect(manager.results.length).toBe(1);
+      expect(manager.results).toHaveLength(1);
       expect(manager.results[0]).toStrictEqual(expectedOutputedResult);
     });
 
@@ -85,19 +93,25 @@ describe('ConcurentPromiseManager', () => {
 
       const manager = new ConcurentPromiseManager(poolSize, []);
 
-      await manager.push(String(1), new Promise(resolve => { resolve(1); }));
+      await manager.push(String(1), new Promise((resolve) => {
+        resolve(1);
+      }));
       expect(manager.size()).toBe(1);
-      expect(manager.results.length).toBe(0);
+      expect(manager.results).toHaveLength(0);
 
-      await manager.push(String(2), new Promise(resolve => { resolve(2); }));
+      await manager.push(String(2), new Promise((resolve) => {
+        resolve(2);
+      }));
       expect(manager.size()).toBe(2);
-      expect(manager.results.length).toBe(0);
+      expect(manager.results).toHaveLength(0);
 
-      await manager.push(String(3), new Promise(resolve => { resolve(3); }));
+      await manager.push(String(3), new Promise((resolve) => {
+        resolve(3);
+      }));
       expect(manager.size()).toBe(2);
-      expect(manager.results.length).toBe(1);
+      expect(manager.results).toHaveLength(1);
 
-      expect(manager.results.length).toBe(1);
+      expect(manager.results).toHaveLength(1);
       expect(manager.results[0]).toStrictEqual({
         result: 1,
         label: '1',
@@ -105,9 +119,11 @@ describe('ConcurentPromiseManager', () => {
         endingTime: 1,
       });
 
-      await manager.push(String(4), new Promise(resolve => { resolve(4); }));
+      await manager.push(String(4), new Promise((resolve) => {
+        resolve(4);
+      }));
       expect(manager.size()).toBe(2);
-      expect(manager.results.length).toBe(2);
+      expect(manager.results).toHaveLength(2);
       expect(manager.results[0]).toStrictEqual({
         result: 1,
         label: '1',
@@ -121,9 +137,11 @@ describe('ConcurentPromiseManager', () => {
         endingTime: 1,
       });
 
-      await manager.push(String(5), new Promise(resolve => { resolve(5); }));
+      await manager.push(String(5), new Promise((resolve) => {
+        resolve(5);
+      }));
       expect(manager.size()).toBe(2);
-      expect(manager.results.length).toBe(3);
+      expect(manager.results).toHaveLength(3);
       expect(manager.results[0]).toStrictEqual({
         result: 1,
         label: '1',
@@ -150,22 +168,28 @@ describe('ConcurentPromiseManager', () => {
       const manager = new ConcurentPromiseManager(5, []);
       await manager.waitUntilQueueEmpty();
 
-      expect(manager.results.length).toBe(0);
+      expect(manager.results).toHaveLength(0);
     });
 
     it('should return all ther result of the queue', async() => {
       const operations: IOperation<number>[] = [
         {
           label: '1',
-          operation: new Promise(resolve => { resolve(1); }),
+          operation: new Promise((resolve) => {
+            resolve(1);
+          }),
         },
         {
           label: '2',
-          operation: new Promise(resolve => { resolve(2); }),
+          operation: new Promise((resolve) => {
+            resolve(2);
+          }),
         },
         {
           label: '3',
-          operation: new Promise(resolve => { resolve(3); }),
+          operation: new Promise((resolve) => {
+            resolve(3);
+          }),
         },
       ];
       jest.spyOn(performance, 'now')
@@ -179,7 +203,7 @@ describe('ConcurentPromiseManager', () => {
       const manager = new ConcurentPromiseManager(5, operations);
       await manager.waitUntilQueueEmpty();
 
-      expect(manager.results.length).toBe(operations.length);
+      expect(manager.results).toHaveLength(operations.length);
       expect(manager.results).toStrictEqual(
         [
           {
@@ -215,15 +239,21 @@ describe('ConcurentPromiseManager', () => {
       const operations: IOperation<number>[] = [
         {
           label: '1',
-          operation: new Promise(resolve => { resolve(1); }),
+          operation: new Promise((resolve) => {
+            resolve(1);
+          }),
         },
         {
           label: '2',
-          operation: new Promise(resolve => { resolve(2); }),
+          operation: new Promise((resolve) => {
+            resolve(2);
+          }),
         },
         {
           label: '3',
-          operation: new Promise(resolve => { resolve(3); }),
+          operation: new Promise((resolve) => {
+            resolve(3);
+          }),
         },
       ];
       const manager = new ConcurentPromiseManager(5, operations);

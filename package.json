@@ -50,8 +50,8 @@
     "async-lock": "^1.4.0",
     "bloem": "^0.2.0",
     "componentsjs": "^6.0.0",
+    "dockerode": "^4.0.2",
     "lru-cache": "^10.3.0",
-     "dockerode": "^4.0.2",
     "mkdirp": "^3.0.1",
     "rdf-parse": "^3.0.0",
     "rdf-serialize": "^3.0.0",
@@ -76,44 +76,5 @@
     "streamify-string": "^1.0.0",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn run build && yarn run lint && yarn run test"
-    }
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.ts$": "ts-jest"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
-    ],
-    "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.ts$",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ],
-    "collectCoverage": true,
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      }
-    }
-  },
-  "scripts": {
-    "test": "jest ${1}",
-    "test-watch": "jest ${1} --watch",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "build": "yarn run build:ts && yarn run build:components",
-    "build:components": "componentsjs-generator -s lib -r rdfdf",
-    "build:ts": "tsc",
-    "validate": "yarn ls",
-    "prepare": "yarn run build",
-    "version": "manual-git-changelog onversion"
   }
 }

@@ -1,8 +1,8 @@
-import type { WriteStream } from 'fs';
-import { createWriteStream } from 'fs';
-import * as fs from 'fs/promises';
-import * as Path from 'path';
-import * as readline from 'readline';
+import type { WriteStream } from 'node:fs';
+import { createWriteStream } from 'node:fs';
+import * as fs from 'node:fs/promises';
+import * as Path from 'node:path';
+import * as readline from 'node:readline';
 import type * as RDF from '@rdfjs/types';
 import * as Docker from 'dockerode';
 import { ConcurentPromiseManager } from './ConcurentPromiseManager';

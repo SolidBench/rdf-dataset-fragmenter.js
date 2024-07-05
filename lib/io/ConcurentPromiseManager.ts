@@ -11,7 +11,7 @@ export class ConcurentPromiseManager<T> {
   public readonly results: IResult<T>[] = [];
 
   public constructor(poolSize: number, initialOperations: IOperation<T>[]) {
-    initialOperations = initialOperations.map(operation => {
+    initialOperations = initialOperations.map((operation) => {
       operation.startingTime = performance.now();
       return operation;
     });
@@ -20,12 +20,12 @@ export class ConcurentPromiseManager<T> {
   }
 
   /**
-     * Push the operation into the operation queue.
-     * If the number of operation is higher or equal to the pool size it will wait until one operation finished.
-     * The results of the operation are store in the attribute "results" of the class instance
-     * @param {string} label - label of the operation
-     * @param {Promise<T>} operation - operation
-     */
+   * Push the operation into the operation queue.
+   * If the number of operation is higher or equal to the pool size it will wait until one operation finished.
+   * The results of the operation are store in the attribute "results" of the class instance
+   * @param {string} label - label of the operation
+   * @param {Promise<T>} operation - operation
+   */
   public async push(label: string, operation: Promise<T>): Promise<void> {
     this.operationQueue.push(
       {
@@ -46,7 +46,7 @@ export class ConcurentPromiseManager<T> {
    * accumulate the results in the "results" class instance attribute.
    * Can be used before the destruction of the object
    * to collect all the results and make sure every operation is completed.
-*/
+   */
   public async waitUntilQueueEmpty(): Promise<void> {
     while (this.size() !== 0) {
       const result = await this.process();
@@ -55,26 +55,29 @@ export class ConcurentPromiseManager<T> {
   }
 
   /**
-     * Get the size of the operation queue.
-     * @returns {number} the size of the operation queue
-     */
+   * Get the size of the operation queue.
+   * @returns {number} the size of the operation queue
+   */
   public size(): number {
     return this.operationQueue.length;
   }
 
   /**
-     * Wait until the fastest operation finishes processing, delete it from the queue, and return its result.
-     * @returns {Promise<IResult<T>>} result of the operation
-     */
+   * Wait until the fastest operation finishes processing, delete it from the queue, and return its result.
+   * @returns {Promise<IResult<T>>} result of the operation
+   */
   private async process(): Promise<IResult<T>> {
     const pool = this.operationQueue.slice(0, this.poolSize);
-    const operations: Promise<[T, number]>[] = pool.map((operation, index) => new Promise(async resolve => {
-      const res = await operation.operation;
-      resolve([ res, index ]);
+    const operations: Promise<[T, number]>[] = pool.map((operation, index) => new Promise((resolve, reject) => {
+      operation.operation.then((res) => {
+        resolve([ res, index ]);
+      }).catch((err) => {
+        reject(err);
+      });
     }));
 
     const [ result, index ] = await Promise.race(operations);
-    this.operationQueue = this.operationQueue.filter((_, i) => i !== index);
+    this.operationQueue = this.operationQueue.filter((element, i) => i !== index);
 
     return {
       result,

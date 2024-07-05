@@ -310,9 +310,9 @@ Options:
 
 #### HDT Quad Sink
 
-A quad sink that writes to files using an IRI to local file system path mapping and then converts the files into an [HDT document](https://www.rdfhdt.org/what-is-hdt/). 
+A quad sink that writes to files using an IRI to local file system path mapping and then converts the files into an [HDT document](https://www.rdfhdt.org/what-is-hdt/).
 The implementation uses the [docker](https://www.docker.com/) image [HDT-Docker](https://github.com/rdfhdt/hdt-docker) of the [hdt-cpp](https://github.com/rdfhdt/hdt-cpp) library.
-The docker operations to acquire the image and execute the transformations into HDT are performed by the sink. 
+The docker operations to acquire the image and execute the transformations into HDT are performed by the sink.
 
 **WARNING: Can be very slow for many files**
 

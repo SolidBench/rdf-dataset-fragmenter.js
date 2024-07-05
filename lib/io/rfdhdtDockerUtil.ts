@@ -1,5 +1,5 @@
-import type * as fs from 'fs';
-import * as Path from 'path';
+import type * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type * as Docker from 'dockerode';
 
 const SUPPORTED_FORMATS = new Map([
@@ -19,25 +19,31 @@ const RDF_HDT_IMAGE_REPO = 'rfdhdt/hdt-cpp';
  * @param {Docker} docker - docker instance
  */
 export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
-  return new Promise(async(resolve, reject) => {
-    const stream = await docker.pull(RDF_HDT_IMAGE_REPO, {});
-
-    const onFinished = (err: any): undefined => {
-      if (err === undefined || err === null) {
-        resolve();
-      } else {
-        process.stderr.write(JSON.stringify(err));
-        process.stderr.write(`\n`);
+  return new Promise((resolve, reject) => {
+    docker.pull(RDF_HDT_IMAGE_REPO, {}, (err: any, stream?: NodeJS.ReadableStream) => {
+      if (err !== null) {
         reject(err);
+        return;
       }
-    };
 
-    const onProgress = (event: any): undefined => {
-      process.stdout.write(JSON.stringify(event));
-      process.stdout.write(`\n`);
-    };
+      const onFinished = (err: any): undefined => {
+        if (err === undefined || err === null) {
+          resolve();
+        } else {
+          process.stderr.write(JSON.stringify(err));
+          process.stderr.write(`\n`);
+          reject(err);
+        }
+      };
 
-    docker.modem.followProgress(stream, onFinished, onProgress);
+      const onProgress = (event: any): undefined => {
+        process.stdout.write(JSON.stringify(event));
+        process.stdout.write(`\n`);
+      };
+
+      // Stream will always be defined if an error was not returned
+      docker.modem.followProgress(stream!, onFinished, onProgress);
+    });
   });
 }
 
@@ -46,8 +52,9 @@ export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
  * Equivalent to the docker command
  * docker run -it --rm -v "$(pwd)":{inputFileFolder} rfdhdt/hdt-cpp /
  * rdf2hdt -i -p -v -f ntriples {inputFilePath} {outputFilePath}
- * @param {Docker} - docker instance
+ * @param {Docker} docker - docker instance
  * @param {string} inputFilePath - the path of the file to be transformed
+ * @param {fs.WriteStream} errorStreamFile - the file stream of the error
  */
 export async function transformToHdt(
   docker: Docker,
@@ -74,6 +81,7 @@ export async function transformToHdt(
     Path.resolve(inputFilePath),
     Path.resolve(Path.join(outputFolder, `${filename}.hdt`)),
   ];
+  /* eslint-disable ts/naming-convention */
   const createOption: Docker.ContainerCreateOptions = {
     HostConfig: {
       AutoRemove: true,
@@ -83,11 +91,12 @@ export async function transformToHdt(
     },
     Tty: false,
   };
-  const data = await docker.run(RDF_HDT_IMAGE_REPO,
-    command,
-    [ errorStreamFile, errorStreamFile ],
-    createOption);
+  /* eslint-enable ts/naming-convention */
+
+  /* eslint-disable ts/no-unsafe-assignment */
+  const data: any = await docker.run(RDF_HDT_IMAGE_REPO, command, [ errorStreamFile, errorStreamFile ], createOption);
   const [ output ] = data;
+  /* eslint-enable ts/no-unsafe-assignment */
   if (output.StatusCode === 1) {
     throw new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.');
   }
