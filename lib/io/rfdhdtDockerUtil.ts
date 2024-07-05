@@ -27,7 +27,7 @@ export async function pullHdtCppDockerImage(docker: Docker): Promise<void> {
       }
 
       const onFinished = (err: any): undefined => {
-        if (err === undefined || err === null) {
+        if (err === null) {
           resolve();
         } else {
           process.stderr.write(JSON.stringify(err));
@@ -68,7 +68,7 @@ export async function transformToHdt(
   const fileExtension = parsedPath.ext;
 
   const format = SUPPORTED_FORMATS.get(fileExtension);
-  if (format === undefined) {
+  if (!format) {
     throw new Error(`format ${fileExtension} not support by rfdhdt/hdt-cpp`);
   }
   const command = [
