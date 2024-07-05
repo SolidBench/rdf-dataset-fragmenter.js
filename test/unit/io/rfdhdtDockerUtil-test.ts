@@ -16,14 +16,27 @@ describe('rfdhdtDockerUtil', () => {
       await pullHdtCppDockerImage(docker);
     }, 120 * 1_000);
 
-    it('should reject on error on a mocked instance', async() => {
+    it('should reject on error on a mocked instance OnFinished', async() => {
       const docker: Docker = new Docker();
-      jest.spyOn(docker, 'pull').mockImplementation((_image: string): any => {
-        return <any>[];
-      });
+      (<jest.MockedFunction<any>> jest.spyOn(docker, 'pull'))
+        .mockImplementation((_image: string, option: any, callback: any): any => {
+          callback(null, true);
+          return <any>[];
+        });
       jest.spyOn(docker.modem, 'followProgress')
         .mockImplementation((_stream, onFinished) => {
           onFinished(new Error('error'), []);
+        });
+      // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
+      expect(pullHdtCppDockerImage(docker)).rejects.toStrictEqual(new Error('error'));
+    });
+
+    it('should reject on error on a mocked instance', async() => {
+      const docker: Docker = new Docker();
+      (<jest.MockedFunction<any>> jest.spyOn(docker, 'pull'))
+        .mockImplementation((_image: string, option: any, callback: any): any => {
+          callback(new Error('error'), null);
+          return <any>[];
         });
       // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
       expect(pullHdtCppDockerImage(docker)).rejects.toStrictEqual(new Error('error'));

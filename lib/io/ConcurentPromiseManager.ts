@@ -71,9 +71,7 @@ export class ConcurentPromiseManager<T> {
     const operations: Promise<[T, number]>[] = pool.map((operation, index) => new Promise((resolve, reject) => {
       operation.operation.then((res) => {
         resolve([ res, index ]);
-      }).catch((err) => {
-        reject(err);
-      });
+      }, err => reject(err));
     }));
 
     const [ result, index ] = await Promise.race(operations);

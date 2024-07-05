@@ -10,7 +10,7 @@ jest.spyOn(globalThis.performance, 'now').mockImplementation();
 
 describe('ConcurentPromiseManager', () => {
   describe('push', () => {
-    it('should directly get the result with a pool size of 1', async() => {
+    it('should directly get the result with a pool size of 1', async () => {
       const expectedResult = true;
       const expectedLabel = 'test';
       const poolSize = 1;
@@ -35,7 +35,23 @@ describe('ConcurentPromiseManager', () => {
       expect(manager.results[0]).toStrictEqual(expectedOutputedResult);
     });
 
-    it('should not get the result with a pool size of 2', async() => {
+    it('should reject when the promise is rejected', async () => {
+      const expectedLabel = 'test';
+      const poolSize = 1;
+
+      jest.spyOn(performance, 'now')
+        .mockReturnValueOnce(1)
+        .mockReturnValueOnce(2);
+
+      const manager = new ConcurentPromiseManager(poolSize, []);
+
+      // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
+      expect(manager.push(expectedLabel, new Promise((resolve, reject) => {
+        reject(new Error("error"));
+      }))).rejects.toStrictEqual(new Error('error'));
+    });
+
+    it('should not get the result with a pool size of 2', async () => {
       const expectedResult = true;
       const expectedLabel = 'test';
       const poolSize = 2;
@@ -49,7 +65,7 @@ describe('ConcurentPromiseManager', () => {
       expect(manager.results).toHaveLength(0);
     });
 
-    it('should get a result when a the number of operation is equal to the poll size', async() => {
+    it('should get a result when a the number of operation is equal to the poll size', async () => {
       const poolSize = 6;
 
       jest.spyOn(performance, 'now')
@@ -85,7 +101,7 @@ describe('ConcurentPromiseManager', () => {
       expect(manager.results[0]).toStrictEqual(expectedOutputedResult);
     });
 
-    it('should get multiple results when a the number of operation is equal to the poll size', async() => {
+    it('should get multiple results when a the number of operation is equal to the poll size', async () => {
       const poolSize = 3;
 
       jest.spyOn(performance, 'now')
@@ -164,14 +180,14 @@ describe('ConcurentPromiseManager', () => {
   });
 
   describe('waitUntilQueueEmpty', () => {
-    it('should return no result if the queue is empty', async() => {
+    it('should return no result if the queue is empty', async () => {
       const manager = new ConcurentPromiseManager(5, []);
       await manager.waitUntilQueueEmpty();
 
       expect(manager.results).toHaveLength(0);
     });
 
-    it('should return all ther result of the queue', async() => {
+    it('should return all ther result of the queue', async () => {
       const operations: IOperation<number>[] = [
         {
           label: '1',
