@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import arrayifyStream from 'arrayify-stream';
 import { DataFactory } from 'rdf-data-factory';
 import { Fragmenter } from '../../lib/Fragmenter';
@@ -39,12 +39,12 @@ describe('Fragmenter', () => {
 
   describe('getTransformedQuadStream', () => {
     it('should handle an empty stream without transformers', async() => {
-      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, [])))
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, []))).resolves
         .toEqual([]);
     });
 
     it('should handle an empty stream with transformers', async() => {
-      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers))).resolves
         .toEqual([]);
     });
 
@@ -52,7 +52,7 @@ describe('Fragmenter', () => {
       quadSource = {
         getQuads: jest.fn(() => streamifyArray([ 'a', 'b' ])),
       };
-      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers))).resolves
         .toEqual([ 'a', 'b' ]);
     });
 
@@ -76,7 +76,7 @@ describe('Fragmenter', () => {
       quadSource = {
         getQuads: jest.fn(() => streamifyArray([ 'a', 'b' ])),
       };
-      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers))).resolves
         .toEqual([ 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'b' ]);
     });
 
@@ -91,7 +91,7 @@ describe('Fragmenter', () => {
           DF.quad(DF.namedNode('b'), DF.namedNode('b'), DF.namedNode('b')),
         ])),
       };
-      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers))).resolves
         .toEqual([
           DF.quad(DF.namedNode('c'), DF.namedNode('c'), DF.namedNode('c')),
           DF.quad(DF.namedNode('c'), DF.namedNode('c'), DF.namedNode('c')),
@@ -128,7 +128,7 @@ describe('Fragmenter', () => {
           ),
         ])),
       };
-      expect(await arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers)))
+      await expect(arrayifyStream(Fragmenter.getTransformedQuadStream(quadSource, transformers))).resolves
         .toEqual([
           DF.quad(
             DF.namedNode('ex:c#Post123'),

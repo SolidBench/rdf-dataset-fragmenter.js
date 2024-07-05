@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategySubject } from '../../../lib/strategy/FragmentationStrategySubject';
@@ -167,7 +167,7 @@ describe('FragmentationStrategySubject', () => {
       });
 
       it('should handle a stream unowned blank node, and ignore it', async() => {
-        (<any> console).warn = jest.fn();
+        jest.spyOn(console, 'warn').mockImplementation();
         await strategy.fragment(streamifyArray([ ...quadsUnownedBnode ]), sink);
         expect(sink.push).toHaveBeenCalledTimes(1);
         expect(sink.push).toHaveBeenNthCalledWith(1, 'ex:s1', quadsUnownedBnode[0]);

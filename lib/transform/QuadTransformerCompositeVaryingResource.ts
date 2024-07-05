@@ -1,9 +1,6 @@
 import type * as RDF from '@rdfjs/types';
-import { DataFactory } from 'rdf-data-factory';
 import { ResourceIdentifier } from './identifier/ResourceIdentifier';
 import type { IQuadTransformer } from './IQuadTransformer';
-
-const DF = new DataFactory();
 
 /**
  * A quad transformer that wraps over other quad transformers,
@@ -37,7 +34,7 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
     const isBuffered = this.resourceIdentifier.isQuadBuffered(quad);
     if (!isBuffered) {
       let quads = [ quad ];
-      const modified = this.resourceIdentifier.forEachMappedResource(quad, transformer => {
+      const modified = this.resourceIdentifier.forEachMappedResource(quad, (transformer) => {
         quads = quads.flatMap(subQuad => transformer.transform(subQuad));
       });
       if (modified) {
@@ -63,7 +60,7 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
         // Determine a transformer based on the creator IRI
         let creatorHash = 0;
         for (let i = 0; i < resource.target.value.length; i++) {
-          creatorHash += resource.target.value.charCodeAt(i);
+          creatorHash += resource.target.value.codePointAt(i)!;
         }
         creatorHash = Math.abs(creatorHash);
         const transformerIndex = creatorHash % this.transformers.length;
@@ -73,19 +70,18 @@ export class QuadTransformerCompositeVaryingResource implements IQuadTransformer
         this.resourceIdentifier.applyMapping(quad, transformer);
 
         // Flush buffered quads
-        return resource.quads.flatMap(subQuad => {
+        return resource.quads.flatMap((subQuad) => {
           // Run through transformers in a loop until the quads don't change anymore
           let subQuadsOut = [];
           let subQuadsLoop = [ subQuad ];
           while (subQuadsOut.length !== subQuadsLoop.length) {
             subQuadsOut = subQuadsLoop;
             for (const subQuadLoop of subQuadsOut) {
-              // eslint-disable-next-line @typescript-eslint/no-loop-func
               this.resourceIdentifier.forEachMappedResource(subQuadLoop, (subTransformer, component) => {
                 // Pass the current quad component as allowed component to the transformer,
                 // so that no other components of that quad are considered by the transformer.
                 subQuadsLoop = subQuadsLoop
-                  .flatMap(subSubQuadLoop => {
+                  .flatMap((subSubQuadLoop) => {
                     // Only map a transformer to a quad that matches.
                     if (component === 'subject' && subSubQuadLoop.subject.value === subQuadLoop.subject.value) {
                       return subTransformer.transform(subSubQuadLoop, component);

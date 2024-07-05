@@ -1,5 +1,5 @@
-import type { Readable } from 'stream';
-import { PassThrough } from 'stream';
+import type { Readable } from 'node:stream';
+import { PassThrough } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
 import type { IFragmentationStrategy } from './IFragmentationStrategy';
@@ -16,7 +16,7 @@ export class FragmentationStrategyComposite implements IFragmentationStrategy {
   }
 
   public async fragment(quadStream: RDF.Stream & Readable, quadSink: IQuadSink): Promise<void> {
-    await Promise.all(this.strategies.map(strategy => {
+    await Promise.all(this.strategies.map((strategy) => {
       const clone = new PassThrough({ objectMode: true });
       const ret = strategy.fragment(clone, quadSink);
       quadStream.on('error', error => clone.emit('error', error));

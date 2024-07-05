@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import type { Readable } from 'stream';
+import * as fs from 'node:fs';
+import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
-import rdfParser from 'rdf-parse';
+import { rdfParser } from 'rdf-parse';
 import type { IQuadSource } from './IQuadSource';
 
 /**

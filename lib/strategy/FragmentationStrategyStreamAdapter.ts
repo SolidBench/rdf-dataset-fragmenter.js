@@ -1,5 +1,5 @@
-import type { Readable, TransformCallback } from 'stream';
-import { Transform } from 'stream';
+import type { Readable, TransformCallback } from 'node:stream';
+import { Transform } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from '../io/IQuadSink';
 import type { IFragmentationStrategy } from './IFragmentationStrategy';
@@ -9,11 +9,10 @@ import type { IFragmentationStrategy } from './IFragmentationStrategy';
  */
 export abstract class FragmentationStrategyStreamAdapter implements IFragmentationStrategy {
   public async fragment(quadStream: RDF.Stream & Readable, quadSink: IQuadSink): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias,consistent-this
+    // eslint-disable-next-line ts/no-this-alias
     const self = this;
     const transform = new Transform({
       objectMode: true,
-      // eslint-disable-next-line no-undef
       transform(quad: RDF.Quad, encoding: BufferEncoding, callback: TransformCallback) {
         self.handleQuad(quad, quadSink).then(() => callback(), callback);
       },
@@ -33,6 +32,7 @@ export abstract class FragmentationStrategyStreamAdapter implements IFragmentati
 
   protected abstract handleQuad(quad: RDF.Quad, quadSink: IQuadSink): Promise<void>;
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   protected async flush(quadSink: IQuadSink): Promise<void> {
     // Do nothing, implementors of this class can optionally override this
   }

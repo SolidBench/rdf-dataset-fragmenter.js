@@ -48,11 +48,10 @@ describe('QuadSinkComposite', () => {
 
     describe('end', () => {
       it('should delegate to the two sinks', async() => {
-        const quad = <any> {};
         await sink.close();
 
-        expect(sink1.close).toHaveBeenCalled();
-        expect(sink2.close).toHaveBeenCalled();
+        expect(sink1.close).toHaveBeenCalledTimes(1);
+        expect(sink2.close).toHaveBeenCalledTimes(1);
       });
     });
   });

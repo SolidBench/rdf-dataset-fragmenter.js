@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { termToString } from 'rdf-string';
@@ -34,7 +34,9 @@ describe('DatasetSummaryVoID', () => {
   });
 
   it('should properly register quads', async() => {
-    quads.forEach(quad => collector.register(quad));
+    for (const quad of quads) {
+      collector.register(quad);
+    }
     expect(collector.serialize().quads).toBeRdfIsomorphic([
       DF.quad(
         dataset,
@@ -169,10 +171,13 @@ describe('DatasetSummaryVoID', () => {
   });
 
   it('should always produce rdf:type as the first quad', async() => {
-    quads.forEach(quad => collector.register(quad));
+    for (const quad of quads) {
+      collector.register(quad);
+    }
     const typedSubjects = new Set<string>();
     for (const quad of collector.serialize().quads) {
       if (!typedSubjects.has(quad.subject.value)) {
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(quad.predicate.value).toEqual(DatasetSummaryVoID.RDF_TYPE.value);
         typedSubjects.add(quad.subject.value);
       }

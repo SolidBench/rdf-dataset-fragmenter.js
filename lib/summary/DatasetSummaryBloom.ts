@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
 import { Bloem } from 'bloem';
 import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArgs } from './DatasetSummary';
@@ -10,6 +10,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
   protected readonly projectedProperties: Map<string, Bloem>;
   protected readonly projectedResources: Map<string, Bloem>;
 
+  /* eslint-disable ts/naming-convention */
   public static readonly MEM_PREFIX = 'http://semweb.mmlab.be/ns/membership#';
 
   public static readonly MEM_CLASS_MEMBERSHIPFUNCTION = DF.namedNode(`${DatasetSummaryBloom.MEM_PREFIX}MembershipFunction`);
@@ -39,6 +40,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
   // The filters will only consider named nodes (IRIs), and will ignore blank nodes, literals and variables.
   public static readonly MEM_PROP_PROJECTEDPROPERTY = DF.namedNode(`${DatasetSummaryBloom.MEM_PREFIX}projectedProperty`);
   public static readonly MEM_PROP_PROJECTEDRESOURCE = DF.namedNode(`${DatasetSummaryBloom.MEM_PREFIX}projectedResource`);
+  /* eslint-enable ts/naming-convention */
 
   public constructor(args: IDatasetSummaryBloomArgs) {
     super(args);

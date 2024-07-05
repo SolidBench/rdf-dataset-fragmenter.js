@@ -1,9 +1,6 @@
 import type * as RDF from '@rdfjs/types';
-import { DataFactory } from 'rdf-data-factory';
 
 import type { IQuadTransformer } from './IQuadTransformer';
-
-const DF = new DataFactory();
 
 /**
  * An abstract quad transformer that appends something to resources of the given type.

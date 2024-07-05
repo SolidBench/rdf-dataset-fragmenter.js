@@ -18,6 +18,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
   // Class partition-related data
   protected readonly entitiesByClass: Map<string, Set<string>>;
 
+  /* eslint-disable ts/naming-convention */
   public static readonly VOID_PREFIX = 'http://rdfs.org/ns/void#';
   public static readonly VOID_TRIPLES = DF.namedNode(`${DatasetSummaryVoID.VOID_PREFIX}triples`);
   public static readonly VOID_ENTITIES = DF.namedNode(`${DatasetSummaryVoID.VOID_PREFIX}entities`);
@@ -33,7 +34,8 @@ export class DatasetSummaryVoID extends DatasetSummary {
   public static readonly VOID_CLASS_PARTITION = DF.namedNode(`${DatasetSummaryVoID.VOID_PREFIX}classPartition`);
   public static readonly VOID_VOCABULARY = DF.namedNode(`${DatasetSummaryVoID.VOID_PREFIX}vocabulary`);
 
-  private static readonly DATASET_REGEX = new RegExp(/#?(\w+)$/u, 'u');
+  private static readonly DATASET_REGEX = /#?(\w+)$/u;
+  /* eslint-enable ts/naming-convention */
 
   public constructor(args: IDatasetSummaryArgs) {
     super(args);

@@ -1,4 +1,4 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { FragmentationStrategyDatasetSummaryVoID } from '../../../lib/strategy/FragmentationStrategyDatasetSummaryVoID';
