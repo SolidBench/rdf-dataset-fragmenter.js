@@ -155,7 +155,7 @@ describe('QuadSinkHdt', () => {
       jest.clearAllMocks();
     });
 
-    it('should close produce the HDT file upon closing', async() => {
+    it('should produce the HDT file upon closing', async() => {
       await sink.push('http://example.org/1/file', quad);
       await sink.push('http://example.org/1/file:3000', quad);
       await sink.close();
@@ -178,7 +178,7 @@ describe('QuadSinkHdt', () => {
       }
     });
 
-    it(`should close produce the HDT file upon closing 
+    it(`should  produce the HDT file upon closing 
             and not delete the source file when the flag is activated`, async() => {
       sink = new QuadSinkHdt({
         outputFormat: 'application/n-quads',

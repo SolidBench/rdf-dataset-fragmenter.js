@@ -5,7 +5,6 @@ import * as Path from 'node:path';
 import * as readline from 'node:readline';
 import type * as RDF from '@rdfjs/types';
 import * as Docker from 'dockerode';
-import { ConcurentPromiseManager } from './ConcurentPromiseManager';
 import type { IQuadSinkFileOptions } from './QuadSinkFile';
 import { QuadSinkFile } from './QuadSinkFile';
 import { transformToHdt, pullHdtCppDockerImage } from './rfdhdtDockerUtil';
@@ -14,7 +13,7 @@ export class QuadSinkHdt extends QuadSinkFile {
   private readonly files: Set<string> = new Set();
   private readonly deleteSourceFiles: boolean;
   private readonly errorFileDockerRfdhdt: WriteStream;
-  private readonly hdtConcurrentTransformationManager: ConcurentPromiseManager<void>;
+  private readonly poolSize: number;
 
   public constructor(
     options: IQuadSinkFileOptions,
@@ -24,8 +23,8 @@ export class QuadSinkHdt extends QuadSinkFile {
   ) {
     super(options);
     this.deleteSourceFiles = deleteSourceFiles;
-    this.hdtConcurrentTransformationManager = new ConcurentPromiseManager(poolSize, []);
     this.errorFileDockerRfdhdt = createWriteStream(errorFileDockerRfdhdt);
+    this.poolSize = poolSize;
   }
 
   public async push(iri: string, quad: RDF.Quad): Promise<void> {
@@ -60,23 +59,27 @@ export class QuadSinkHdt extends QuadSinkFile {
     const docker: Docker = new Docker();
     // Pull the docker image if it is not available in the system
     await pullHdtCppDockerImage(docker);
-
+    const operationPool: Map<string, Promise<string>> = new Map();
     let i = 0;
+
     for (const file of this.files) {
-      await this.hdtConcurrentTransformationManager.push(file, this.transformToHdt(docker, file));
-      if (i % this.hdtConcurrentTransformationManager.poolSize === 0) {
+      operationPool.set(file, this.transformToHdt(docker, file));
+      if (i % this.poolSize === 0) {
         this.attemptLogHdtTransformation(i);
+        const winnerFile = await Promise.race(operationPool.values());
+        operationPool.delete(winnerFile);
       }
       i++;
     }
-    await this.hdtConcurrentTransformationManager.waitUntilQueueEmpty();
+    await Promise.all(operationPool.values());
     this.attemptLogHdtTransformation(i, true);
   }
 
-  private async transformToHdt(docker: Docker, file: string): Promise<void> {
+  private async transformToHdt(docker: Docker, file: string): Promise<string> {
     await transformToHdt(docker, file, this.errorFileDockerRfdhdt);
     if (this.deleteSourceFiles) {
       await fs.rm(file);
     }
+    return file;
   }
 }
