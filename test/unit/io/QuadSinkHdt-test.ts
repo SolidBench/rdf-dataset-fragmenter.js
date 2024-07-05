@@ -21,7 +21,7 @@ describe('QuadSinkHdt', () => {
   let spyStdoutWrite: any;
 
   afterAll(async() => {
-    await fs.rm('./error_log_docker_rfdhdt');
+    await fs.rm('./error_log_docker_rfdhdt.txt');
   });
 
   describe('push', () => {

@@ -19,7 +19,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     options: IQuadSinkFileOptions,
     poolSize = 1,
     deleteSourceFiles = false,
-    errorFileDockerRfdhdt = './error_log_docker_rfdhdt',
+    errorFileDockerRfdhdt = './error_log_docker_rfdhdt.txt',
   ) {
     super(options);
     this.deleteSourceFiles = deleteSourceFiles;

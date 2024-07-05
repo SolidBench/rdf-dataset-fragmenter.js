@@ -341,7 +341,7 @@ Options:
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
 * `"poolSize"`: The number of concurrent HDT conversion operations. By the default `1`.
 * `"deleteSourceFiles"`: If the sink should delete the source RDF file after the conversion into HDT.
-* `"errorFileDockerRfdhdt"`: File where the error of HDT-Docker will be outputed. By default `"./error_log_docker_rfdhdt"`.
+* `"errorFileDockerRfdhdt"`: File where the error of HDT-Docker will be outputed. By default `"./error_log_docker_rfdhdt.txt"`.
 
 #### Composite Quad Sink
 

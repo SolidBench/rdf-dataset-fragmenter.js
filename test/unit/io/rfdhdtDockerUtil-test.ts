@@ -3,11 +3,11 @@ import * as fs from 'node:fs/promises';
 import * as Docker from 'dockerode';
 import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
 
-const ERROR_STEAM_FILE = createWriteStream('./error_log_docker_rfdhdt');
+const ERROR_STEAM_FILE = createWriteStream('./error_log_docker_rfdhdt.txt');
 
 describe('rfdhdtDockerUtil', () => {
   afterAll(async() => {
-    await fs.rm('./error_log_docker_rfdhdt');
+    await fs.rm('./error_log_docker_rfdhdt.txt');
   });
 
   describe('pullImage', () => {
@@ -77,9 +77,14 @@ describe('rfdhdtDockerUtil', () => {
       jest.spyOn(docker, 'run').mockResolvedValueOnce([{ StatusCode: 1 }]);
       const inputFilePath = './test/unit/io/rdf_files/test.nt';
       // eslint-disable-next-line ts/no-floating-promises, jest/valid-expect
-      expect(transformToHdt(docker, inputFilePath, ERROR_STEAM_FILE))
+      expect(
+        transformToHdt(docker, inputFilePath, ERROR_STEAM_FILE),
+      )
         .rejects
-        .toStrictEqual(new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.'));
+        .toStrictEqual(new Error(
+          'Exited with error code 1. ' +
+          'More information in the defined error file by default ./error_log_docker_rfdhdt.txt .',
+        ));
     });
   });
 });

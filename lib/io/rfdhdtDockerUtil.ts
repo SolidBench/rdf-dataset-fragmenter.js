@@ -98,6 +98,8 @@ export async function transformToHdt(
   const [ output ] = data;
   /* eslint-enable ts/no-unsafe-assignment */
   if (output.StatusCode === 1) {
-    throw new Error('Exited with error code 1. More information in ./error_log_docker_rfdhdt.');
+    throw new Error(
+      'Exited with error code 1. More information in the defined error file by default ./error_log_docker_rfdhdt.txt .',
+    );
   }
 }
