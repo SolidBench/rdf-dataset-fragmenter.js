@@ -32,7 +32,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     await super.push(iri, quad);
 
     // Add files with the defined extension to the list to be transformed
-    if (this.fileExtension !== undefined && path.includes(this.fileExtension.replace('$', ''))) {
+    if (this.fileExtension !== undefined && path.includes(this.fileExtension)) {
       this.files.add(path);
     }
   }
