@@ -100,7 +100,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
     }
   }
 
-  public serialize(): IDatasetSummaryOutput {
+  public serialize(): IDatasetSummaryOutput[] {
     const output: RDF.Quad[] = [];
     if (this.totalQuads > 0) {
       const datasetIri = DF.namedNode(this.dataset);
@@ -170,7 +170,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
         );
       }
     }
-    return { iri: this.dataset, quads: output };
+    return [{ iri: this.dataset, quads: output }];
   }
 
   protected hashString(value: string): string {

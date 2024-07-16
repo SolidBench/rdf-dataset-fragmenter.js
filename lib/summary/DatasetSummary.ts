@@ -10,7 +10,7 @@ export interface IDatasetSummaryOutput {
 
 export interface IDatasetSummary {
   register: (quad: RDF.Quad) => void;
-  serialize: () => IDatasetSummaryOutput;
+  serialize: () => IDatasetSummaryOutput[];
 }
 
 export abstract class DatasetSummary implements IDatasetSummary {
@@ -27,7 +27,7 @@ export abstract class DatasetSummary implements IDatasetSummary {
   }
 
   public abstract register(quad: RDF.Quad): void;
-  public abstract serialize(): IDatasetSummaryOutput;
+  public abstract serialize(): IDatasetSummaryOutput[];
 }
 
 export interface IDatasetSummaryArgs {
