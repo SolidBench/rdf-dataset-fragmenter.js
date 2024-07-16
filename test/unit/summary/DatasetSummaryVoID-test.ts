@@ -38,7 +38,7 @@ describe('DatasetSummaryVoID', () => {
       collector.register(quad);
     }
 
-    expect(collector.serialize().length).toBe(1);
+    expect(collector.serialize()).toHaveLength(1);
 
     expect(collector.serialize()[0].quads).toBeRdfIsomorphic([
       DF.quad(
@@ -170,7 +170,7 @@ describe('DatasetSummaryVoID', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.serialize().length).toBe(1);
+    expect(collector.serialize()).toHaveLength(1);
     expect(collector.serialize()[0].quads).toBeRdfIsomorphic([]);
   });
 
@@ -180,7 +180,7 @@ describe('DatasetSummaryVoID', () => {
     }
     const typedSubjects = new Set<string>();
 
-    expect(collector.serialize().length).toBe(1);
+    expect(collector.serialize()).toHaveLength(1);
 
     for (const quad of collector.serialize()[0].quads) {
       if (!typedSubjects.has(quad.subject.value)) {

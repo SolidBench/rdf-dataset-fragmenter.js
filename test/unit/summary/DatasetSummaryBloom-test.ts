@@ -30,7 +30,7 @@ describe('DatasetSummaryCollectorBloom', () => {
       collector.register(quad);
     }
 
-    expect(collector.serialize().length).toBe(1);
+    expect(collector.serialize()).toHaveLength(1);
 
     const filters = collector.serialize()[0].quads.filter(quad =>
       quad.predicate.value === DatasetSummaryBloom.MEM_PROP_BINARYREPRESENTATION.value &&
@@ -50,7 +50,7 @@ describe('DatasetSummaryCollectorBloom', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.serialize().length).toBe(1);
+    expect(collector.serialize()).toHaveLength(1);
     expect(collector.serialize()[0].quads).toBeRdfIsomorphic([]);
   });
 
@@ -60,8 +60,8 @@ describe('DatasetSummaryCollectorBloom', () => {
     }
     const typedSubjects = new Set<string>();
 
-    expect(collector.serialize().length).toBe(1);
-    
+    expect(collector.serialize()).toHaveLength(1);
+
     for (const quad of collector.serialize()[0].quads) {
       if (!typedSubjects.has(quad.subject.value)) {
         // eslint-disable-next-line jest/no-conditional-expect

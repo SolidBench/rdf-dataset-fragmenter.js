@@ -67,7 +67,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
   }
 
   protected async flush(quadSink: IQuadSink): Promise<void> {
-    const blankNodeQueue = [...this.blankNodeDatasets.keys()];
+    const blankNodeQueue = [ ...this.blankNodeDatasets.keys() ];
     const processedBlankNodes = new Set<string>();
     while (blankNodeQueue.length > 0) {
       const blankNode = blankNodeQueue.shift();
@@ -84,7 +84,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
                 !this.blankNodeDatasets.has(quad.object.value) &&
                 !processedBlankNodes.has(quad.object.value)
               ) {
-                this.blankNodeDatasets.set(quad.object.value, new Set<string>([dataset]));
+                this.blankNodeDatasets.set(quad.object.value, new Set<string>([ dataset ]));
                 blankNodeQueue.push(quad.object.value);
               }
             }
@@ -94,7 +94,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
     }
     this.blankNodeQuads.clear();
     this.blankNodeDatasets.clear();
-    for (const [key, summary] of this.summaries) {
+    for (const [ key, summary ] of this.summaries) {
       const output = summary.serialize();
       for (const { iri, quads } of output) {
         for (const quad of quads) {
