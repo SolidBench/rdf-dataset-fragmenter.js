@@ -113,6 +113,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    */
   private readonly datasetObjectExeption: Record<string, IUndescribedDataModel>;
 
+  private readonly handledUndescribedObject: Set<string> = new Set();
+
   public constructor(args: IDatasetSummaryShapeIndex) {
     super(args);
     this.iriFragmentationMultipleFiles = args.iriFragmentationMultipleFiles;
@@ -136,8 +138,11 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     }
 
     for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
-      if (quad.subject.value.includes(pathElement) && quad.subject.value.includes(this.dataset)) {
+      if (quad.subject.value.includes(pathElement) &&
+                quad.subject.value.includes(this.dataset) &&
+                !this.handledUndescribedObject.has(name)) {
         this.registerShapeIndexEntry(name, fragmentation);
+        this.handledUndescribedObject.add(name);
         return;
       }
     }

@@ -172,5 +172,88 @@ describe('DatasetSummaryShapeIndex', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
     });
+
+    it('should not register a triple from an undescribe triple multiple time', () => {
+      const spy = jest.spyOn(prand, 'uniformIntDistribution')
+        .mockImplementationOnce(() => {
+          return <any>[ 0, this ];
+        });
+
+      const aTriple = DF.quad(
+        DF.namedNode('http://example.be#007/card#asad'),
+        DF.namedNode('http://localhost:3000/internal/asda'),
+        DF.namedNode('http://localhost:3000/foo'),
+      );
+      collector.register(aTriple);
+      const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
+        [ 'card', {
+          ressourceFragmentation: ResourceFragmentation.DISTRIBUTED,
+          shape: 'profile',
+          iri: `${dataset.value}/profile/`,
+        }],
+      ]);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+
+      const aSecondTriple = DF.quad(
+        DF.namedNode('http://example.be#007/card#asad'),
+        DF.namedNode('http://localhost:3000/internal/asw2da'),
+        DF.namedNode('http://localhost:3000/foo'),
+      );
+      collector.register(aSecondTriple);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+    });
+
+    it('should register multiple triples', () => {
+      const spy = jest.spyOn(prand, 'uniformIntDistribution')
+        .mockImplementationOnce(() => {
+          return <any>[ 0, this ];
+        })
+        .mockImplementationOnce(() => {
+          return <any>[ 1, this ];
+        });
+
+      const aTriple = DF.quad(
+        DF.namedNode('http://example.be#007'),
+        DF.namedNode('http://localhost:3000/internal/commentsFragmentation'),
+        DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+      );
+      collector.register(aTriple);
+      const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
+        [ 'comments', {
+          ressourceFragmentation: ResourceFragmentation.SINGLE,
+          shape: 'commentsA',
+          iri: `${dataset.value}/comments`,
+        }],
+      ]);
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+
+      const aSecondTriple = DF.quad(
+        DF.namedNode('http://example.be#007'),
+        DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+        DF.namedNode('http://localhost:3000/internal/FragmentationCreationDate'),
+      );
+      collector.register(aSecondTriple);
+      const expectedHandleContentSecond: Map<string, IShapeIndexEntry> = new Map([
+        [ 'posts', {
+          ressourceFragmentation: ResourceFragmentation.DISTRIBUTED,
+          shape: 'postB',
+          iri: `${dataset.value}/posts/`,
+        }],
+        [ 'comments', {
+          ressourceFragmentation: ResourceFragmentation.SINGLE,
+          shape: 'commentsA',
+          iri: `${dataset.value}/comments`,
+        }],
+      ]);
+
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect((collector).contentHandled).toStrictEqual(expectedHandleContentSecond);
+    });
   });
 });
