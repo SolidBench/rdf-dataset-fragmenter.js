@@ -53,6 +53,7 @@
     "dockerode": "^4.0.2",
     "lru-cache": "^10.3.0",
     "mkdirp": "^3.0.1",
+    "pure-rand": "^6.1.0",
     "rdf-parse": "^3.0.0",
     "rdf-serialize": "^3.0.0",
     "rdf-string": "^1.6.0",
