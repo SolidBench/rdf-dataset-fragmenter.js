@@ -1442,6 +1442,13 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.3.tgz#6209321eb2c1712a7e7466422b8cb1fc0d9dd5d8"
   integrity sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==
 
+"@types/streamify-array@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@types/streamify-array/-/streamify-array-1.0.3.tgz#911dce97f73da2cb92523a155df2febdcb290b46"
+  integrity sha512-sRRw2NHDm/9gx2Eukgn9Irjzet0ULDP3Y/A1CGYaUR4OzU2RRXYDnvilaeAkiup4q7rUR1rjr2nf8tIUDV1gkg==
+  dependencies:
+    "@types/node" "*"
+
 "@types/triple-beam@^1.3.2":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@types/triple-beam/-/triple-beam-1.3.5.tgz#74fef9ffbaa198eb8b588be029f38b00299caa2c"

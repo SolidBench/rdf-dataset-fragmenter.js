@@ -74,9 +74,6 @@ export class FragmentationStrategyDatasetShapeIndex
     this.datasetObjectFragmentationPredicate = options.datasetObjectFragmentationPredicate;
     this.datasetObjectExeption = options.datasetObjectExeption;
 
-    if (options.contentOfStorage.length === 0) {
-      throw new Error('there should be at least one content type in the resource');
-    }
     if (options.randomSeed === undefined) {
       const seed = Date.now() * Math.random();
       this.randomSeed = seed;
@@ -97,9 +94,6 @@ export class FragmentationStrategyDatasetShapeIndex
       datasetObjectExeption: this.datasetObjectExeption,
     });
     this.randomSeed += 1;
-    if (this.randomSeed === Number.POSITIVE_INFINITY) {
-      this.randomSeed = 0;
-    }
     return summary;
   }
 

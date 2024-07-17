@@ -145,7 +145,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
           ResourceFragmentation.DISTRIBUTED :
           ResourceFragmentation.SINGLE;
         this.registerShapeIndexEntry(dataModelObject, fragmentation);
-        return;
+        break;
       }
     }
 
@@ -186,6 +186,9 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   public async serialize(): Promise<IDatasetSummaryOutput[]> {
     const [ shapeIndexEntry, shapes ] = await this.serializeShapeIndexEntries();
+    if (shapeIndexEntry.quads.length === 0) {
+      return [];
+    }
     const shapeIndex = this.serializeShapeIndexInstance();
     /* eslint-disable unicorn/prefer-spread */
     shapeIndex.quads = shapeIndex.quads.concat(shapeIndexEntry.quads);
@@ -205,7 +208,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
     for (const entry of this.contentHandled.values()) {
-      const currentEntry = DF.blankNode();
+      const currentEntry = DF.blankNode(entry.shapeInfo.name);
       const entryTypeDefinition = DF.quad(
         shapeIndexNode,
         DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,

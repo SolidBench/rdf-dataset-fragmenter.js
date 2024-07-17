@@ -1072,8 +1072,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
     it('should provide an empty output given no entries', async() => {
       const output = await collector.serialize();
-      expect(output).toHaveLength(1);
-      expect(output[0].iri).toBe(collector.shapeIndexIri);
+      expect(output).toHaveLength(0);
     });
 
     it('should provide an output', async() => {
@@ -1083,7 +1082,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         });
 
       const spySerializeShapeIndexEntries = jest.spyOn(collector, 'serializeShapeIndexEntries')
-        .mockResolvedValueOnce([{ quads: []}, [ '', '', '' ]]);
+        .mockResolvedValueOnce([{ quads: [ '' ]}, [ '', '', '' ]]);
       const spySerializeShapeIndexInstance = jest.spyOn(collector, 'serializeShapeIndexInstance')
         .mockReturnValueOnce({ quads: []});
       const spySerializeCompletenessOfShapeIndex = jest.spyOn(collector, 'serializeCompletenessOfShapeIndex')
