@@ -95,7 +95,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
     this.blankNodeQuads.clear();
     this.blankNodeDatasets.clear();
     for (const [ key, summary ] of this.summaries) {
-      const output = summary.serialize();
+      const output = await summary.serialize();
       for (const { iri, quads } of output) {
         for (const quad of quads) {
           await quadSink.push(iri, quad);

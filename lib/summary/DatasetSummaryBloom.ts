@@ -69,7 +69,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
     }
   }
 
-  public serialize(): IDatasetSummaryOutput[] {
+  public async serialize(): Promise<IDatasetSummaryOutput[]> {
     const output: RDF.Quad[] = [];
     if (this.projectedProperties.size > 0 || this.projectedResources.size > 0) {
       const projections = new Map<RDF.NamedNode, Map<string, Bloem>>([

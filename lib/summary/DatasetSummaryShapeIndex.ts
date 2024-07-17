@@ -1,6 +1,11 @@
 import type * as RDF from '@rdfjs/types';
+import * as ShexParser from '@shexjs/parser';
+import { JsonLdParser } from 'jsonld-streaming-parser';
 import prand from 'pure-rand';
 import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArgs } from './DatasetSummary';
+
+/* eslint-disable-next-line import/extensions */
+import * as SHEX_CONTEXT from './shex-context.json';
 
 /* eslint-disable ts/naming-convention */
 export enum ResourceFragmentation {
@@ -16,6 +21,10 @@ export interface IUndescribedDataModel {
 
 export interface IShapeIndexEntry {
   shape: string;
+  shapeInfo: {
+    name: string;
+    directory: string;
+  };
   iri: string;
   ressourceFragmentation: ResourceFragmentation;
 }
@@ -115,6 +124,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   private readonly handledUndescribedObject: Set<string> = new Set();
 
+  private readonly shapeIndexIri: string;
+
   public constructor(args: IDatasetSummaryShapeIndex) {
     super(args);
     this.iriFragmentationMultipleFiles = args.iriFragmentationMultipleFiles;
@@ -124,6 +135,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.contentOfStorage = args.contentOfStorage;
     this.datasetObjectExeption = args.datasetObjectExeption;
     this.randomGenerator = args.randomGeneratorShapeSelection;
+    this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
   }
 
   public register(quad: RDF.Quad): void {
@@ -148,11 +160,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     }
   }
 
-  public serialize(): IDatasetSummaryOutput[] {
-    return [];
-  }
-
-  private registerShapeIndexEntry(dataModelObject: string, fragmentation: ResourceFragmentation): void {
+  public registerShapeIndexEntry(dataModelObject: string, fragmentation: ResourceFragmentation): void {
     const shapeEntry = this.shapeMap[dataModelObject];
     if (shapeEntry) {
       const [ randomIndex, newGenerator ] =
@@ -165,10 +173,159 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
       const indexEntry: IShapeIndexEntry = {
         shape,
+        shapeInfo: {
+          name: shapeEntry.name,
+          directory: shapeEntry.directory,
+        },
         ressourceFragmentation: fragmentation,
         iri,
       };
       this.contentHandled.set(dataModelObject, indexEntry);
     }
+  }
+
+  public async serialize(): Promise<IDatasetSummaryOutput[]> {
+    const [ shapeIndexEntry, shapes ] = await this.serializeShapeIndexEntries();
+    const shapeIndex = this.serializeShapeIndexInstance();
+    /* eslint-disable unicorn/prefer-spread */
+    shapeIndex.quads = shapeIndex.quads.concat(shapeIndexEntry.quads);
+    shapeIndex.quads = shapeIndex.quads.concat(this.serializeCompletenessOfShapeIndex().quads);
+    return [
+      shapeIndex,
+    ].concat(shapes);
+    /* eslint-enable unicorn/prefer-spread */
+  }
+
+  public async serializeShapeIndexEntries(): Promise<[IDatasetSummaryOutput, IDatasetSummaryOutput[]]> {
+    const output: IDatasetSummaryOutput = {
+      iri: this.shapeIndexIri,
+      quads: [],
+    };
+    const shapeOutputs: IDatasetSummaryOutput[] = [];
+
+    const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
+    for (const entry of this.contentHandled.values()) {
+      const currentEntry = DF.blankNode();
+      const entryTypeDefinition = DF.quad(
+        shapeIndexNode,
+        DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,
+        currentEntry,
+      );
+      const bindByShape = DF.quad(
+        currentEntry,
+        DatasetSummaryShapeIndex.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
+        DF.namedNode(this.generateShapeIri(entry.shapeInfo)),
+      );
+      const target = DF.quad(
+        currentEntry,
+        entry.ressourceFragmentation === ResourceFragmentation.SINGLE ?
+          DatasetSummaryShapeIndex.SOLID_INSTANCE_NODE :
+          DatasetSummaryShapeIndex.SOLID_INSTANCE_CONTAINER_NODE,
+        DF.namedNode(entry.iri),
+      );
+      shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
+
+      output.quads.push(entryTypeDefinition, bindByShape, target);
+    }
+    return [ output, shapeOutputs ];
+  }
+
+  public serializeShapeIndexInstance(): IDatasetSummaryOutput {
+    const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
+    const typeDefinition = DF.quad(
+      shapeIndexNode,
+      DatasetSummaryShapeIndex.RDF_TYPE_NODE,
+      DatasetSummaryShapeIndex.SHAPE_INDEX_CLASS_NODE,
+    );
+
+    const domain = DF.quad(
+      shapeIndexNode,
+      DatasetSummaryShapeIndex.SHAPE_INDEX_DOMAIN_NODE,
+      DF.literal(`${this.dataset}/.*`, DatasetSummaryShapeIndex.RDF_STRING_TYPE),
+    );
+
+    return {
+      iri: this.shapeIndexIri,
+      quads: [ typeDefinition, domain ],
+    };
+  }
+
+  public serializeCompletenessOfShapeIndex(): IDatasetSummaryOutput {
+    // We check if all the resource has been handled
+    if (this.contentHandled.size !== this.contentOfStorage.size) {
+      return {
+        iri: this.shapeIndexIri,
+        quads: [],
+      };
+    }
+    for (const val of this.contentHandled.keys()) {
+      if (!this.contentOfStorage.has(val)) {
+        return {
+          iri: this.shapeIndexIri,
+          quads: [],
+        };
+      }
+    }
+    // All the resource has been handled so we indicate it with a triple
+    const isComplete = DF.quad(
+      DF.namedNode(this.shapeIndexIri),
+      DatasetSummaryShapeIndex.SHAPE_INDEX_IS_COMPLETE_NODE,
+      DatasetSummaryShapeIndex.RDF_TRUE,
+    );
+
+    return {
+      iri: this.shapeIndexIri,
+      quads: [ isComplete ],
+    };
+  }
+
+  public async serializeShape(shapeShexc: string, shapeIRI: string): Promise<IDatasetSummaryOutput> {
+    const shexParser = ShexParser.construct(shapeIRI);
+    shapeShexc = this.transformShapeTemplateIntoShape(shapeShexc, shapeIRI);
+    const shapeJSONLD = shexParser.parse(shapeShexc);
+    const stringShapeJsonLD = JSON.stringify(shapeJSONLD);
+    const quads: RDF.Quad[] = [];
+
+    return new Promise((resolve, reject) => {
+      // The jsonLD is not valid without the context field and the library doesn't include it
+      // because a ShExJ MAY contain a @context field
+      // https://shex.io/shex-semantics/#shexj
+      const jsonldParser = new JsonLdParser({
+        streamingProfile: false,
+        context: SHEX_CONTEXT,
+        skipContextValidation: true,
+      });
+      jsonldParser
+        .on('data', (quad: RDF.Quad) => {
+          quads.push(quad);
+        })
+      // We ignore this because it is difficult to provide a valid ShEx document that
+      // would not be parsable in RDF given it has been already parsed in ShExJ
+
+        .on('error', /* istanbul ignore next */(error: any) => {
+          reject(error);
+        })
+        .on('end', () => {
+          resolve({
+            iri: shapeIRI,
+            quads,
+          });
+        });
+
+      jsonldParser.write(stringShapeJsonLD);
+      jsonldParser.end();
+    });
+  }
+
+  public generateShapeIri(entry: { directory: string; name: string }): string {
+    return `${this.dataset}/${entry.directory}_shape#${entry.name}`;
+  }
+
+  public transformShapeTemplateIntoShape(shapeShexc: string, shapeIRI: string): string {
+    shapeShexc = shapeShexc.replace('$', shapeIRI);
+    for (const entry of Object.values(this.shapeMap)) {
+      shapeShexc = shapeShexc.replaceAll(`{:${entry.name}}`, this.generateShapeIri(entry));
+    }
+    return shapeShexc;
   }
 }

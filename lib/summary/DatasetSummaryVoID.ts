@@ -100,7 +100,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
     }
   }
 
-  public serialize(): IDatasetSummaryOutput[] {
+  public async serialize(): Promise<IDatasetSummaryOutput[]> {
     const output: RDF.Quad[] = [];
     if (this.totalQuads > 0) {
       const datasetIri = DF.namedNode(this.dataset);
