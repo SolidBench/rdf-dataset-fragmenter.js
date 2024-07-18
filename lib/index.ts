@@ -8,7 +8,7 @@ export * from './io/QuadSinkFiltered';
 export * from './io/QuadSourceComposite';
 export * from './io/QuadSourceFile';
 export * from './io/QuadSinkHdt';
-export * from './io/QuadSinkAnnotation';
+export * from './io/QuadSinkAnnotateFile';
 export * from './quadmatcher/IQuadMatcher';
 export * from './quadmatcher/QuadMatcherPredicate';
 export * from './quadmatcher/QuadMatcherResourceType';
