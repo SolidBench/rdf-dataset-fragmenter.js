@@ -5,7 +5,13 @@ import { QuadSinkFile, type IQuadSinkFileOptions } from './QuadSinkFile';
 const n3Parser = new N3.Parser();
 
 export interface IQuadSinkAnnotatedFileOptions extends IQuadSinkFileOptions {
+  /**
+   * IRI template of the file to annotate
+   */
   iriPatterns: string[];
+  /**
+   * Triples to annotate the files
+   */
   annotation: string;
 }
 

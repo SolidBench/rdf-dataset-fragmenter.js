@@ -451,6 +451,35 @@ Options:
 * `"fileExtension"`: An optional extension to add to resulting files.
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
 
+#### Annotated File Quad Sink
+
+A quad sink that writes to files using an IRI to local file system path mapping and add an triple annotation to each file.
+
+```json
+{
+  "quadSink": {
+    "@type": "QuadSinkAnnotateFile",
+    "annotation": "<$> <https://shapeIndex.com#ShapeIndex> <{}/shapeIndex> .",
+    "iriPatterns": ["^(.*\\/pods\\/[0-9]+)"],
+    "log": true,
+    "outputFormat": "application/n-quads",
+    "fileExtension": ".nq",
+    "iriToPath": {
+      "http://": "out-fragments/http/",
+      "https://": "out-fragments/https/"
+    }
+  }
+}
+```
+Options:
+* `"log"`: If a quad counter should be shown to show the current progress.
+* `"outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
+* `"fileExtension"`: An optional extension to add to resulting files.
+* `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
+* `"annotation"`: Triple annotation for each file of the dataset. `$` signifies the IRI of the current file and `{}` signifies the
+matching instance of the pattern.
+* `"iriPatterns"`: The IRI pattern of the file to annotate.
+
 #### HDT Quad Sink
 
 A quad sink that writes to files using an IRI to local file system path mapping and then converts the files into an [HDT document](https://www.rdfhdt.org/what-is-hdt/).
