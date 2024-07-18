@@ -47,7 +47,7 @@ describe('DatasetSummaryShapeIndex', () => {
       name: 'noise',
     },
   };
-  const contentOfStorage = new Set([ 'comments', 'posts', 'card', 'noise' ]);
+  const contentTypesOfDatasets = new Set([ 'comments', 'posts', 'card', 'noise' ]);
   const randomSeed: any = jest.fn();
   const datasetObjectExeption: Record<string, IUndescribedDataModel> = {
     card: { name: 'card', fragmentation: ResourceFragmentation.DISTRIBUTED },
@@ -64,7 +64,7 @@ describe('DatasetSummaryShapeIndex', () => {
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -94,7 +94,7 @@ describe('DatasetSummaryShapeIndex', () => {
       ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContent);
     });
 
     it('should register a triple with a distributed fragmentation', () => {
@@ -122,7 +122,7 @@ describe('DatasetSummaryShapeIndex', () => {
       ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContent);
     });
 
     it('should not register a triple with a subject not related to the dataset', () => {
@@ -139,7 +139,7 @@ describe('DatasetSummaryShapeIndex', () => {
       collector.register(aTriple);
 
       expect(spy).toHaveBeenCalledTimes(0);
-      expect((collector).contentHandled).toStrictEqual(new Map());
+      expect((collector).registeredEntries).toStrictEqual(new Map());
     });
 
     it('should not register a triple not related to the data model', () => {
@@ -156,7 +156,7 @@ describe('DatasetSummaryShapeIndex', () => {
       collector.register(aTriple);
 
       expect(spy).toHaveBeenCalledTimes(0);
-      expect((collector).contentHandled).toStrictEqual(new Map());
+      expect((collector).registeredEntries).toStrictEqual(new Map());
     });
 
     it('should register a triple from an undescribe triple', () => {
@@ -184,7 +184,7 @@ describe('DatasetSummaryShapeIndex', () => {
       ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContent);
     });
 
     it('should not register a triple from an undescribe triple multiple time', () => {
@@ -212,7 +212,7 @@ describe('DatasetSummaryShapeIndex', () => {
       ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContent);
 
       const aSecondTriple = DF.quad(
         DF.namedNode('http://example.be#007/card#asad'),
@@ -222,7 +222,7 @@ describe('DatasetSummaryShapeIndex', () => {
       collector.register(aSecondTriple);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContent);
     });
 
     it('should register multiple triples', () => {
@@ -253,7 +253,7 @@ describe('DatasetSummaryShapeIndex', () => {
       ]);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContent);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContent);
 
       const aSecondTriple = DF.quad(
         DF.namedNode('http://example.be#007'),
@@ -283,7 +283,7 @@ describe('DatasetSummaryShapeIndex', () => {
       ]);
 
       expect(spy).toHaveBeenCalledTimes(2);
-      expect((collector).contentHandled).toStrictEqual(expectedHandleContentSecond);
+      expect((collector).registeredEntries).toStrictEqual(expectedHandleContentSecond);
     });
   });
 
@@ -298,7 +298,7 @@ describe('DatasetSummaryShapeIndex', () => {
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -324,7 +324,7 @@ describe('DatasetSummaryShapeIndex', () => {
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -452,7 +452,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -503,7 +503,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -597,7 +597,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage: new Set([ 'comments', 'posts', 'card', 'foo' ]),
+        contentTypesOfDatasets: new Set([ 'comments', 'posts', 'card', 'foo' ]),
         randomSeed,
         datasetObjectExeption,
       });
@@ -652,7 +652,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage: new Set(),
+        contentTypesOfDatasets: new Set(),
         randomSeed,
         datasetObjectExeption,
       });
@@ -682,7 +682,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -806,7 +806,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap: shapeMapWithRealShape,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });
@@ -883,7 +883,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap: collector.shapeMap,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
         generationProbability: 20,
@@ -1098,7 +1098,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetObjectFragmentationPredicate,
         shapeMap: shapeMapWithRealShape,
-        contentOfStorage,
+        contentTypesOfDatasets,
         randomSeed,
         datasetObjectExeption,
       });

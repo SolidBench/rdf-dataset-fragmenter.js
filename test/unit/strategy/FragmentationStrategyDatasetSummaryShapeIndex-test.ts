@@ -46,7 +46,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
     it('should use the defined random seed', () => {
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: {},
-        contentOfStorage: [],
+        contentTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
@@ -64,7 +64,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
 
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: {},
-        contentOfStorage: [],
+        contentTypesOfDatasets: [],
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
         datasetObjectFragmentationPredicate: {},
@@ -105,7 +105,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentOfStorage: [],
+        contentTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
@@ -173,7 +173,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentOfStorage: [],
+        contentTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
@@ -240,7 +240,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentOfStorage: [],
+        contentTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
@@ -395,7 +395,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentOfStorage: [ 'noise', 'settings', 'card', 'posts', 'comments' ],
+        contentTypesOfDatasets: [ 'noise', 'settings', 'card', 'posts', 'comments' ],
         randomSeed: 4,
         iriFragmentationOneFile: [
           'http://localhost:3000/internal/FragmentationOneFile',

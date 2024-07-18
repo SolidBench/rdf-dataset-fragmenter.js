@@ -132,7 +132,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    * The registered entries of the  shape index
    */
   private readonly registeredEntries: Map<string, IShapeIndexEntry> = new Map();
-  private readonly contentOfStorage: Set<string>;
+  private readonly contentTypesOfDatasets: Set<string>;
   private readonly datasetObjectExeption: Record<string, IUndescribedDataModel>;
 
   /**
@@ -157,7 +157,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.iriFragmentationOneFile = args.iriFragmentationOneFile;
     this.datasetObjectFragmentationPredicate = args.datasetObjectFragmentationPredicate;
     this.shapeMap = args.shapeMap;
-    this.contentOfStorage = args.contentTypesOfDatasets;
+    this.contentTypesOfDatasets = args.contentTypesOfDatasets;
     this.datasetObjectExeption = args.datasetObjectExeption;
     this.randomGenerator = prand.xoroshiro128plus(args.randomSeed);
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
@@ -313,14 +313,14 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    */
   public serializeCompletenessOfShapeIndex(): IDatasetSummaryOutput {
     // We check if all the resource has been handled
-    if (this.registeredEntries.size !== this.contentOfStorage.size) {
+    if (this.registeredEntries.size !== this.contentTypesOfDatasets.size) {
       return {
         iri: this.shapeIndexIri,
         quads: [],
       };
     }
     for (const val of this.registeredEntries.keys()) {
-      if (!this.contentOfStorage.has(val)) {
+      if (!this.contentTypesOfDatasets.has(val)) {
         return {
           iri: this.shapeIndexIri,
           quads: [],
