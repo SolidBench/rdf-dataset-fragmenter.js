@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { Readable } from 'node:stream';
 import { DataFactory } from 'rdf-data-factory';
 import type {
   IFragmentationStrategyDatasetSummaryShapeIndexOptions,
@@ -6,14 +7,16 @@ import type {
 import {
   FragmentationStrategyDatasetShapeIndex,
 } from '../../../lib/strategy/FragmentationStrategyDatasetSummaryShapeIndex';
+import type { IDatasetSummaryOutput } from '../../../lib/summary/DatasetSummary';
 import type { IShapeEntry } from '../../../lib/summary/DatasetSummaryShapeIndex';
-import { ResourceFragmentation } from '../../../lib/summary/DatasetSummaryShapeIndex';
+import { ResourceFragmentation, DatasetSummaryShapeIndex } from '../../../lib/summary/DatasetSummaryShapeIndex';
 
 const streamifyArray = require('streamify-array');
 
 const DF = new DataFactory();
 
 jest.mock('node:fs');
+jest.mock('../../../lib/summary/DatasetSummaryShapeIndex');
 
 describe('FragmentationStrategyDatasetShapeIndex', () => {
   describe('constructor', () => {
@@ -138,6 +141,48 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
           name: 'Noise',
         },
       });
+    });
+
+    it('should not construct if an entry doesn\'t define a shape', () => {
+      const shapeMap: Record<string, IShapeEntry> = {
+        comments: {
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
+          directory: 'comments',
+          name: 'Comment',
+        },
+        posts: {
+          shapes: [],
+          directory: 'posts',
+          name: 'Post',
+        },
+        card: {
+          shapes: [ 'profile.shexc' ],
+          directory: 'profile',
+          name: 'Profile',
+        },
+        settings: {
+          shapes: [ 'settings.shexc' ],
+          directory: 'settings',
+          name: 'Setting',
+        },
+        noise: {
+          shapes: [ 'noise.shexc' ],
+          directory: 'noise',
+          name: 'Noise',
+        },
+      };
+      const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
+        shapeConfig: shapeMap,
+        contentOfStorage: [],
+        randomSeed: 4,
+        iriFragmentationOneFile: [],
+        iriFragmentationMultipleFiles: [],
+        datasetObjectFragmentationPredicate: {},
+        datasetObjectExeption: {},
+        datasetPatterns: [],
+      };
+      expect(() => new FragmentationStrategyDatasetShapeIndex(options))
+        .toThrow(new Error('every resource type defined should have at least one entry'));
     });
   });
 
@@ -391,7 +436,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       expect(sink.push).not.toHaveBeenCalled();
     });
 
-    it('should not handle a quad not related to a shape', async() => {
+    it('should handle a quad not related to the datasets', async() => {
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
@@ -399,8 +444,152 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
           DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
         ),
       ];
+
+      jest.spyOn(DatasetSummaryShapeIndex.prototype, 'serialize').mockImplementation().mockResolvedValue([]);
+
       await strategy.fragment(streamifyArray([ ...quads ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
+    });
+
+    it('should handle a quad related to a dataset', async() => {
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
+          DF.namedNode('http://localhost:3000/internal/barFragmentation'),
+          DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+        ),
+      ];
+
+      const outputs = [
+        {
+          iri: 'foo',
+          quads: [
+            DF.quad(DF.blankNode(), DF.namedNode('foo'), DF.blankNode()),
+            DF.quad(DF.blankNode(), DF.namedNode('bar'), DF.blankNode()),
+          ],
+        },
+        {
+          iri: 'foo1',
+          quads: [
+            DF.quad(DF.blankNode(), DF.namedNode('foo1'), DF.blankNode()),
+            DF.quad(DF.blankNode(), DF.namedNode('bar1'), DF.blankNode()),
+          ],
+        },
+      ];
+
+      const numberOfSinkCall = outputs.reduce((accumulator: number, currentValue: IDatasetSummaryOutput): number => {
+        return accumulator += currentValue.quads.length;
+      }, 0);
+
+      jest.spyOn(DatasetSummaryShapeIndex.prototype, 'serialize').mockImplementation().mockResolvedValueOnce(outputs);
+
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+      expect(sink.push).toHaveBeenCalledTimes(numberOfSinkCall);
+
+      expect(sink.push).toHaveBeenNthCalledWith(1, outputs[0].iri, outputs[0].quads[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(2, outputs[0].iri, outputs[0].quads[1]);
+
+      expect(sink.push).toHaveBeenNthCalledWith(3, outputs[1].iri, outputs[1].quads[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(4, outputs[1].iri, outputs[1].quads[1]);
+    });
+
+    it('should handle quads related to multiple datasets', async() => {
+      const quads = [
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
+          DF.namedNode('http://localhost:3000/internal/commentsFragmentation'),
+          DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
+          DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+          DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000010995116278290'),
+          DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+          DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/abcdefg'),
+          DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+          DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+        ),
+        DF.quad(
+          DF.namedNode('http://localhost:3000/pods/00000010995116278292'),
+          DF.namedNode('http://localhost:3000/internal/postsFragmentation'),
+          DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+        ),
+      ];
+
+      const outputs1 = [
+        {
+          iri: 'foo',
+          quads: [
+            DF.quad(DF.blankNode('0'), DF.namedNode('foo'), DF.blankNode('0')),
+            DF.quad(DF.blankNode('0'), DF.namedNode('bar'), DF.blankNode('0')),
+          ],
+        },
+        {
+          iri: 'foo1',
+          quads: [
+            DF.quad(DF.blankNode('1'), DF.namedNode('foo1'), DF.blankNode('1')),
+            DF.quad(DF.blankNode('1'), DF.namedNode('bar1'), DF.blankNode('1')),
+          ],
+        },
+      ];
+
+      const outputs2 = [
+        {
+          iri: 'foo2',
+          quads: [
+            DF.quad(DF.blankNode('2'), DF.namedNode('foo2'), DF.blankNode('2')),
+            DF.quad(DF.blankNode('2'), DF.namedNode('bar2'), DF.blankNode('2')),
+          ],
+        },
+        {
+          iri: 'foo3',
+          quads: [
+            DF.quad(DF.blankNode('3'), DF.namedNode('foo3'), DF.blankNode('3')),
+            DF.quad(DF.blankNode('3'), DF.namedNode('bar3'), DF.blankNode('3')),
+          ],
+        },
+      ];
+
+      jest.spyOn(DatasetSummaryShapeIndex.prototype, 'serialize').mockImplementation()
+        .mockResolvedValueOnce(outputs1)
+        .mockResolvedValueOnce(outputs2)
+        .mockResolvedValueOnce([]);
+
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
+
+      const numberOfSinkCall = outputs1.reduce((accumulator: number, currentValue: IDatasetSummaryOutput): number => {
+        return accumulator += currentValue.quads.length;
+      }, 0) + outputs2.reduce((accumulator: number, currentValue: IDatasetSummaryOutput): number => {
+        return accumulator += currentValue.quads.length;
+      }, 0);
+
+      expect(sink.push).toHaveBeenCalledTimes(numberOfSinkCall);
+
+      expect(sink.push).toHaveBeenNthCalledWith(1, outputs1[0].iri, outputs1[0].quads[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(2, outputs1[0].iri, outputs1[0].quads[1]);
+
+      expect(sink.push).toHaveBeenNthCalledWith(3, outputs1[1].iri, outputs1[1].quads[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(4, outputs1[1].iri, outputs1[1].quads[1]);
+
+      expect(sink.push).toHaveBeenNthCalledWith(5, outputs2[0].iri, outputs2[0].quads[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(6, outputs2[0].iri, outputs2[0].quads[1]);
+
+      expect(sink.push).toHaveBeenNthCalledWith(7, outputs2[1].iri, outputs2[1].quads[0]);
+      expect(sink.push).toHaveBeenNthCalledWith(8, outputs2[1].iri, outputs2[1].quads[1]);
+    });
+
+    it('should reject on an erroring stream', async() => {
+      const stream: any = new Readable();
+      stream._read = () => {
+        stream.emit('error', new Error('Error in stream'));
+      };
+      await expect(strategy.fragment(stream, sink)).rejects.toThrow(new Error('Error in stream'));
     });
   });
 });
