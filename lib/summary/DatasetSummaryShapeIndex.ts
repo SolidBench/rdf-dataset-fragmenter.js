@@ -93,7 +93,7 @@ export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
    * The key is an element of the path of those object and the object is the name from shape in an IShapeEntry object.
    * Example: key=>card; object=>card; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
    */
-  datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  datasetResourceFragmentationException: Record<string, IUndescribedDataModel>;
   /**
    * Probability to generate a shape index entry.
    * Should be between 0 and 100.
@@ -132,8 +132,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    * The registered entries of the  shape index
    */
   private readonly registeredEntries: Map<string, IShapeIndexEntry> = new Map();
-  private readonly contentTypesOfDatasets: Set<string>;
-  private readonly datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  private readonly resourceTypesOfDatasets: Set<string>;
+  private readonly datasetResourceFragmentationException: Record<string, IUndescribedDataModel>;
 
   /**
    * The handle undescribed object.
@@ -157,8 +157,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.iriFragmentationOneFile = args.iriFragmentationOneFile;
     this.datasetObjectFragmentationPredicate = args.datasetObjectFragmentationPredicate;
     this.shapeMap = args.shapeMap;
-    this.contentTypesOfDatasets = args.contentTypesOfDatasets;
-    this.datasetObjectExeption = args.datasetObjectExeption;
+    this.resourceTypesOfDatasets = args.contentTypesOfDatasets;
+    this.datasetResourceFragmentationException = args.datasetResourceFragmentationException;
     this.randomGenerator = prand.xoroshiro128plus(args.randomSeed);
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
     this.generationProbability = args.generationProbability ?? 100;
@@ -177,7 +177,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     }
 
     // Register an entry undescribed by the data model
-    for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
+    for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetResourceFragmentationException)) {
       if (quad.subject.value.includes(pathElement) &&
         quad.subject.value.includes(this.dataset) &&
         !this.handledUndescribedObject.has(name)) {
@@ -313,14 +313,14 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    */
   public serializeCompletenessOfShapeIndex(): IDatasetSummaryOutput {
     // We check if all the resource has been handled
-    if (this.registeredEntries.size !== this.contentTypesOfDatasets.size) {
+    if (this.registeredEntries.size !== this.resourceTypesOfDatasets.size) {
       return {
         iri: this.shapeIndexIri,
         quads: [],
       };
     }
     for (const val of this.registeredEntries.keys()) {
-      if (!this.contentTypesOfDatasets.has(val)) {
+      if (!this.resourceTypesOfDatasets.has(val)) {
         return {
           iri: this.shapeIndexIri,
           quads: [],

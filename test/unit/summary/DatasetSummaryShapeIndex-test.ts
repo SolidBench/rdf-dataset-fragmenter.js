@@ -66,7 +66,7 @@ describe('DatasetSummaryShapeIndex', () => {
         shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -300,7 +300,7 @@ describe('DatasetSummaryShapeIndex', () => {
         shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -326,7 +326,7 @@ describe('DatasetSummaryShapeIndex', () => {
         shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -454,7 +454,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -505,7 +505,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -599,7 +599,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap,
         contentTypesOfDatasets: new Set([ 'comments', 'posts', 'card', 'foo' ]),
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
 
       jest.spyOn(prand, 'uniformIntDistribution')
@@ -654,7 +654,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap,
         contentTypesOfDatasets: new Set(),
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
 
       const output = collector.serializeCompletenessOfShapeIndex();
@@ -684,7 +684,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -808,7 +808,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap: shapeMapWithRealShape,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 
@@ -885,7 +885,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap: collector.shapeMap,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
         generationProbability: 20,
       });
       jest.spyOn(prand, 'uniformIntDistribution')
@@ -1100,7 +1100,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         shapeMap: shapeMapWithRealShape,
         contentTypesOfDatasets,
         randomSeed,
-        datasetObjectExeption,
+        datasetResourceFragmentationException: datasetObjectExeption,
       });
     });
 

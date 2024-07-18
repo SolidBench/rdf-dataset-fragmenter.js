@@ -16,7 +16,7 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
   /**
    * All the content type of a dataset
    */
-  contentTypesOfDatasets: string[];
+  resourceTypesOfDatasets: string[];
   /**
    * The initial random seed for stochastic shape index generation.
    */
@@ -43,7 +43,7 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
    * Example: key=>profile; object=>profile; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
    * @range {json}
    */
-  datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  datasetResourceFragmentationException: Record<string, IUndescribedDataModel>;
   /**
    * Probability to generate a shape index entry.
    * Should be between 0 and 100.
@@ -61,7 +61,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
    * The content of a storage.
    * It is used to determine if the shape index is complete.
    */
-  private readonly contentTypesOfDatasets: Set<string>;
+  private readonly resourceTypesOfDatasets: Set<string>;
   /**
    * The initial random seed for stochastic shape index generation.
    */
@@ -87,7 +87,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
    * The key is an element of the path of those object and the object is the name from shape in an IShapeEntry object.
    * Example: key=>profile; object=>profile; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
    */
-  private readonly datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  private readonly datasetResourceFragmentationException: Record<string, IUndescribedDataModel>;
   /**
    * Probability to generate a shape index entry.
    * Should be between 0 and 100.
@@ -98,11 +98,11 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
     super(options);
 
     this.shapeMap = this.generateShapeMap(options.shapeConfig);
-    this.contentTypesOfDatasets = new Set(options.contentTypesOfDatasets);
+    this.resourceTypesOfDatasets = new Set(options.resourceTypesOfDatasets);
     this.iriFragmentationMultipleFiles = new Set(options.iriFragmentationMultipleFiles);
     this.iriFragmentationOneFile = new Set(options.iriFragmentationOneFile);
     this.datasetObjectFragmentationPredicate = options.datasetObjectFragmentationPredicate;
-    this.datasetObjectExeption = options.datasetObjectExeption;
+    this.datasetResourceFragmentationException = options.datasetResourceFragmentationException;
     this.generationProbability = options.generationProbability;
 
     if (options.randomSeed === undefined) {
@@ -121,8 +121,8 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
       datasetObjectFragmentationPredicate: this.datasetObjectFragmentationPredicate,
       shapeMap: this.shapeMap,
       randomSeed: this.randomSeed,
-      contentTypesOfDatasets: this.contentTypesOfDatasets,
-      datasetObjectExeption: this.datasetObjectExeption,
+      contentTypesOfDatasets: this.resourceTypesOfDatasets,
+      datasetResourceFragmentationException: this.datasetResourceFragmentationException,
       generationProbability: this.generationProbability,
     });
     this.randomSeed += 1;

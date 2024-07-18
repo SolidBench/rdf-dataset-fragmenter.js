@@ -278,6 +278,149 @@ After generation, the summaries can be re-mapped to a different document URI.
   }
 }
 ```
+#### Shape Index Fragmentation Strategy
+Fragmentation strategy that generate a shape index in each sub-datasets.
+The sub-datasets are defined by the IRI template at the field `datasetPatterns`.
+
+An exemple of the `component.js` configuration is presented below.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyDatasetSummaryShapeIndex",
+    "shapeConfig": {
+      "comments": {
+        "shapes": [
+          "./shapes/comments.shexc"
+        ],
+        "directory": "comments",
+        "name": "Comment"
+      },
+      "posts": {
+        "shapes": [
+          "./shapes/posts.shexc"
+        ],
+        "directory": "posts",
+        "name": "Post"
+      },
+      "card": {
+        "shapes": [
+          "./shapes/profile.shexc"
+        ],
+        "directory": "profile",
+        "name": "Profile"
+      }
+    },
+    "contentTypesOfDatasets": [
+      "comments",
+      "posts",
+      "cards"
+    ],
+    "randomSeed": 1,
+    "iriFragmentationOneFile": [
+      "http://localhost:3000/internal/FragmentationOneFile"
+    ],
+    "iriFragmentationMultipleFiles": [
+      "http://localhost:3000/internal/FragmentationPerResource",
+      "http://localhost:3000/internal/FragmentationLocation",
+      "http://localhost:3000/internal/FragmentationCreationDate"
+    ],
+    "datasetObjectFragmentationPredicate": {
+      "comments": "http://localhost:3000/internal/commentsFragmentation",
+      "posts": "http://localhost:3000/internal/postsFragmentation"
+    },
+    "datasetResourceFragmentationException": {
+      "card": {
+        "name": "card",
+        "fragmentation": 0
+      },
+      "noise": {
+        "name": "noise",
+        "fragmentation": 0
+      }
+    },
+    "generationProbability": 100,
+    "datasetPatterns": [
+      "^(.*\\/pods\\/[0-9]+)"
+    ]
+  }
+}
+```
+Options:
+
+- `"shapeConfig"`: Define the shape of each datasets.
+  - `"shapes"`: A list of path to shape templates following the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format. If the IRI of the shape is `$` then the IRI will be tied to the current dataset.
+  Another shape IRI in the same dataset can be refered by using `{:ShapeName}`. E.g.
+`ldbcvoc:id <{:Comment}> ;` where `Comment` is the `name` of a shape define
+in the config. When multiple shapes are defined then for each dataset one shape will be chosen randomly with consideration to the `randomSeed`.
+  - `"directory"`: The name of a container of the resource.
+  - `"name"`: The name of the shape.
+- `"resourceTypesOfDatasets"`: The type of resource inside of a dataset. They **should** be related to the `shapeConfig` keys.
+- `"randomSeed"`: The initial random seed for the stochastic operations in the generation of the shape index. Each dataset will have its random seed. The seed will be determined by giving the `randomSeed` to the first dataset and incrementing the latest random Seed given to a dataset by one to the next datasets encountered.
+- `"iriFragmentationOneFile"`: The IRI from a triple `<subject> <datasetObjectFragmentationPredicateField> <iriFragmentationOneFile>`,
+defining a fragmentation in one file of the resource type.
+- `"iriFragmentationMultipleFiles"`: The IRI from a triple `<subject> <datasetObjectFragmentationPredicateField> <iriFragmentationMultipleFiles>`,
+defining a fragmentation in multiple file of the resource type.
+- `"datasetObjectFragmentationPredicate"`: The predicate describing the resource type. The keys **must** be the related to the keys of `shapeConfig`.
+- `"datasetResourceFragmentationException"`: Describe the resource type where the fragmentation is not describe in the data model. The keys **must** be the related to the keys of `shapeConfig`.
+  - `"name"`: Substring in the IRI (at the subject position) describing the resource
+  - `"fragmentation"`: Define the fragmentation of the resource type `0` identify a distributed fragmentation and `1` a fragmentation in one file.
+- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`.
+- `"datasetPatterns"`: The IRI template of a dataset
+
+A sample output file tree and its associated files is displayed below.
+
+```
+├── comments
+│   ├── 2012-08-10.nq
+│   └── 2012-08-17.nq
+├── comments_shape.nq
+├── noise
+│   ├── NOISE-12310.nq
+│   └── NOISE-9909.nq
+├── posts.nq
+├── posts_shape.nq
+├── profile
+│   └── card.nq
+├── profile_shape.nq
+├── settings
+│   └── publicTypeIndex.nq
+└── shapeIndex.nq
+```
+
+`http://localhost:3000/pods/00000000000000000768/profile_shape`
+(sample of the output)
+```nquad
+<http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_1829_49 .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+_:df_1829_51 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Schema> .
+_:df_1829_51 <http://www.w3.org/ns/shex#shapes> _:df_1829_50 .
+_:df_1829_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#NodeConstraint> .
+_:df_1829_0 <http://www.w3.org/ns/shex#nodeKind> <http://www.w3.org/ns/shex#iri> .
+_:df_1829_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#TripleConstraint> .
+_:df_1829_1 <http://www.w3.org/ns/shex#predicate> <http://www.w3.org/ns/pim/space#storage> .
+_:df_1829_1 <http://www.w3.org/ns/shex#valueExpr> _:df_1829
+
+```
+
+`http://localhost:3000/pods/00000000000000000768/shapeIndex`
+
+```nquad
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://shapeIndex.com#ShapeIndex> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#domain> "http://localhost:3000/pods/00000000000000000065/.*"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1018 .
+_:df_3_1018 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/profile_shape#Profile> .
+_:df_3_1018 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/profile/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1082 .
+_:df_3_1082 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/posts_shape#Post> .
+_:df_3_1082 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/posts/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_4148 .
+_:df_3_4148 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/comments_shape#Comment> .
+_:df_3_4148 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/comments/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#isComplete> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+
+```
 
 ### Quad Sinks
 

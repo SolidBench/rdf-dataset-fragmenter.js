@@ -46,12 +46,12 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
     it('should use the defined random seed', () => {
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: {},
-        contentTypesOfDatasets: [],
+        resourceTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
         datasetObjectFragmentationPredicate: {},
-        datasetObjectExeption: {},
+        datasetResourceFragmentationException: {},
         datasetPatterns: [],
       };
       const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
@@ -64,11 +64,11 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
 
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: {},
-        contentTypesOfDatasets: [],
+        resourceTypesOfDatasets: [],
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
         datasetObjectFragmentationPredicate: {},
-        datasetObjectExeption: {},
+        datasetResourceFragmentationException: {},
         datasetPatterns: [],
       };
       const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
@@ -105,12 +105,12 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentTypesOfDatasets: [],
+        resourceTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
         datasetObjectFragmentationPredicate: {},
-        datasetObjectExeption: {},
+        datasetResourceFragmentationException: {},
         datasetPatterns: [],
       };
       const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
@@ -173,12 +173,12 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentTypesOfDatasets: [],
+        resourceTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
         datasetObjectFragmentationPredicate: {},
-        datasetObjectExeption: {},
+        datasetResourceFragmentationException: {},
         datasetPatterns: [],
       };
       expect(() => new FragmentationStrategyDatasetSummaryShapeIndex(options))
@@ -240,12 +240,12 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentTypesOfDatasets: [],
+        resourceTypesOfDatasets: [],
         randomSeed: 4,
         iriFragmentationOneFile: [],
         iriFragmentationMultipleFiles: [],
         datasetObjectFragmentationPredicate: {},
-        datasetObjectExeption: {},
+        datasetResourceFragmentationException: {},
         datasetPatterns: [],
       };
       strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
@@ -395,7 +395,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        contentTypesOfDatasets: [ 'noise', 'settings', 'card', 'posts', 'comments' ],
+        resourceTypesOfDatasets: [ 'noise', 'settings', 'card', 'posts', 'comments' ],
         randomSeed: 4,
         iriFragmentationOneFile: [
           'http://localhost:3000/internal/FragmentationOneFile',
@@ -409,7 +409,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
           comments: 'http://localhost:3000/internal/commentsFragmentation',
           posts: 'http://localhost:3000/internal/postsFragmentation',
         },
-        datasetObjectExeption: {
+        datasetResourceFragmentationException: {
           card: { name: 'card', fragmentation: ResourceFragmentation.DISTRIBUTED },
           noise: { name: 'noise', fragmentation: ResourceFragmentation.DISTRIBUTED },
           settings: { name: 'settings', fragmentation: ResourceFragmentation.DISTRIBUTED },
