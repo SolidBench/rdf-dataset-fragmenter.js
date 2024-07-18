@@ -9,17 +9,31 @@ import * as SHEX_CONTEXT from './shex-context.json';
 
 /* eslint-disable ts/naming-convention */
 export enum ResourceFragmentation {
+  /**
+   * The data is in multiple files
+   */
   DISTRIBUTED,
+  /**
+   * The data is in one file
+   */
   SINGLE,
 }
 /* eslint-enable ts/naming-convention */
-
+/**
+ * Data that the fragmentation is not described using triples
+ * eg: profile, noise, setting in Solidbench
+ */
 export interface IUndescribedDataModel {
   fragmentation: ResourceFragmentation;
   name: string;
 }
-
+/**
+ * The entry of a shape index
+ */
 export interface IShapeIndexEntry {
+  /**
+   * @description the ShExC string
+   */
   shape: string;
   shapeInfo: {
     name: string;
@@ -45,13 +59,34 @@ export interface IShapeEntry {
 }
 
 export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
+  /**
+   * Iri (place at the object position) of indicating the fragmentation of the ressource into a single file.
+   * For exemple http://localhost:3000/internal/FragmentationOneFile
+   */
   iriFragmentationOneFile: Set<string>;
+  /**
+   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * For exemple http://localhost:3000/internal/FragmentationPerResource
+   */
   iriFragmentationMultipleFiles: Set<string>;
-  // Object name, by iri of the predicate of the fragmentation
-  // the object name must match the name of the shape
+  /**
+   * Iri (place at the object predicate) indicating the resource being fragmented.
+   * For exemple http://localhost:3000/internal/postsFragmentation .
+   * The key is the predicate and the object is the name from shape in an IShapeEntry object
+   */
   datasetObjectFragmentationPredicate: Record<string, string>;
+  /**
+   * @description A map of the resource type and shape
+   */
   shapeMap: Record<string, IShapeEntry>;
+  /**
+   * The content of a storage.
+   * It is used to determine if the shape index is complete.
+   */
   contentOfStorage: Set<string>;
+  /**
+   * The random seed for stochastic shape index generation.
+   */
   randomSeed: number;
   /**
    * Dataset object divided by resource but not described by the fragmentation.
@@ -88,49 +123,32 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
   /* eslint-enable ts/naming-convention */
 
-  /**
-   * Iri that describe the fragmentation into a single file for exemple:
-   * http://localhost:3000/internal/FragmentationOneFile
-   */
   private readonly iriFragmentationOneFile: Set<string>;
-  /**
-   * Iri that describe the fragmentation into multiple files for exemple:
-   * http://localhost:3000/internal/FragmentationPerResource
-   */
   private readonly iriFragmentationMultipleFiles: Set<string>;
-
   private readonly datasetObjectFragmentationPredicate: Record<string, string>;
-
-  /**
-   * @description A map of the resource type and shape
-   */
   private readonly shapeMap: Record<string, IShapeEntry>;
-
-  /**
-   * @description A random generator
-   */
   private randomGenerator: prand.RandomGenerator;
-
   /**
-   * @description A map of the storage and the resource type handled
+   * The registered entries of the  shape index
    */
-  private readonly contentHandled: Map<string, IShapeIndexEntry> = new Map();
-  /**
-   * The content of a storage.
-   * It is used to determine if the shape index is complete.
-   */
+  private readonly registeredEntries: Map<string, IShapeIndexEntry> = new Map();
   private readonly contentOfStorage: Set<string>;
-  /**
-   * Dataset object divided by resource but not described by the fragmentation.
-   * The key is an element of the path of those object and the object is the name from shape in an IShapeEntry object.
-   * Example: key=>profile; object=>profile; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
-   */
   private readonly datasetObjectExeption: Record<string, IUndescribedDataModel>;
 
+  /**
+   * The handle undescribed object.
+   * It exist to avoid repetition of the shape index entries because they are generated
+   * based on the capture of IRIs.
+   */
   private readonly handledUndescribedObject: Set<string> = new Set();
 
+  /**
+   * The IRI of the shape index of the dataset
+   */
   private readonly shapeIndexIri: string;
-
+  /**
+   * The probability to generate a shape index entry
+   */
   private readonly generationProbability: number;
 
   public constructor(args: IDatasetSummaryShapeIndex) {
@@ -147,7 +165,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   }
 
   public register(quad: RDF.Quad): void {
-    for (const [ dataModelObject, predicate ] of Object.entries(this.datasetObjectFragmentationPredicate)) {
+    // register an entry that is described by the data model
+    for (const [dataModelObject, predicate] of Object.entries(this.datasetObjectFragmentationPredicate)) {
       if (quad.predicate.value === predicate && quad.subject.value.includes(this.dataset)) {
         const fragmentation = this.iriFragmentationMultipleFiles.has(quad.object.value) ?
           ResourceFragmentation.DISTRIBUTED :
@@ -157,7 +176,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       }
     }
 
-    for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
+    // register an entry undescribed by the data model
+    for (const [pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
       if (quad.subject.value.includes(pathElement) &&
         quad.subject.value.includes(this.dataset) &&
         !this.handledUndescribedObject.has(name)) {
@@ -167,13 +187,18 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       }
     }
   }
-
+  /**
+   * Register a shape index entry
+   * @param {string} dataModelObject 
+   * @param {ResourceFragmentation} fragmentation 
+   */
   public registerShapeIndexEntry(dataModelObject: string, fragmentation: ResourceFragmentation): void {
     const shapeEntry = this.shapeMap[dataModelObject];
     if (shapeEntry) {
-      const [ randomIndex, newGenerator ] =
+      const [randomIndex, newGenerator] =
         prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
       this.randomGenerator = newGenerator;
+      // choose the a shape from the shape been using with an even probability
       const shape = shapeEntry.shapes[randomIndex];
       const iri = fragmentation === ResourceFragmentation.DISTRIBUTED ?
         `${this.dataset}/${shapeEntry.directory}/` :
@@ -188,16 +213,17 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
         ressourceFragmentation: fragmentation,
         iri,
       };
-      this.contentHandled.set(dataModelObject, indexEntry);
+      this.registeredEntries.set(dataModelObject, indexEntry);
     }
   }
 
   public async serialize(): Promise<IDatasetSummaryOutput[]> {
-    const [ shapeIndexEntry, shapes ] = await this.serializeShapeIndexEntries();
+    const [shapeIndexEntry, shapes] = await this.serializeShapeIndexEntries();
     if (shapeIndexEntry.quads.length === 0) {
       return [];
     }
     const shapeIndex = this.serializeShapeIndexInstance();
+    // we use concat because it is much faster than spread operator
     /* eslint-disable unicorn/prefer-spread */
     shapeIndex.quads = shapeIndex.quads.concat(shapeIndexEntry.quads);
     shapeIndex.quads = shapeIndex.quads.concat(this.serializeCompletenessOfShapeIndex().quads);
@@ -206,7 +232,11 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     ].concat(shapes);
     /* eslint-enable unicorn/prefer-spread */
   }
-
+  
+  /**
+   * Serialized the shape index entries and their associated shapes
+   * @returns {[IDatasetSummaryOutput, IDatasetSummaryOutput[]]} - The serialized shape index entries and their associated shapes
+   */
   public async serializeShapeIndexEntries(): Promise<[IDatasetSummaryOutput, IDatasetSummaryOutput[]]> {
     const output: IDatasetSummaryOutput = {
       iri: this.shapeIndexIri,
@@ -216,8 +246,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
     const entryToDelete = [];
-    for (const [ key, entry ] of this.contentHandled) {
-      const [ entryGenerationValue, newGenerator ] =
+    for (const [key, entry] of this.registeredEntries) {
+      const [entryGenerationValue, newGenerator] =
         prand.uniformIntDistribution(0, 100, this.randomGenerator);
       this.randomGenerator = newGenerator;
       // Add the entry to the shape index based on the generation probability
@@ -248,11 +278,14 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       }
     }
     for (const entry of entryToDelete) {
-      this.contentHandled.delete(entry);
+      this.registeredEntries.delete(entry);
     }
-    return [ output, shapeOutputs ];
+    return [output, shapeOutputs];
   }
-
+  /**
+   * Serialize the triples that define the shape index instance
+   * @returns {IDatasetSummaryOutput}
+   */
   public serializeShapeIndexInstance(): IDatasetSummaryOutput {
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
     const typeDefinition = DF.quad(
@@ -269,19 +302,22 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     return {
       iri: this.shapeIndexIri,
-      quads: [ typeDefinition, domain ],
+      quads: [typeDefinition, domain],
     };
   }
-
+  /**
+   * Serialize the information indicating if the shape index is complete
+   * @returns {IDatasetSummaryOutput}
+   */
   public serializeCompletenessOfShapeIndex(): IDatasetSummaryOutput {
     // We check if all the resource has been handled
-    if (this.contentHandled.size !== this.contentOfStorage.size) {
+    if (this.registeredEntries.size !== this.contentOfStorage.size) {
       return {
         iri: this.shapeIndexIri,
         quads: [],
       };
     }
-    for (const val of this.contentHandled.keys()) {
+    for (const val of this.registeredEntries.keys()) {
       if (!this.contentOfStorage.has(val)) {
         return {
           iri: this.shapeIndexIri,
@@ -298,10 +334,15 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     return {
       iri: this.shapeIndexIri,
-      quads: [ isComplete ],
+      quads: [isComplete],
     };
   }
-
+  /**
+   * Serialize the shape
+   * @param {string} shapeShexc ShEx template shapes in the shexc serialized  
+   * @param {string} shapeIRI The Iri of the shape
+   * @returns {IDatasetSummaryOutput}
+   */
   public async serializeShape(shapeShexc: string, shapeIRI: string): Promise<IDatasetSummaryOutput> {
     const shexParser = ShexParser.construct(shapeIRI);
     shapeShexc = this.transformShapeTemplateIntoShape(shapeShexc, shapeIRI);
@@ -339,11 +380,20 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       jsonldParser.end();
     });
   }
-
+  /**
+   * Generate the iri of a shape based on the user provided information
+   * @param entry 
+   * @returns {string} 
+   */
   public generateShapeIri(entry: { directory: string; name: string }): string {
     return `${this.dataset}/${entry.directory}_shape#${entry.name}`;
   }
-
+  /**
+   * Transform the shape template into a shape
+   * @param {string} shapeShexc ShEx template shapes in the shexc serialized  
+   * @param {string} shapeIRI The Iri of the shape
+   * @returns {string}
+   */
   public transformShapeTemplateIntoShape(shapeShexc: string, shapeIRI: string): string {
     shapeShexc = shapeShexc.replace('$', shapeIRI);
     for (const entry of Object.values(this.shapeMap)) {
