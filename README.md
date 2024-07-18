@@ -446,7 +446,6 @@ _:Comment <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000
 _:Comment <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/comments/> .
 <http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#isComplete> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
 
-
 ```
 
 ### Quad Sinks
