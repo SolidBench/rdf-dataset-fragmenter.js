@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import prand from 'pure-rand';
 import type { IShapeEntry, IUndescribedDataModel } from '../summary/DatasetSummaryShapeIndex';
 import { DatasetSummaryShapeIndex } from '../summary/DatasetSummaryShapeIndex';
 import {
@@ -9,19 +8,25 @@ import {
 
 export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
   extends IFragmentationStrategyDatasetSummaryOptions {
+  /**
+   * @range {json}
+   */
   shapeConfig: Record<string, IShapeEntry>;
   contentOfStorage: string[];
-  tripleShapeIndexLocator?: boolean;
   randomSeed?: number;
   iriFragmentationOneFile: string[];
   iriFragmentationMultipleFiles: string[];
-  // Object name, by iri of the predicate of the fragmentation
-  // the object name must match the name of the shape
+  /**
+   * Object name, by iri of the predicate of the fragmentation
+   * the object name must match the name of the shape
+   * @range {json}
+   */
   datasetObjectFragmentationPredicate: Record<string, string>;
   /**
    * Dataset object divided by resource but not described by the fragmentation.
    * The key is an element of the path of those object and the object is the name from shape in an IShapeEntry object.
    * Example: key=>profile; object=>profile; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
+   * @range {json}
    */
   datasetObjectExeption: Record<string, IUndescribedDataModel>;
   /**
@@ -31,7 +36,7 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
   generationProbability?: number;
 }
 
-export class FragmentationStrategyDatasetShapeIndex
+export class FragmentationStrategyDatasetSummaryShapeIndex
   extends FragmentationStrategyDatasetSummary<DatasetSummaryShapeIndex> {
   /**
    * @description A map of the resource type and shape
@@ -100,7 +105,7 @@ export class FragmentationStrategyDatasetShapeIndex
       iriFragmentationOneFile: this.iriFragmentationOneFile,
       datasetObjectFragmentationPredicate: this.datasetObjectFragmentationPredicate,
       shapeMap: this.shapeMap,
-      randomGeneratorShapeSelection: prand.xoroshiro128plus(this.randomSeed),
+      randomSeed: this.randomSeed,
       contentOfStorage: this.contentOfStorage,
       datasetObjectExeption: this.datasetObjectExeption,
       generationProbability: this.generationProbability,

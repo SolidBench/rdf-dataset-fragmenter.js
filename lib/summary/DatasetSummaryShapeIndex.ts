@@ -52,7 +52,7 @@ export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
   datasetObjectFragmentationPredicate: Record<string, string>;
   shapeMap: Record<string, IShapeEntry>;
   contentOfStorage: Set<string>;
-  randomGeneratorShapeSelection: prand.RandomGenerator;
+  randomSeed: number;
   /**
    * Dataset object divided by resource but not described by the fragmentation.
    * The key is an element of the path of those object and the object is the name from shape in an IShapeEntry object.
@@ -141,7 +141,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.shapeMap = args.shapeMap;
     this.contentOfStorage = args.contentOfStorage;
     this.datasetObjectExeption = args.datasetObjectExeption;
-    this.randomGenerator = args.randomGeneratorShapeSelection;
+    this.randomGenerator = prand.xoroshiro128plus(args.randomSeed);
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
     this.generationProbability = args.generationProbability ?? 100;
   }

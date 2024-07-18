@@ -5,7 +5,7 @@ import type {
   IFragmentationStrategyDatasetSummaryShapeIndexOptions,
 } from '../../../lib/strategy/FragmentationStrategyDatasetSummaryShapeIndex';
 import {
-  FragmentationStrategyDatasetShapeIndex,
+  FragmentationStrategyDatasetSummaryShapeIndex,
 } from '../../../lib/strategy/FragmentationStrategyDatasetSummaryShapeIndex';
 import type { IDatasetSummaryOutput } from '../../../lib/summary/DatasetSummary';
 import type { IShapeEntry } from '../../../lib/summary/DatasetSummaryShapeIndex';
@@ -54,7 +54,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         datasetObjectExeption: {},
         datasetPatterns: [],
       };
-      const strategy = new FragmentationStrategyDatasetShapeIndex(options);
+      const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
       expect((<any>strategy).randomSeed).toBe(4);
     });
 
@@ -71,7 +71,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         datasetObjectExeption: {},
         datasetPatterns: [],
       };
-      const strategy = new FragmentationStrategyDatasetShapeIndex(options);
+      const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
       expect((<any>strategy).randomSeed).toBe(2);
     });
 
@@ -113,7 +113,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         datasetObjectExeption: {},
         datasetPatterns: [],
       };
-      const strategy = new FragmentationStrategyDatasetShapeIndex(options);
+      const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
       expect((<any>strategy).shapeMap).toStrictEqual({
         comments: {
           shapes: [ 'comments', 'posts' ],
@@ -181,7 +181,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         datasetObjectExeption: {},
         datasetPatterns: [],
       };
-      expect(() => new FragmentationStrategyDatasetShapeIndex(options))
+      expect(() => new FragmentationStrategyDatasetSummaryShapeIndex(options))
         .toThrow(new Error('every resource type defined should have at least one entry'));
     });
   });
@@ -248,7 +248,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         datasetObjectExeption: {},
         datasetPatterns: [],
       };
-      strategy = new FragmentationStrategyDatasetShapeIndex(options);
+      strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
     });
 
     it('should create a summary and increment the random seed', () => {
@@ -416,7 +416,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         },
         datasetPatterns: [ '^(.*\\/pods\\/[0-9]+)' ],
       };
-      strategy = new FragmentationStrategyDatasetShapeIndex(options);
+      strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
     });
 
     it('should not handle an empty stream', async() => {

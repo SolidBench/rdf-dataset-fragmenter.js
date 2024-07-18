@@ -48,7 +48,7 @@ describe('DatasetSummaryShapeIndex', () => {
     },
   };
   const contentOfStorage = new Set([ 'comments', 'posts', 'card', 'noise' ]);
-  const randomGeneratorShapeSelection: any = jest.fn();
+  const randomSeed: any = jest.fn();
   const datasetObjectExeption: Record<string, IUndescribedDataModel> = {
     card: { name: 'card', fragmentation: ResourceFragmentation.DISTRIBUTED },
     noise: { name: 'noise', fragmentation: ResourceFragmentation.DISTRIBUTED },
@@ -65,7 +65,7 @@ describe('DatasetSummaryShapeIndex', () => {
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -299,7 +299,7 @@ describe('DatasetSummaryShapeIndex', () => {
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -325,7 +325,7 @@ describe('DatasetSummaryShapeIndex', () => {
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -453,7 +453,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -504,7 +504,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -598,7 +598,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage: new Set([ 'comments', 'posts', 'card', 'foo' ]),
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
 
@@ -653,7 +653,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage: new Set(),
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
 
@@ -683,7 +683,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -807,7 +807,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap: shapeMapWithRealShape,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
@@ -884,7 +884,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap: collector.shapeMap,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
         generationProbability: 20,
       });
@@ -1099,7 +1099,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         datasetObjectFragmentationPredicate,
         shapeMap: shapeMapWithRealShape,
         contentOfStorage,
-        randomGeneratorShapeSelection,
+        randomSeed,
         datasetObjectExeption,
       });
     });
