@@ -282,8 +282,6 @@ After generation, the summaries can be re-mapped to a different document URI.
 Fragmentation strategy that generate a shape index in each sub-datasets.
 The sub-datasets are defined by the IRI template at the field `datasetPatterns`.
 
-An exemple of the `component.js` configuration is presented below.
-
 ```json
 {
   "fragmentationStrategy": {
@@ -346,6 +344,7 @@ An exemple of the `component.js` configuration is presented below.
   }
 }
 ```
+
 Options:
 
 - `"shapeConfig"`: Define the shape of each datasets.
