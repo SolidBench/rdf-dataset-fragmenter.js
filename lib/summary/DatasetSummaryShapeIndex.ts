@@ -165,8 +165,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   }
 
   public register(quad: RDF.Quad): void {
-    // register an entry that is described by the data model
-    for (const [dataModelObject, predicate] of Object.entries(this.datasetObjectFragmentationPredicate)) {
+    // Register an entry that is described by the data model
+    for (const [ dataModelObject, predicate ] of Object.entries(this.datasetObjectFragmentationPredicate)) {
       if (quad.predicate.value === predicate && quad.subject.value.includes(this.dataset)) {
         const fragmentation = this.iriFragmentationMultipleFiles.has(quad.object.value) ?
           ResourceFragmentation.DISTRIBUTED :
@@ -176,8 +176,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       }
     }
 
-    // register an entry undescribed by the data model
-    for (const [pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
+    // Register an entry undescribed by the data model
+    for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
       if (quad.subject.value.includes(pathElement) &&
         quad.subject.value.includes(this.dataset) &&
         !this.handledUndescribedObject.has(name)) {
@@ -187,18 +187,19 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       }
     }
   }
+
   /**
    * Register a shape index entry
-   * @param {string} dataModelObject 
-   * @param {ResourceFragmentation} fragmentation 
+   * @param {string} dataModelObject
+   * @param {ResourceFragmentation} fragmentation
    */
   public registerShapeIndexEntry(dataModelObject: string, fragmentation: ResourceFragmentation): void {
     const shapeEntry = this.shapeMap[dataModelObject];
     if (shapeEntry) {
-      const [randomIndex, newGenerator] =
+      const [ randomIndex, newGenerator ] =
         prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
       this.randomGenerator = newGenerator;
-      // choose the a shape from the shape been using with an even probability
+      // Choose the a shape from the shape been using with an even probability
       const shape = shapeEntry.shapes[randomIndex];
       const iri = fragmentation === ResourceFragmentation.DISTRIBUTED ?
         `${this.dataset}/${shapeEntry.directory}/` :
@@ -218,12 +219,12 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   }
 
   public async serialize(): Promise<IDatasetSummaryOutput[]> {
-    const [shapeIndexEntry, shapes] = await this.serializeShapeIndexEntries();
+    const [ shapeIndexEntry, shapes ] = await this.serializeShapeIndexEntries();
     if (shapeIndexEntry.quads.length === 0) {
       return [];
     }
     const shapeIndex = this.serializeShapeIndexInstance();
-    // we use concat because it is much faster than spread operator
+    // We use concat because it is much faster than spread operator
     /* eslint-disable unicorn/prefer-spread */
     shapeIndex.quads = shapeIndex.quads.concat(shapeIndexEntry.quads);
     shapeIndex.quads = shapeIndex.quads.concat(this.serializeCompletenessOfShapeIndex().quads);
@@ -232,10 +233,11 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     ].concat(shapes);
     /* eslint-enable unicorn/prefer-spread */
   }
-  
+
   /**
    * Serialized the shape index entries and their associated shapes
-   * @returns {[IDatasetSummaryOutput, IDatasetSummaryOutput[]]} - The serialized shape index entries and their associated shapes
+   * @returns {[IDatasetSummaryOutput, IDatasetSummaryOutput[]]} -
+   * The serialized shape index entries and their associated shapes
    */
   public async serializeShapeIndexEntries(): Promise<[IDatasetSummaryOutput, IDatasetSummaryOutput[]]> {
     const output: IDatasetSummaryOutput = {
@@ -246,8 +248,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
     const entryToDelete = [];
-    for (const [key, entry] of this.registeredEntries) {
-      const [entryGenerationValue, newGenerator] =
+    for (const [ key, entry ] of this.registeredEntries) {
+      const [ entryGenerationValue, newGenerator ] =
         prand.uniformIntDistribution(0, 100, this.randomGenerator);
       this.randomGenerator = newGenerator;
       // Add the entry to the shape index based on the generation probability
@@ -280,11 +282,11 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     for (const entry of entryToDelete) {
       this.registeredEntries.delete(entry);
     }
-    return [output, shapeOutputs];
+    return [ output, shapeOutputs ];
   }
+
   /**
    * Serialize the triples that define the shape index instance
-   * @returns {IDatasetSummaryOutput}
    */
   public serializeShapeIndexInstance(): IDatasetSummaryOutput {
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
@@ -302,12 +304,12 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     return {
       iri: this.shapeIndexIri,
-      quads: [typeDefinition, domain],
+      quads: [ typeDefinition, domain ],
     };
   }
+
   /**
    * Serialize the information indicating if the shape index is complete
-   * @returns {IDatasetSummaryOutput}
    */
   public serializeCompletenessOfShapeIndex(): IDatasetSummaryOutput {
     // We check if all the resource has been handled
@@ -334,14 +336,14 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     return {
       iri: this.shapeIndexIri,
-      quads: [isComplete],
+      quads: [ isComplete ],
     };
   }
+
   /**
    * Serialize the shape
-   * @param {string} shapeShexc ShEx template shapes in the shexc serialized  
+   * @param {string} shapeShexc ShEx template shapes in the shexc serialized
    * @param {string} shapeIRI The Iri of the shape
-   * @returns {IDatasetSummaryOutput}
    */
   public async serializeShape(shapeShexc: string, shapeIRI: string): Promise<IDatasetSummaryOutput> {
     const shexParser = ShexParser.construct(shapeIRI);
@@ -380,19 +382,19 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       jsonldParser.end();
     });
   }
+
   /**
    * Generate the iri of a shape based on the user provided information
-   * @param entry 
-   * @returns {string} 
+   * @param {{ directory: string; name: string }} entry
    */
   public generateShapeIri(entry: { directory: string; name: string }): string {
     return `${this.dataset}/${entry.directory}_shape#${entry.name}`;
   }
+
   /**
    * Transform the shape template into a shape
-   * @param {string} shapeShexc ShEx template shapes in the shexc serialized  
+   * @param {string} shapeShexc ShEx template shapes in the shexc serialized
    * @param {string} shapeIRI The Iri of the shape
-   * @returns {string}
    */
   public transformShapeTemplateIntoShape(shapeShexc: string, shapeIRI: string): string {
     shapeShexc = shapeShexc.replace('$', shapeIRI);
