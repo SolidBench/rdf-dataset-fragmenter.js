@@ -9,12 +9,27 @@ import {
 export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
   extends IFragmentationStrategyDatasetSummaryOptions {
   /**
+   * Information about the shape used in the datasets
    * @range {json}
    */
   shapeConfig: Record<string, IShapeEntry>;
-  contentOfStorage: string[];
+  /**
+   * All the content type of a dataset
+   */
+  contentTypesOfDatasets: string[];
+  /**
+   * The initial random seed for stochastic shape index generation.
+   */
   randomSeed?: number;
+  /**
+   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * For exemple http://localhost:3000/internal/FragmentationPerResource
+   */
   iriFragmentationOneFile: string[];
+  /**
+   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * For exemple http://localhost:3000/internal/FragmentationPerResource
+   */
   iriFragmentationMultipleFiles: string[];
   /**
    * Object name, by iri of the predicate of the fragmentation
@@ -46,9 +61,9 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
    * The content of a storage.
    * It is used to determine if the shape index is complete.
    */
-  private readonly contentOfStorage: Set<string>;
+  private readonly contentTypesOfDatasets: Set<string>;
   /**
-   * The initial random seed for stochastic shape generation.
+   * The initial random seed for stochastic shape index generation.
    */
   private randomSeed: number;
   /**
@@ -83,7 +98,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
     super(options);
 
     this.shapeMap = this.generateShapeMap(options.shapeConfig);
-    this.contentOfStorage = new Set(options.contentOfStorage);
+    this.contentTypesOfDatasets = new Set(options.contentTypesOfDatasets);
     this.iriFragmentationMultipleFiles = new Set(options.iriFragmentationMultipleFiles);
     this.iriFragmentationOneFile = new Set(options.iriFragmentationOneFile);
     this.datasetObjectFragmentationPredicate = options.datasetObjectFragmentationPredicate;
@@ -106,7 +121,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
       datasetObjectFragmentationPredicate: this.datasetObjectFragmentationPredicate,
       shapeMap: this.shapeMap,
       randomSeed: this.randomSeed,
-      contentOfStorage: this.contentOfStorage,
+      contentTypesOfDatasets: this.contentTypesOfDatasets,
       datasetObjectExeption: this.datasetObjectExeption,
       generationProbability: this.generationProbability,
     });

@@ -80,10 +80,10 @@ export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
    */
   shapeMap: Record<string, IShapeEntry>;
   /**
-   * The content of a storage.
+   *  All the content type of a dataset.
    * It is used to determine if the shape index is complete.
    */
-  contentOfStorage: Set<string>;
+  contentTypesOfDatasets: Set<string>;
   /**
    * The random seed for stochastic shape index generation.
    */
@@ -157,7 +157,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.iriFragmentationOneFile = args.iriFragmentationOneFile;
     this.datasetObjectFragmentationPredicate = args.datasetObjectFragmentationPredicate;
     this.shapeMap = args.shapeMap;
-    this.contentOfStorage = args.contentOfStorage;
+    this.contentOfStorage = args.contentTypesOfDatasets;
     this.datasetObjectExeption = args.datasetObjectExeption;
     this.randomGenerator = prand.xoroshiro128plus(args.randomSeed);
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
