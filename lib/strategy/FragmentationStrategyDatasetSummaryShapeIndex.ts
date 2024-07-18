@@ -24,6 +24,11 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
    * Example: key=>profile; object=>profile; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
    */
   datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  /**
+   * Probability to generate a shape index entry.
+   * Should be between 0 and 100.
+   */
+  generationProbability?: number;
 }
 
 export class FragmentationStrategyDatasetShapeIndex
@@ -63,6 +68,11 @@ export class FragmentationStrategyDatasetShapeIndex
    * Example: key=>profile; object=>profile; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
    */
   private readonly datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  /**
+   * Probability to generate a shape index entry.
+   * Should be between 0 and 100.
+   */
+  private readonly generationProbability?: number;
 
   public constructor(options: IFragmentationStrategyDatasetSummaryShapeIndexOptions) {
     super(options);
@@ -73,6 +83,7 @@ export class FragmentationStrategyDatasetShapeIndex
     this.iriFragmentationOneFile = new Set(options.iriFragmentationOneFile);
     this.datasetObjectFragmentationPredicate = options.datasetObjectFragmentationPredicate;
     this.datasetObjectExeption = options.datasetObjectExeption;
+    this.generationProbability = options.generationProbability;
 
     if (options.randomSeed === undefined) {
       const seed = Date.now() * Math.random();
@@ -92,6 +103,7 @@ export class FragmentationStrategyDatasetShapeIndex
       randomGeneratorShapeSelection: prand.xoroshiro128plus(this.randomSeed),
       contentOfStorage: this.contentOfStorage,
       datasetObjectExeption: this.datasetObjectExeption,
+      generationProbability: this.generationProbability,
     });
     this.randomSeed += 1;
     return summary;

@@ -59,6 +59,11 @@ export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
    * Example: key=>card; object=>card; triple=>http://localhost:3000/pods/00000030786325577964/profile/card#me
    */
   datasetObjectExeption: Record<string, IUndescribedDataModel>;
+  /**
+   * Probability to generate a shape index entry.
+   * Should be between 0 and 100.
+   */
+  generationProbability?: number;
 }
 
 export class DatasetSummaryShapeIndex extends DatasetSummary {
@@ -81,7 +86,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   public static readonly SOLID_INSTANCE_NODE = DF.namedNode('http://www.w3.org/ns/solid/terms#instance');
   public static readonly SOLID_INSTANCE_CONTAINER_NODE =
     DF.namedNode('http://www.w3.org/ns/solid/terms#instanceContainer');
-    /* eslint-enable ts/naming-convention */
+  /* eslint-enable ts/naming-convention */
 
   /**
    * Iri that describe the fragmentation into a single file for exemple:
@@ -126,6 +131,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   private readonly shapeIndexIri: string;
 
+  private readonly generationProbability: number;
+
   public constructor(args: IDatasetSummaryShapeIndex) {
     super(args);
     this.iriFragmentationMultipleFiles = args.iriFragmentationMultipleFiles;
@@ -136,6 +143,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.datasetObjectExeption = args.datasetObjectExeption;
     this.randomGenerator = args.randomGeneratorShapeSelection;
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
+    this.generationProbability = args.generationProbability ?? 100;
   }
 
   public register(quad: RDF.Quad): void {
@@ -151,8 +159,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetObjectExeption)) {
       if (quad.subject.value.includes(pathElement) &&
-                quad.subject.value.includes(this.dataset) &&
-                !this.handledUndescribedObject.has(name)) {
+        quad.subject.value.includes(this.dataset) &&
+        !this.handledUndescribedObject.has(name)) {
         this.registerShapeIndexEntry(name, fragmentation);
         this.handledUndescribedObject.add(name);
         return;
@@ -164,12 +172,12 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     const shapeEntry = this.shapeMap[dataModelObject];
     if (shapeEntry) {
       const [ randomIndex, newGenerator ] =
-                prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
+        prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
       this.randomGenerator = newGenerator;
       const shape = shapeEntry.shapes[randomIndex];
       const iri = fragmentation === ResourceFragmentation.DISTRIBUTED ?
-                `${this.dataset}/${shapeEntry.directory}/` :
-                `${this.dataset}/${dataModelObject}`;
+        `${this.dataset}/${shapeEntry.directory}/` :
+        `${this.dataset}/${dataModelObject}`;
 
       const indexEntry: IShapeIndexEntry = {
         shape,
@@ -207,28 +215,40 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     const shapeOutputs: IDatasetSummaryOutput[] = [];
 
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
-    for (const entry of this.contentHandled.values()) {
-      const currentEntry = DF.blankNode(entry.shapeInfo.name);
-      const entryTypeDefinition = DF.quad(
-        shapeIndexNode,
-        DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,
-        currentEntry,
-      );
-      const bindByShape = DF.quad(
-        currentEntry,
-        DatasetSummaryShapeIndex.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
-        DF.namedNode(this.generateShapeIri(entry.shapeInfo)),
-      );
-      const target = DF.quad(
-        currentEntry,
-        entry.ressourceFragmentation === ResourceFragmentation.SINGLE ?
-          DatasetSummaryShapeIndex.SOLID_INSTANCE_NODE :
-          DatasetSummaryShapeIndex.SOLID_INSTANCE_CONTAINER_NODE,
-        DF.namedNode(entry.iri),
-      );
-      shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
+    const entryToDelete = [];
+    for (const [ key, entry ] of this.contentHandled) {
+      const [ entryGenerationValue, newGenerator ] =
+        prand.uniformIntDistribution(0, 100, this.randomGenerator);
+      this.randomGenerator = newGenerator;
+      // Add the entry to the shape index based on the generation probability
+      if (entryGenerationValue < this.generationProbability) {
+        const currentEntry = DF.blankNode(entry.shapeInfo.name);
+        const entryTypeDefinition = DF.quad(
+          shapeIndexNode,
+          DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,
+          currentEntry,
+        );
+        const bindByShape = DF.quad(
+          currentEntry,
+          DatasetSummaryShapeIndex.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
+          DF.namedNode(this.generateShapeIri(entry.shapeInfo)),
+        );
+        const target = DF.quad(
+          currentEntry,
+          entry.ressourceFragmentation === ResourceFragmentation.SINGLE ?
+            DatasetSummaryShapeIndex.SOLID_INSTANCE_NODE :
+            DatasetSummaryShapeIndex.SOLID_INSTANCE_CONTAINER_NODE,
+          DF.namedNode(entry.iri),
+        );
+        shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
 
-      output.quads.push(entryTypeDefinition, bindByShape, target);
+        output.quads.push(entryTypeDefinition, bindByShape, target);
+      } else {
+        entryToDelete.push(key);
+      }
+    }
+    for (const entry of entryToDelete) {
+      this.contentHandled.delete(entry);
     }
     return [ output, shapeOutputs ];
   }
@@ -302,8 +322,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
         .on('data', (quad: RDF.Quad) => {
           quads.push(quad);
         })
-      // We ignore this because it is difficult to provide a valid ShEx document that
-      // would not be parsable in RDF given it has been already parsed in ShExJ
+        // We ignore this because it is difficult to provide a valid ShEx document that
+        // would not be parsable in RDF given it has been already parsed in ShExJ
 
         .on('error', /* istanbul ignore next */(error: any) => {
           reject(error);

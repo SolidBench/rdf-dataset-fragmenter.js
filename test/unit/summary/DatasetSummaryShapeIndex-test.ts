@@ -822,6 +822,8 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
           return <any>[ 0, this ];
+        }).mockImplementationOnce(() => {
+          return <any>[ 0, this ];
         });
 
       const aTriple = DF.quad(
@@ -872,6 +874,38 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
           target,
         ],
       );
+    });
+
+    it('should generate not generate an entry based on a generation probability', async() => {
+      collector = new DatasetSummaryShapeIndex({
+        dataset: dataset.value,
+        iriFragmentationOneFile,
+        iriFragmentationMultipleFiles,
+        datasetObjectFragmentationPredicate,
+        shapeMap: collector.shapeMap,
+        contentOfStorage,
+        randomGeneratorShapeSelection,
+        datasetObjectExeption,
+        generationProbability: 20,
+      });
+      jest.spyOn(prand, 'uniformIntDistribution')
+        .mockImplementationOnce(() => {
+          return <any>[ 0, this ];
+        }).mockImplementationOnce(() => {
+          return <any>[ 33, this ];
+        });
+
+      const aTriple = DF.quad(
+        DF.namedNode('http://example.be#007'),
+        DF.namedNode('http://localhost:3000/internal/commentsFragmentation'),
+        DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+      );
+
+      collector.register(aTriple);
+
+      const [ entry, shapes ] = await collector.serializeShapeIndexEntries();
+      expect(entry.quads).toHaveLength(0);
+      expect(shapes).toHaveLength(0);
     });
 
     it('should generate multiple entries', async() => {
