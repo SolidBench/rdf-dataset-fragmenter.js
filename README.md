@@ -311,10 +311,10 @@ An exemple of the `component.js` configuration is presented below.
         "name": "Profile"
       }
     },
-    "contentTypesOfDatasets": [
+    "resourceTypesOfDatasets": [
       "comments",
       "posts",
-      "cards"
+      "card"
     ],
     "randomSeed": 1,
     "iriFragmentationOneFile": [
@@ -391,8 +391,8 @@ A sample output file tree and its associated files is displayed below.
 `http://localhost:3000/pods/00000000000000000768/profile_shape`
 (sample of the output)
 ```nquad
-<http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_1829_49 .
-_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://localhost:3000/pods/00000000000000000619/profile_shape#Profile> .
+<http://localhost:3000/pods/00000000000000000768/profile_shape#Profile> <http://www.w3.org/ns/shex#shapeExpr> _:df_1829_49 .
+_:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://localhost:3000/pods/00000000000000000768/profile_shape#Profile> .
 _:df_1829_50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
 _:df_1829_51 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/shex#Schema> .
 _:df_1829_51 <http://www.w3.org/ns/shex#shapes> _:df_1829_50 .
@@ -403,22 +403,49 @@ _:df_1829_1 <http://www.w3.org/ns/shex#predicate> <http://www.w3.org/ns/pim/spac
 _:df_1829_1 <http://www.w3.org/ns/shex#valueExpr> _:df_1829
 
 ```
+Shape template of a post
 
-`http://localhost:3000/pods/00000000000000000768/shapeIndex`
+```
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
+PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
+
+<$> CLOSED {
+    a ldbcvoc:Comment?;
+    ldbcvoc:id xsd:long ;
+    ldbcvoc:creationDate xsd:dateTime ;
+    ldbcvoc:locationIP xsd:string  ;
+    ldbcvoc:browserUsed xsd:string ;
+    ldbcvoc:content xsd:string?;
+    ldbcvoc:lenght xsd:int ;
+    ldbcvoc:hasTag IRI *;
+    (
+        ldbcvoc:replyOf @<{:Post}> *;
+        |
+        ldbcvoc:replyOf @<{:Comment}> *;
+    );
+    ldbcvoc:isLocatedIn IRI ;
+    ldbcvoc:hasCreator @<{:Profile}> ;
+}
+```
+
+`http://localhost:3000/pods/00000000000000000065/shapeIndex`
 
 ```nquad
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#ShapeIndex> <http://localhost:3000/pods/00000000000000000065/shapeIndex> .
 <http://localhost:3000/pods/00000000000000000065/shapeIndex> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://shapeIndex.com#ShapeIndex> .
-<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#domain> "http://localhost:3000/pods/00000000000000000065/.*"^^<http://www.w3.org/2001/XMLSchema#string> .
-<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1018 .
-_:df_3_1018 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/profile_shape#Profile> .
-_:df_3_1018 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/profile/> .
-<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_1082 .
-_:df_3_1082 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/posts_shape#Post> .
-_:df_3_1082 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/posts/> .
-<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:df_3_4148 .
-_:df_3_4148 <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/comments_shape#Comment> .
-_:df_3_4148 <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/comments/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#domain> "http://localhost:3000/pods/00000000000000000065/.*" .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:Profile .
+_:Profile <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/profile_shape#Profile> .
+_:Profile <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/profile/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:Post .
+_:Post <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/posts_shape#Post> .
+_:Post <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/posts/> .
+<http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#entry> _:Comment .
+_:Comment <https://shapeIndex.com#bindByShape> <http://localhost:3000/pods/00000000000000000065/comments_shape#Comment> .
+_:Comment <http://www.w3.org/ns/solid/terms#instanceContainer> <http://localhost:3000/pods/00000000000000000065/comments/> .
 <http://localhost:3000/pods/00000000000000000065/shapeIndex> <https://shapeIndex.com#isComplete> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+
 
 ```
 
