@@ -52,7 +52,6 @@ export class QuadSinkAnnotateFile extends QuadSinkFile {
 
   private parseTripleTemplate(triple: string, iri: string, matchingPattern: string): Quad[] {
     const parsedTriple = triple.replaceAll('$', iri).replaceAll('{}', matchingPattern);
-    const quads: Quad[] = n3Parser.parse(parsedTriple);
-    return quads;
+    return n3Parser.parse(parsedTriple);
   }
 }
