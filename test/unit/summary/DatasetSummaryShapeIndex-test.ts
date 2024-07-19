@@ -1120,7 +1120,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       const spySerializeShapeIndexInstance = jest.spyOn(collector, 'serializeShapeIndexInstance')
         .mockReturnValueOnce({ quads: []});
       const spySerializeCompletenessOfShapeIndex = jest.spyOn(collector, 'serializeCompletenessOfShapeIndex')
-        .mockReturnValueOnce([{ quads: []}]);
+        .mockReturnValueOnce({ quads: []});
 
       const output = await collector.serialize();
       expect(output).toHaveLength(4);

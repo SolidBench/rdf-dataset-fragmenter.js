@@ -220,14 +220,13 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       return [];
     }
     const shapeIndex = this.serializeShapeIndexInstance();
-    // We use concat because it is much faster than spread operator
-    /* eslint-disable unicorn/prefer-spread */
-    shapeIndex.quads = shapeIndex.quads.concat(shapeIndexEntry.quads);
-    shapeIndex.quads = shapeIndex.quads.concat(this.serializeCompletenessOfShapeIndex().quads);
+    const shapeIndexCompleteness = this.serializeCompletenessOfShapeIndex();
+    shapeIndex.quads = [ ...shapeIndex.quads, ...shapeIndexEntry.quads,  ...shapeIndexCompleteness.quads  ];
+    
     return [
       shapeIndex,
-    ].concat(shapes);
-    /* eslint-enable unicorn/prefer-spread */
+      ...shapes,
+    ];
   }
 
   /**
