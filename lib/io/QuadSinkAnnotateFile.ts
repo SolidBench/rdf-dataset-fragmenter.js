@@ -10,13 +10,16 @@ export interface IQuadSinkAnnotatedFileOptions extends IQuadSinkFileOptions {
    */
   iriPatterns: string[];
   /**
-   * Triples to annotate the files
+   * Triples in N-Triples format annotating the files
    */
   annotation: string;
 }
 
 export class QuadSinkAnnotateFile extends QuadSinkFile {
   private readonly iriPatterns: RegExp[];
+  /**
+   * IRI already handled to avoid duplication of annotation
+   */
   private readonly handleIri: Set<string> = new Set();
   private readonly annotation: string;
 
@@ -29,6 +32,7 @@ export class QuadSinkAnnotateFile extends QuadSinkFile {
   public async push(iri: string, quad: Quad): Promise<void> {
     for (const exp of this.iriPatterns) {
       const match = iri.match(exp);
+      // The pattern is match and the IRI has not been handled
       if (match !== null && !this.handleIri.has(this.getFilePath(iri))) {
         const annotations = this.parseTripleTemplate(this.annotation, iri, match[0]);
         for (const annotation of annotations) {
@@ -47,8 +51,7 @@ export class QuadSinkAnnotateFile extends QuadSinkFile {
   }
 
   private parseTripleTemplate(triple: string, iri: string, matchingPattern: string): Quad[] {
-    let parsedTriple = triple.replaceAll('$', iri);
-    parsedTriple = parsedTriple.replaceAll('{}', matchingPattern);
+    const parsedTriple = triple.replaceAll('$', iri).replaceAll('{}', matchingPattern);
     const quads: Quad[] = n3Parser.parse(parsedTriple);
     return quads;
   }
