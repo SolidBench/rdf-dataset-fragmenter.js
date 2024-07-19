@@ -21,7 +21,7 @@ export enum ResourceFragmentation {
 /* eslint-enable ts/naming-convention */
 /**
  * Data that the fragmentation is not described using triples
- * eg: profile, noise, setting in Solidbench
+ * eg: profile, noise and setting in Solidbench
  */
 export interface IUndescribedDataModel {
   fragmentation: ResourceFragmentation;
@@ -60,12 +60,12 @@ export interface IShapeEntry {
 
 export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
   /**
-   * Iri (place at the object position) of indicating the fragmentation of the ressource into a single file.
+   * Iri (place at the object position) indicating the fragmentation of the ressource into a single file.
    * For exemple http://localhost:3000/internal/FragmentationOneFile
    */
   iriFragmentationOneFile: Set<string>;
   /**
-   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * Iri (place at the object position) indicating the fragmentation of the ressource into a multiple files.
    * For exemple http://localhost:3000/internal/FragmentationPerResource
    */
   iriFragmentationMultipleFiles: Set<string>;
@@ -74,18 +74,18 @@ export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
    * For exemple http://localhost:3000/internal/postsFragmentation .
    * The key is the predicate and the object is the name from shape in an IShapeEntry object
    */
-  datasetObjectFragmentationPredicate: Record<string, string>;
+  datasetResourceFragmentationPredicate: Record<string, string>;
   /**
    * @description A map of the resource type and shape
    */
   shapeMap: Record<string, IShapeEntry>;
   /**
-   *  All the content type of a dataset.
+   * All the content type of a dataset.
    * It is used to determine if the shape index is complete.
    */
   contentTypesOfDatasets: Set<string>;
   /**
-   * The random seed for stochastic shape index generation.
+   * The random seed for stochastic shape index generation operations.
    */
   randomSeed: number;
   /**
@@ -125,7 +125,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   private readonly iriFragmentationOneFile: Set<string>;
   private readonly iriFragmentationMultipleFiles: Set<string>;
-  private readonly datasetObjectFragmentationPredicate: Record<string, string>;
+  private readonly datasetResourceFragmentationPredicate: Record<string, string>;
   private readonly shapeMap: Record<string, IShapeEntry>;
   private randomGenerator: prand.RandomGenerator;
   /**
@@ -136,12 +136,10 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   private readonly datasetResourceFragmentationException: Record<string, IUndescribedDataModel>;
 
   /**
-   * The handle undescribed object.
-   * It exist to avoid repetition of the shape index entries because they are generated
-   * based on the capture of IRIs.
+   * The handled undescribed resources.
+   * It exist to avoid repetition of the shape index entries.
    */
-  private readonly handledUndescribedObject: Set<string> = new Set();
-
+  private readonly handledUndescribedResources: Set<string> = new Set();
   /**
    * The IRI of the shape index of the dataset
    */
@@ -155,7 +153,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     super(args);
     this.iriFragmentationMultipleFiles = args.iriFragmentationMultipleFiles;
     this.iriFragmentationOneFile = args.iriFragmentationOneFile;
-    this.datasetObjectFragmentationPredicate = args.datasetObjectFragmentationPredicate;
+    this.datasetResourceFragmentationPredicate = args.datasetResourceFragmentationPredicate;
     this.shapeMap = args.shapeMap;
     this.resourceTypesOfDatasets = args.contentTypesOfDatasets;
     this.datasetResourceFragmentationException = args.datasetResourceFragmentationException;
@@ -166,23 +164,21 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   public register(quad: RDF.Quad): void {
     // Register an entry that is described by the data model
-    for (const [ dataModelObject, predicate ] of Object.entries(this.datasetObjectFragmentationPredicate)) {
-      if (quad.predicate.value === predicate && quad.subject.value.includes(this.dataset)) {
-        const fragmentation = this.iriFragmentationMultipleFiles.has(quad.object.value) ?
+    const dataModelObject =this.datasetResourceFragmentationPredicate[quad.predicate.value];
+    if(dataModelObject && quad.subject.value.includes(this.dataset)){
+      const fragmentation = this.iriFragmentationMultipleFiles.has(quad.object.value) ?
           ResourceFragmentation.DISTRIBUTED :
           ResourceFragmentation.SINGLE;
         this.registerShapeIndexEntry(dataModelObject, fragmentation);
-        break;
-      }
     }
-
+    
     // Register an entry undescribed by the data model
     for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetResourceFragmentationException)) {
       if (quad.subject.value.includes(pathElement) &&
         quad.subject.value.includes(this.dataset) &&
-        !this.handledUndescribedObject.has(name)) {
+        !this.handledUndescribedResources.has(name)) {
         this.registerShapeIndexEntry(name, fragmentation);
-        this.handledUndescribedObject.add(name);
+        this.handledUndescribedResources.add(name);
         return;
       }
     }
@@ -190,11 +186,11 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   /**
    * Register a shape index entry
-   * @param {string} dataModelObject
+   * @param {string} dataModelResource
    * @param {ResourceFragmentation} fragmentation
    */
-  public registerShapeIndexEntry(dataModelObject: string, fragmentation: ResourceFragmentation): void {
-    const shapeEntry = this.shapeMap[dataModelObject];
+  public registerShapeIndexEntry(dataModelResource: string, fragmentation: ResourceFragmentation): void {
+    const shapeEntry = this.shapeMap[dataModelResource];
     if (shapeEntry) {
       const [ randomIndex, newGenerator ] =
         prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
@@ -203,7 +199,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       const shape = shapeEntry.shapes[randomIndex];
       const iri = fragmentation === ResourceFragmentation.DISTRIBUTED ?
         `${this.dataset}/${shapeEntry.directory}/` :
-        `${this.dataset}/${dataModelObject}`;
+        `${this.dataset}/${dataModelResource}`;
 
       const indexEntry: IShapeIndexEntry = {
         shape,
@@ -214,7 +210,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
         ressourceFragmentation: fragmentation,
         iri,
       };
-      this.registeredEntries.set(dataModelObject, indexEntry);
+      this.registeredEntries.set(dataModelResource, indexEntry);
     }
   }
 
