@@ -221,8 +221,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     }
     const shapeIndex = this.serializeShapeIndexInstance();
     const shapeIndexCompleteness = this.serializeCompletenessOfShapeIndex();
-    shapeIndex.quads = [ ...shapeIndex.quads, ...shapeIndexEntry.quads,  ...shapeIndexCompleteness.quads  ];
-    
+    shapeIndex.quads = [ ...shapeIndex.quads, ...shapeIndexEntry.quads, ...shapeIndexCompleteness.quads ];
+
     return [
       shapeIndex,
       ...shapes,
