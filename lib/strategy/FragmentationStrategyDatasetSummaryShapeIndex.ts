@@ -14,29 +14,29 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
    */
   shapeConfig: Record<string, IShapeEntry>;
   /**
-   * All the content type of a dataset
+   * All the ressource type of a dataset
    */
   resourceTypesOfDatasets: string[];
   /**
-   * The initial random seed for stochastic shape index generation.
+   * The initial random seed for stochastic shape index generation operations.
    */
   randomSeed?: number;
   /**
-   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * Iri (place at the object position) indicating the fragmentation of the ressource into a multiple files.
    * For exemple http://localhost:3000/internal/FragmentationPerResource
    */
   iriFragmentationOneFile: string[];
   /**
-   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * Iri (place at the object position) indicating the fragmentation of the ressource into a multiple files.
    * For exemple http://localhost:3000/internal/FragmentationPerResource
    */
   iriFragmentationMultipleFiles: string[];
   /**
-   * Object name, by iri of the predicate of the fragmentation
+   * ressource name (same as the key of shapeConfig) by iri of the predicate of the fragmentation
    * the object name must match the name of the shape
    * @range {json}
    */
-  datasetObjectFragmentationPredicate: Record<string, string>;
+  datasetResourceFragmentationPredicate: Record<string, string>;
   /**
    * Dataset object divided by resource but not described by the fragmentation.
    * The key is an element of the path of those object and the object is the name from shape in an IShapeEntry object.
@@ -67,17 +67,17 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
    */
   private randomSeed: number;
   /**
-   * Iri (place at the object position) of indicating the fragmentation of the ressource into a single file.
+   * IRI (place at the object position) of indicating the fragmentation of the ressource into a single file.
    * For exemple http://localhost:3000/internal/FragmentationOneFile
    */
   private readonly iriFragmentationOneFile: Set<string>;
   /**
-   * Iri (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
+   * IRI (place at the object position) of indicating the fragmentation of the ressource into a multiple files.
    * For exemple http://localhost:3000/internal/FragmentationPerResource
    */
   private readonly iriFragmentationMultipleFiles: Set<string>;
   /**
-   * Iri (place at the object predicate) indicating the resource being fragmented.
+   * IRI (place at the object predicate) indicating the resource being fragmented.
    * For exemple http://localhost:3000/internal/postsFragmentation .
    * The key is the predicate and the object is the name from shape in an IShapeEntry object
    */
@@ -101,11 +101,11 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
     this.resourceTypesOfDatasets = new Set(options.resourceTypesOfDatasets);
     this.iriFragmentationMultipleFiles = new Set(options.iriFragmentationMultipleFiles);
     this.iriFragmentationOneFile = new Set(options.iriFragmentationOneFile);
-    this.datasetObjectFragmentationPredicate = options.datasetObjectFragmentationPredicate;
+    this.datasetObjectFragmentationPredicate = options.datasetResourceFragmentationPredicate;
     this.datasetResourceFragmentationException = options.datasetResourceFragmentationException;
     this.generationProbability = options.generationProbability;
 
-    if (options.randomSeed === undefined) {
+    if (!options.randomSeed) {
       const seed = Date.now() * Math.random();
       this.randomSeed = seed;
     } else {
@@ -118,7 +118,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
       dataset,
       iriFragmentationMultipleFiles: this.iriFragmentationMultipleFiles,
       iriFragmentationOneFile: this.iriFragmentationOneFile,
-      datasetObjectFragmentationPredicate: this.datasetObjectFragmentationPredicate,
+      datasetResourceFragmentationPredicate: this.datasetObjectFragmentationPredicate,
       shapeMap: this.shapeMap,
       randomSeed: this.randomSeed,
       contentTypesOfDatasets: this.resourceTypesOfDatasets,
