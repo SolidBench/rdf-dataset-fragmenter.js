@@ -164,14 +164,14 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   public register(quad: RDF.Quad): void {
     // Register an entry that is described by the data model
-    const dataModelObject =this.datasetResourceFragmentationPredicate[quad.predicate.value];
-    if(dataModelObject && quad.subject.value.includes(this.dataset)){
+    const dataModelObject = this.datasetResourceFragmentationPredicate[quad.predicate.value];
+    if (dataModelObject && quad.subject.value.includes(this.dataset)) {
       const fragmentation = this.iriFragmentationMultipleFiles.has(quad.object.value) ?
-          ResourceFragmentation.DISTRIBUTED :
-          ResourceFragmentation.SINGLE;
-        this.registerShapeIndexEntry(dataModelObject, fragmentation);
+        ResourceFragmentation.DISTRIBUTED :
+        ResourceFragmentation.SINGLE;
+      this.registerShapeIndexEntry(dataModelObject, fragmentation);
     }
-    
+
     // Register an entry undescribed by the data model
     for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetResourceFragmentationException)) {
       if (quad.subject.value.includes(pathElement) &&

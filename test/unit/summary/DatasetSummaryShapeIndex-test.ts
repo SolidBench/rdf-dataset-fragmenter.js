@@ -27,27 +27,27 @@ describe('DatasetSummaryShapeIndex', () => {
   };
   const shapeMap: Record<string, IShapeEntry> = {
     comments: {
-      shapes: ['commentsA', 'commentsB', 'commentsC'],
+      shapes: [ 'commentsA', 'commentsB', 'commentsC' ],
       directory: 'comments',
       name: 'Comment',
     },
     posts: {
-      shapes: ['postA', 'postB', 'postC'],
+      shapes: [ 'postA', 'postB', 'postC' ],
       directory: 'posts',
       name: 'Post',
     },
     card: {
-      shapes: ['profile'],
+      shapes: [ 'profile' ],
       directory: 'profile',
       name: 'Profile',
     },
     noise: {
-      shapes: ['noise'],
+      shapes: [ 'noise' ],
       directory: 'noise',
       name: 'noise',
     },
   };
-  const contentTypesOfDatasets = new Set(['comments', 'posts', 'card', 'noise']);
+  const contentTypesOfDatasets = new Set([ 'comments', 'posts', 'card', 'noise' ]);
   const randomSeed: any = jest.fn();
   const datasetObjectExeption: Record<string, IUndescribedDataModel> = {
     card: { name: 'card', fragmentation: ResourceFragmentation.DISTRIBUTED },
@@ -73,7 +73,7 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should register a triple with a single fragmentation', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
       const aTriple = DF.quad(
         DF.namedNode('http://example.be#007'),
@@ -82,7 +82,7 @@ describe('DatasetSummaryShapeIndex', () => {
       );
       collector.register(aTriple);
       const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
-        ['comments', {
+        [ 'comments', {
           ressourceFragmentation: ResourceFragmentation.SINGLE,
           shape: 'commentsA',
           shapeInfo: {
@@ -100,7 +100,7 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should register a triple with a distributed fragmentation', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[1, this];
+          return <any>[ 1, this ];
         });
 
       const aTriple = DF.quad(
@@ -110,7 +110,7 @@ describe('DatasetSummaryShapeIndex', () => {
       );
       collector.register(aTriple);
       const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
-        ['posts', {
+        [ 'posts', {
           ressourceFragmentation: ResourceFragmentation.DISTRIBUTED,
           shape: 'postB',
           shapeInfo: {
@@ -128,7 +128,7 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should not register a triple with a subject not related to the dataset', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[1, this];
+          return <any>[ 1, this ];
         });
 
       const aTriple = DF.quad(
@@ -145,7 +145,7 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should not register a triple not related to the data model', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[1, this];
+          return <any>[ 1, this ];
         });
 
       const aTriple = DF.quad(
@@ -162,7 +162,7 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should register a triple from an undescribe triple', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const aTriple = DF.quad(
@@ -172,7 +172,7 @@ describe('DatasetSummaryShapeIndex', () => {
       );
       collector.register(aTriple);
       const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
-        ['card', {
+        [ 'card', {
           ressourceFragmentation: ResourceFragmentation.DISTRIBUTED,
           shape: 'profile',
           shapeInfo: {
@@ -190,7 +190,7 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should not register a triple from an undescribe triple multiple time', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const aTriple = DF.quad(
@@ -200,7 +200,7 @@ describe('DatasetSummaryShapeIndex', () => {
       );
       collector.register(aTriple);
       const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
-        ['card', {
+        [ 'card', {
           ressourceFragmentation: ResourceFragmentation.DISTRIBUTED,
           shape: 'profile',
           shapeInfo: {
@@ -228,10 +228,10 @@ describe('DatasetSummaryShapeIndex', () => {
     it('should register multiple triples', () => {
       const spy = jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         })
         .mockImplementationOnce(() => {
-          return <any>[1, this];
+          return <any>[ 1, this ];
         });
 
       const aTriple = DF.quad(
@@ -241,7 +241,7 @@ describe('DatasetSummaryShapeIndex', () => {
       );
       collector.register(aTriple);
       const expectedHandleContent: Map<string, IShapeIndexEntry> = new Map([
-        ['comments', {
+        [ 'comments', {
           ressourceFragmentation: ResourceFragmentation.SINGLE,
           shape: 'commentsA',
           shapeInfo: {
@@ -262,7 +262,7 @@ describe('DatasetSummaryShapeIndex', () => {
       );
       collector.register(aSecondTriple);
       const expectedHandleContentSecond: Map<string, IShapeIndexEntry> = new Map([
-        ['posts', {
+        [ 'posts', {
           ressourceFragmentation: ResourceFragmentation.DISTRIBUTED,
           shape: 'postB',
           shapeInfo: {
@@ -271,7 +271,7 @@ describe('DatasetSummaryShapeIndex', () => {
           },
           iri: `${dataset.value}/posts/`,
         }],
-        ['comments', {
+        [ 'comments', {
           ressourceFragmentation: ResourceFragmentation.SINGLE,
           shape: 'commentsA',
           shapeInfo: {
@@ -458,7 +458,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       });
     });
 
-    it('should produce a data summary output of a shape', async () => {
+    it('should produce a data summary output of a shape', async() => {
       const template = `
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
@@ -522,7 +522,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
     it('should indicate that the shape index is not complete given a shape index with some entries', () => {
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[1, this];
+          return <any>[ 1, this ];
         });
 
       const aTriple = DF.quad(
@@ -545,7 +545,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
     it('should indicate that the shape index is complete', () => {
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementation(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const aCommentTriple = DF.quad(
@@ -580,11 +580,11 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       const output = collector.serializeCompletenessOfShapeIndex();
       const expectedOutput: IDatasetSummaryOutput = {
         iri: collector.shapeIndexIri,
-        quads: [DF.quad(
+        quads: [ DF.quad(
           DF.namedNode(collector.shapeIndexIri),
           DatasetSummaryShapeIndex.SHAPE_INDEX_IS_COMPLETE_NODE,
           DatasetSummaryShapeIndex.RDF_TRUE,
-        )],
+        ) ],
       };
 
       expect(output).toStrictEqual(expectedOutput);
@@ -597,14 +597,14 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
         iriFragmentationMultipleFiles,
         datasetResourceFragmentationPredicate: datasetObjectFragmentationPredicate,
         shapeMap,
-        contentTypesOfDatasets: new Set(['comments', 'posts', 'card', 'foo']),
+        contentTypesOfDatasets: new Set([ 'comments', 'posts', 'card', 'foo' ]),
         randomSeed,
         datasetResourceFragmentationException: datasetObjectExeption,
       });
 
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementation(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const aCommentTriple = DF.quad(
@@ -660,11 +660,11 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       const output = collector.serializeCompletenessOfShapeIndex();
       const expectedOutput: IDatasetSummaryOutput = {
         iri: collector.shapeIndexIri,
-        quads: [DF.quad(
+        quads: [ DF.quad(
           DF.namedNode(collector.shapeIndexIri),
           DatasetSummaryShapeIndex.SHAPE_INDEX_IS_COMPLETE_NODE,
           DatasetSummaryShapeIndex.RDF_TRUE,
-        )],
+        ) ],
       };
 
       expect(output).toStrictEqual(expectedOutput);
@@ -704,7 +704,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
       const expectedOutput = {
         iri: collector.shapeIndexIri,
-        quads: [typeDefinition, domain],
+        quads: [ typeDefinition, domain ],
       };
 
       expect(collector.serializeShapeIndexInstance()).toStrictEqual(expectedOutput);
@@ -784,17 +784,17 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 `;
       const shapeMapWithRealShape: Record<string, IShapeEntry> = {
         comments: {
-          shapes: [commentShape],
+          shapes: [ commentShape ],
           directory: 'comments',
           name: 'Comment',
         },
         posts: {
-          shapes: [postShape],
+          shapes: [ postShape ],
           directory: 'posts',
           name: 'Post',
         },
         card: {
-          shapes: [profileShape],
+          shapes: [ profileShape ],
           directory: 'profile',
           name: 'Profile',
         },
@@ -812,18 +812,18 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       });
     });
 
-    it('should generate no entry given no triple registered', async () => {
+    it('should generate no entry given no triple registered', async() => {
       const output = await collector.serializeShapeIndexEntries();
 
-      expect(output).toStrictEqual([{ iri: collector.shapeIndexIri, quads: [] }, []]);
+      expect(output).toStrictEqual([{ iri: collector.shapeIndexIri, quads: []}, []]);
     });
 
-    it('should generate an entry', async () => {
+    it('should generate an entry', async() => {
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         }).mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const aTriple = DF.quad(
@@ -834,7 +834,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
       collector.register(aTriple);
 
-      const [entry, shapes] = await collector.serializeShapeIndexEntries();
+      const [ entry, shapes ] = await collector.serializeShapeIndexEntries();
 
       expect(shapes).toHaveLength(1);
 
@@ -876,7 +876,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       );
     });
 
-    it('should generate not generate an entry based on a generation probability', async () => {
+    it('should generate not generate an entry based on a generation probability', async() => {
       collector = new DatasetSummaryShapeIndex({
         dataset: dataset.value,
         iriFragmentationOneFile,
@@ -890,9 +890,9 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       });
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         }).mockImplementationOnce(() => {
-          return <any>[33, this];
+          return <any>[ 33, this ];
         });
 
       const aTriple = DF.quad(
@@ -903,15 +903,15 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
       collector.register(aTriple);
 
-      const [entry, shapes] = await collector.serializeShapeIndexEntries();
+      const [ entry, shapes ] = await collector.serializeShapeIndexEntries();
       expect(entry.quads).toHaveLength(0);
       expect(shapes).toHaveLength(0);
     });
 
-    it('should generate multiple entries', async () => {
+    it('should generate multiple entries', async() => {
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementation(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const aCommentTriple = DF.quad(
@@ -929,7 +929,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       collector.register(aCommentTriple);
       collector.register(aPostTriple);
 
-      const [entry, shapes] = await collector.serializeShapeIndexEntries();
+      const [ entry, shapes ] = await collector.serializeShapeIndexEntries();
 
       expect(shapes).toHaveLength(2);
 
@@ -1076,17 +1076,17 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 `;
       const shapeMapWithRealShape: Record<string, IShapeEntry> = {
         comments: {
-          shapes: [commentShape],
+          shapes: [ commentShape ],
           directory: 'comments',
           name: 'Comment',
         },
         posts: {
-          shapes: [postShape],
+          shapes: [ postShape ],
           directory: 'posts',
           name: 'Post',
         },
         card: {
-          shapes: [profileShape],
+          shapes: [ profileShape ],
           directory: 'profile',
           name: 'Profile',
         },
@@ -1104,23 +1104,23 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       });
     });
 
-    it('should provide an empty output given no entries', async () => {
+    it('should provide an empty output given no entries', async() => {
       const output = await collector.serialize();
       expect(output).toHaveLength(0);
     });
 
-    it('should provide an output', async () => {
+    it('should provide an output', async() => {
       jest.spyOn(prand, 'uniformIntDistribution')
         .mockImplementationOnce(() => {
-          return <any>[0, this];
+          return <any>[ 0, this ];
         });
 
       const spySerializeShapeIndexEntries = jest.spyOn(collector, 'serializeShapeIndexEntries')
-        .mockResolvedValueOnce([{ quads: [''] }, ['', '', '']]);
+        .mockResolvedValueOnce([{ quads: [ '' ]}, [ '', '', '' ]]);
       const spySerializeShapeIndexInstance = jest.spyOn(collector, 'serializeShapeIndexInstance')
-        .mockReturnValueOnce({ quads: [] });
+        .mockReturnValueOnce({ quads: []});
       const spySerializeCompletenessOfShapeIndex = jest.spyOn(collector, 'serializeCompletenessOfShapeIndex')
-        .mockReturnValueOnce([{ quads: [] }]);
+        .mockReturnValueOnce([{ quads: []}]);
 
       const output = await collector.serialize();
       expect(output).toHaveLength(4);

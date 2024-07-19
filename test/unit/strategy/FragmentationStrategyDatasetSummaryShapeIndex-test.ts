@@ -78,27 +78,27 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
     it('should generate the correct shape map', () => {
       const shapeMap: Record<string, IShapeEntry> = {
         comments: {
-          shapes: ['comments.shexc', 'posts.shexc'],
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
           directory: 'comments',
           name: 'Comment',
         },
         posts: {
-          shapes: ['posts.shexc'],
+          shapes: [ 'posts.shexc' ],
           directory: 'posts',
           name: 'Post',
         },
         card: {
-          shapes: ['profile.shexc'],
+          shapes: [ 'profile.shexc' ],
           directory: 'profile',
           name: 'Profile',
         },
         settings: {
-          shapes: ['settings.shexc'],
+          shapes: [ 'settings.shexc' ],
           directory: 'settings',
           name: 'Setting',
         },
         noise: {
-          shapes: ['noise.shexc'],
+          shapes: [ 'noise.shexc' ],
           directory: 'noise',
           name: 'Noise',
         },
@@ -116,27 +116,27 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       const strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
       expect((<any>strategy).shapeMap).toStrictEqual({
         comments: {
-          shapes: ['comments', 'posts'],
+          shapes: [ 'comments', 'posts' ],
           directory: 'comments',
           name: 'Comment',
         },
         posts: {
-          shapes: ['posts'],
+          shapes: [ 'posts' ],
           directory: 'posts',
           name: 'Post',
         },
         card: {
-          shapes: ['profile'],
+          shapes: [ 'profile' ],
           directory: 'profile',
           name: 'Profile',
         },
         settings: {
-          shapes: ['settings'],
+          shapes: [ 'settings' ],
           directory: 'settings',
           name: 'Setting',
         },
         noise: {
-          shapes: ['noise'],
+          shapes: [ 'noise' ],
           directory: 'noise',
           name: 'Noise',
         },
@@ -146,7 +146,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
     it('should not construct if an entry doesn\'t define a shape', () => {
       const shapeMap: Record<string, IShapeEntry> = {
         comments: {
-          shapes: ['comments.shexc', 'posts.shexc'],
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
           directory: 'comments',
           name: 'Comment',
         },
@@ -156,17 +156,17 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
           name: 'Post',
         },
         card: {
-          shapes: ['profile.shexc'],
+          shapes: [ 'profile.shexc' ],
           directory: 'profile',
           name: 'Profile',
         },
         settings: {
-          shapes: ['settings.shexc'],
+          shapes: [ 'settings.shexc' ],
           directory: 'settings',
           name: 'Setting',
         },
         noise: {
-          shapes: ['noise.shexc'],
+          shapes: [ 'noise.shexc' ],
           directory: 'noise',
           name: 'Noise',
         },
@@ -213,27 +213,27 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
 
       const shapeMap: Record<string, IShapeEntry> = {
         comments: {
-          shapes: ['comments.shexc', 'posts.shexc'],
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
           directory: 'comments',
           name: 'Comment',
         },
         posts: {
-          shapes: ['posts.shexc'],
+          shapes: [ 'posts.shexc' ],
           directory: 'posts',
           name: 'Post',
         },
         card: {
-          shapes: ['profile.shexc'],
+          shapes: [ 'profile.shexc' ],
           directory: 'profile',
           name: 'Profile',
         },
         settings: {
-          shapes: ['settings.shexc'],
+          shapes: [ 'settings.shexc' ],
           directory: 'settings',
           name: 'Setting',
         },
         noise: {
-          shapes: ['noise.shexc'],
+          shapes: [ 'noise.shexc' ],
           directory: 'noise',
           name: 'Noise',
         },
@@ -368,34 +368,34 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
 
       const shapeMap: Record<string, IShapeEntry> = {
         comments: {
-          shapes: ['comments.shexc', 'posts.shexc'],
+          shapes: [ 'comments.shexc', 'posts.shexc' ],
           directory: 'comments',
           name: 'Comment',
         },
         posts: {
-          shapes: ['posts.shexc'],
+          shapes: [ 'posts.shexc' ],
           directory: 'posts',
           name: 'Post',
         },
         card: {
-          shapes: ['profile.shexc'],
+          shapes: [ 'profile.shexc' ],
           directory: 'profile',
           name: 'Profile',
         },
         settings: {
-          shapes: ['settings.shexc'],
+          shapes: [ 'settings.shexc' ],
           directory: 'settings',
           name: 'Setting',
         },
         noise: {
-          shapes: ['noise.shexc'],
+          shapes: [ 'noise.shexc' ],
           directory: 'noise',
           name: 'Noise',
         },
       };
       const options: IFragmentationStrategyDatasetSummaryShapeIndexOptions = {
         shapeConfig: shapeMap,
-        resourceTypesOfDatasets: ['noise', 'settings', 'card', 'posts', 'comments'],
+        resourceTypesOfDatasets: [ 'noise', 'settings', 'card', 'posts', 'comments' ],
         randomSeed: 4,
         iriFragmentationOneFile: [
           'http://localhost:3000/internal/FragmentationOneFile',
@@ -414,17 +414,17 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
           noise: { name: 'noise', fragmentation: ResourceFragmentation.DISTRIBUTED },
           settings: { name: 'settings', fragmentation: ResourceFragmentation.DISTRIBUTED },
         },
-        datasetPatterns: ['^(.*\\/pods\\/[0-9]+)'],
+        datasetPatterns: [ '^(.*\\/pods\\/[0-9]+)' ],
       };
       strategy = new FragmentationStrategyDatasetSummaryShapeIndex(options);
     });
 
-    it('should not handle an empty stream', async () => {
+    it('should not handle an empty stream', async() => {
       await strategy.fragment(streamifyArray([]), sink);
       expect(sink.push).not.toHaveBeenCalled();
     });
 
-    it('should not handle a quad not bounded by a shape', async () => {
+    it('should not handle a quad not bounded by a shape', async() => {
       const quads = [
         DF.quad(
           DF.blankNode(),
@@ -432,11 +432,11 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
           DF.namedNode('bar'),
         ),
       ];
-      await strategy.fragment(streamifyArray([...quads]), sink);
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
     });
 
-    it('should handle a quad not related to the datasets', async () => {
+    it('should handle a quad not related to the datasets', async() => {
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
@@ -447,11 +447,11 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
 
       jest.spyOn(DatasetSummaryShapeIndex.prototype, 'serialize').mockImplementation().mockResolvedValue([]);
 
-      await strategy.fragment(streamifyArray([...quads]), sink);
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
       expect(sink.push).not.toHaveBeenCalled();
     });
 
-    it('should handle a quad related to a dataset', async () => {
+    it('should handle a quad related to a dataset', async() => {
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
@@ -483,7 +483,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
 
       jest.spyOn(DatasetSummaryShapeIndex.prototype, 'serialize').mockImplementation().mockResolvedValueOnce(outputs);
 
-      await strategy.fragment(streamifyArray([...quads]), sink);
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
       expect(sink.push).toHaveBeenCalledTimes(numberOfSinkCall);
 
       expect(sink.push).toHaveBeenNthCalledWith(1, outputs[0].iri, outputs[0].quads[0]);
@@ -493,7 +493,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       expect(sink.push).toHaveBeenNthCalledWith(4, outputs[1].iri, outputs[1].quads[1]);
     });
 
-    it('should handle quads related to multiple datasets', async () => {
+    it('should handle quads related to multiple datasets', async() => {
       const quads = [
         DF.quad(
           DF.namedNode('http://localhost:3000/pods/00000010995116278291'),
@@ -561,7 +561,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
         .mockResolvedValueOnce(outputs2)
         .mockResolvedValueOnce([]);
 
-      await strategy.fragment(streamifyArray([...quads]), sink);
+      await strategy.fragment(streamifyArray([ ...quads ]), sink);
 
       const numberOfSinkCall = outputs1.reduce((accumulator: number, currentValue: IDatasetSummaryOutput): number => {
         return accumulator += currentValue.quads.length;
@@ -584,7 +584,7 @@ describe('FragmentationStrategyDatasetShapeIndex', () => {
       expect(sink.push).toHaveBeenNthCalledWith(8, outputs2[1].iri, outputs2[1].quads[1]);
     });
 
-    it('should reject on an erroring stream', async () => {
+    it('should reject on an erroring stream', async() => {
       const stream: any = new Readable();
       stream._read = () => {
         stream.emit('error', new Error('Error in stream'));

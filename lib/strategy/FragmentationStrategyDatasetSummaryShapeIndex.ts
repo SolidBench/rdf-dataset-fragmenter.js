@@ -32,7 +32,7 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
    */
   iriFragmentationMultipleFiles: string[];
   /**
-   * ressource name (same as the key of shapeConfig) by iri of the predicate of the fragmentation
+   * Ressource name (same as the key of shapeConfig) by iri of the predicate of the fragmentation
    * the object name must match the name of the shape
    * @range {json}
    */
@@ -105,11 +105,11 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
     this.datasetResourceFragmentationException = options.datasetResourceFragmentationException;
     this.generationProbability = options.generationProbability;
 
-    if (!options.randomSeed) {
+    if (options.randomSeed) {
+      this.randomSeed = options.randomSeed;
+    } else {
       const seed = Date.now() * Math.random();
       this.randomSeed = seed;
-    } else {
-      this.randomSeed = options.randomSeed;
     }
   }
 
