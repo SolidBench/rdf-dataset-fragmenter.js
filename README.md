@@ -279,7 +279,7 @@ After generation, the summaries can be re-mapped to a different document URI.
 }
 ```
 #### Shape Index Fragmentation Strategy
-Fragmentation strategy that generate a shape index in each sub-datasets.
+Fragmentation strategy generating a shape index in each sub-datasets.
 The sub-datasets are defined by the IRI template at the field `datasetPatterns`.
 
 ```json
@@ -355,17 +355,17 @@ in the config. When multiple shapes are defined then for each dataset one shape 
   - `"directory"`: The name of a container of the resource.
   - `"name"`: The name of the shape.
 - `"resourceTypesOfDatasets"`: The type of resource inside of a dataset. They **should** be related to the `shapeConfig` keys.
-- `"randomSeed"`: The initial random seed for the stochastic operations in the generation of the shape index. Each dataset will have its random seed. The seed will be determined by giving the `randomSeed` to the first dataset and incrementing the latest random Seed given to a dataset by one to the next datasets encountered.
+- `"randomSeed"`: The initial random seed for the stochastic operations in the generation of the shape index. Each dataset will have its random seed. The seed will be determined by giving the `randomSeed` to the first dataset and incrementing the latest random Seed given to a dataset by one to the next datasets encountered. This is done to facilitate concurent operations between datasets.
 - `"iriFragmentationOneFile"`: The IRI from a triple `<subject> <datasetObjectFragmentationPredicateField> <iriFragmentationOneFile>`,
-defining a fragmentation in one file of the resource type.
+defining a fragmentation in one file of the resource type ( define in `datasetObjectFragmentationPredicateField`).
 - `"iriFragmentationMultipleFiles"`: The IRI from a triple `<subject> <datasetObjectFragmentationPredicateField> <iriFragmentationMultipleFiles>`,
-defining a fragmentation in multiple file of the resource type.
+defining a fragmentation in multiple file of the resource type ( define in `datasetObjectFragmentationPredicateField`).
 - `"datasetObjectFragmentationPredicate"`: The predicate describing the resource type. The keys **must** be the related to the keys of `shapeConfig`.
 - `"datasetResourceFragmentationException"`: Describe the resource type where the fragmentation is not describe in the data model. The keys **must** be the related to the keys of `shapeConfig`.
-  - `"name"`: Substring in the IRI (at the subject position) describing the resource
-  - `"fragmentation"`: Define the fragmentation of the resource type `0` identify a distributed fragmentation and `1` a fragmentation in one file.
-- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`.
-- `"datasetPatterns"`: The IRI template of a dataset
+  - `"name"`: Substring in the IRI (at the subject position) describing the resource.
+  - `"fragmentation"`: Define the fragmentation of the resource type. `0` identify a distributed fragmentation (in multiple files) and `1` a fragmentation in one file.
+- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`. If no entry are generated the shape index is not generated in the dataset.
+- `"datasetPatterns"`: The IRI template of a dataset. There **should** not have a trailling `/`.
 
 A sample output file tree and its associated files is displayed below.
 
@@ -478,7 +478,7 @@ Options:
 
 #### Annotated File Quad Sink
 
-A quad sink that writes to files using an IRI to local file system path mapping and add an triple annotation to each file.
+A quad sink that writes to files using an IRI to local file system path mapping with an annotation in each file in the form of triples.
 
 ```json
 {
@@ -501,8 +501,8 @@ Options:
 * `"outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
 * `"fileExtension"`: An optional extension to add to resulting files.
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
-* `"annotation"`: Triple annotation for each file of the dataset. `$` signifies the IRI of the current file and `{}` signifies the
-matching instance of the pattern.
+* `"annotation"`: Triple in the N-Triples format annotation for each file of the dataset. `$` signifies the IRI of the current file and `{}` signifies the
+matching IRI instance of the pattern.
 * `"iriPatterns"`: The IRI pattern of the file to annotate.
 
 #### HDT Quad Sink
