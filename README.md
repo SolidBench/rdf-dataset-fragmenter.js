@@ -323,9 +323,9 @@ The sub-datasets are defined by the IRI template at the field `datasetPatterns`.
       "http://localhost:3000/internal/FragmentationLocation",
       "http://localhost:3000/internal/FragmentationCreationDate"
     ],
-    "datasetObjectFragmentationPredicate": {
-      "comments": "http://localhost:3000/internal/commentsFragmentation",
-      "posts": "http://localhost:3000/internal/postsFragmentation"
+    "datasetResourceFragmentationPredicate": {
+      "http://localhost:3000/internal/commentsFragmentation": "comments",
+      "http://localhost:3000/internal/postsFragmentation": "posts"
     },
     "datasetResourceFragmentationException": {
       "card": {
@@ -360,11 +360,11 @@ in the config. When multiple shapes are defined then for each dataset one shape 
 defining a fragmentation in one file of the resource type ( define in `datasetObjectFragmentationPredicateField`).
 - `"iriFragmentationMultipleFiles"`: The IRI from a triple `<subject> <datasetObjectFragmentationPredicateField> <iriFragmentationMultipleFiles>`,
 defining a fragmentation in multiple file of the resource type ( define in `datasetObjectFragmentationPredicateField`).
-- `"datasetObjectFragmentationPredicate"`: The predicate describing the resource type. The keys **must** be the related to the keys of `shapeConfig`.
+- `"datasetResourceFragmentationPredicate"`: The predicate describing the resource type. The objects **must** be the related to the keys of `shapeConfig`.
 - `"datasetResourceFragmentationException"`: Describe the resource type where the fragmentation is not describe in the data model. The keys **must** be the related to the keys of `shapeConfig`.
   - `"name"`: Substring in the IRI (at the subject position) describing the resource.
   - `"fragmentation"`: Define the fragmentation of the resource type. `0` identify a distributed fragmentation (in multiple files) and `1` a fragmentation in one file.
-- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`. If no entry are generated the shape index is not generated in the dataset.
+- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`. If no entry are generated the shape index is not generated in the dataset. the value **should** be between 0 and 100.
 - `"datasetPatterns"`: The IRI template of a dataset. There **should** not have a trailling `/`.
 
 A sample output file tree and its associated files is displayed below.
