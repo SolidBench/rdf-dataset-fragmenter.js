@@ -32,7 +32,7 @@ export class QuadSinkAnnotateFile extends QuadSinkFile {
   public async push(iri: string, quad: Quad): Promise<void> {
     for (const exp of this.iriPatterns) {
       const match = iri.match(exp);
-      // The pattern is match and the IRI has not been handled
+      // The pattern is matched and the IRI has not been handled
       if (match !== null && !this.handleIri.has(this.getFilePath(iri))) {
         const annotations = this.parseTripleTemplate(this.annotation, iri, match[0]);
         for (const annotation of annotations) {
