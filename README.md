@@ -310,11 +310,12 @@ Options:
 
 #### HDT Quad Sink
 
-A quad sink that writes to files using an IRI to local file system path mapping and then converts the files into an [HDT document](https://www.rdfhdt.org/what-is-hdt/).
-The implementation uses the [docker](https://www.docker.com/) image [HDT-Docker](https://github.com/rdfhdt/hdt-docker) of the [hdt-cpp](https://github.com/rdfhdt/hdt-cpp) library.
-The docker operations to acquire the image and execute the transformations into HDT are performed by the sink.
+A quad sink that writes to files using an IRI to local file system path mapping,
+and then converts the files into [HDT](https://www.rdfhdt.org/what-is-hdt/) documents
+using the Docker image of [rdfhdt/hdt-cpp](https://github.com/rdfhdt/hdt-cpp).
 
-**WARNING: Can be very slow for many files**
+The conversion to HDT is done file by file, which can be really slow.
+The conversion concurrency option can be adjusted to increase the number of simultaneously converted file.
 
 ```json
 {
@@ -323,13 +324,13 @@ The docker operations to acquire the image and execute the transformations into 
     "log": true,
     "outputFormat": "application/n-quads",
     "fileExtension": "$.nq",
+    "generateIndexes": true,
+    "removeSourceFiles": true,
+    "conversionConcurrency": 1,
     "iriToPath": {
       "http://example.org/base/": "output/base/",
       "http://example.org/other/": "output/other/"
-    },
-    "poolSize": 1,
-    "deleteSourceFiles": false,
-    "errorFileDockerRfdhdt": "./error_log_docker_rfdhdt.txt"
+    }
   }
 }
 ```
@@ -339,9 +340,9 @@ Options:
 * `"outputFormat"`: The desired output serialization. (Only `"application/n-quads"` is considered stable at the moment).
 * `"fileExtension"`: An optional extension to add to resulting files.
 * `"iriToPath"`: A collection of mappings that indicate what URL patterns should be translated into what folder structure.
-* `"poolSize"`: The number of concurrent HDT conversion operations. By the default `1`.
-* `"deleteSourceFiles"`: If the sink should delete the source RDF file after the conversion into HDT.
-* `"errorFileDockerRfdhdt"`: File where the error of HDT-Docker will be outputed. By default `"./error_log_docker_rfdhdt.txt"`.
+* `"generateIndexes"`: Whether to generate indexes alongside the HDT file. Toggles the `-i` flag of `rdf2hdt`.
+* `"removeSourceFiles"`: Whether to remove the RDF source files after they have been converted to HDT.
+* `"conversionConcurrency"`: The maximum number of concurrent HDT conversions to execute.
 
 #### Composite Quad Sink
 

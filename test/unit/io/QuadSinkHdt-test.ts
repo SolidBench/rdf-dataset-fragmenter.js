@@ -1,284 +1,295 @@
-import * as fs from 'node:fs/promises';
-import type * as RDF from '@rdfjs/types';
+import { unlink } from 'node:fs/promises';
+import { basename, dirname } from 'node:path';
+import { PassThrough } from 'node:stream';
 import * as Docker from 'dockerode';
-import { DataFactory } from 'rdf-data-factory';
+import type { IQuadSink } from '../../../lib/io/IQuadSink';
 import { QuadSinkHdt } from '../../../lib/io/QuadSinkHdt';
-import { pullHdtCppDockerImage, transformToHdt } from '../../../lib/io/rfdhdtDockerUtil';
 
-const DF = new DataFactory();
+jest.mock<typeof import('../../../lib/io/ParallelFileWriter')>('../../../lib/io/ParallelFileWriter');
+jest.mock<typeof import('dockerode')>('dockerode');
+jest.mock<typeof import('node:fs/promises')>('node:fs/promises');
 
-jest.mock('../../../lib/io/ParallelFileWriter');
-jest.mock('node:readline');
-jest.mock('../../../lib/io/rfdhdtDockerUtil');
-jest.mock('node:fs/promises');
+interface IQuadSinkHdt extends IQuadSink {
+  log: boolean;
+  generateIndexes: boolean;
+  removeSourceFiles: boolean;
+  conversionConcurrency: number;
+  fileExtension: string | undefined;
+  docker: Docker;
+  filesToConvert: Set<string>;
+  getFilePath: (iri: string) => string;
+  pullDockerImage: () => Promise<void>;
+  convertSingleFile: (rdfFilePath: string) => Promise<void>;
+  convertToHdt: () => Promise<void>;
+  attemptConversionLog: (count: number) => void;
+}
 
 describe('QuadSinkHdt', () => {
-  let sink: QuadSinkHdt;
-  let quad: RDF.Quad;
-  let writeStream: any;
-  let fileWriter: any;
+  let sink: IQuadSinkHdt;
 
-  let spyStdoutWrite: any;
+  const hdtcppDockerImage = 'rdfhdt/hdt-cpp:latest';
+  const hdtCppMountPath = '/tmp/convert';
 
-  afterAll(async() => {
-    await fs.rm('./error_log_docker_rfdhdt.txt');
+  const log = true;
+  const generateIndexes = false;
+  const removeSourceFiles = true;
+  const conversionConcurrency = 1;
+
+  const outputFormat = 'application/n-quads';
+  const fileExtension = '.nq';
+  const iriToPath: Record<string, string> = {
+    'http://example.org/1/': '/path/to/folder1/',
+    'http://example.org/2/': '/path/to/folder2/',
+  };
+
+  beforeEach(() => {
+    sink = <any> new QuadSinkHdt({
+      log,
+      iriToPath,
+      outputFormat,
+      fileExtension,
+      conversionConcurrency,
+      generateIndexes,
+      removeSourceFiles,
+    });
+    jest.resetAllMocks();
   });
 
-  describe('push', () => {
+  describe('constructor', () => {
+    it.each([
+      'application/n-quads',
+      'application/n-triples',
+      'text/turtle',
+      'application/rdf+xml',
+      'text/n3',
+    ])('should accept %s as output format', (outputFormat) => {
+      expect(() => new QuadSinkHdt({ outputFormat, iriToPath })).not.toThrow();
+    });
+
+    it('should reject an unsupported output format', () => {
+      const outputFormat = 'application/json';
+      const expectedError = `Unsupported HDT output format ${outputFormat}`;
+      expect(() => new QuadSinkHdt({ outputFormat, iriToPath })).toThrow(expectedError);
+    });
+
+    it('should assign default parameter values', () => {
+      sink = <any> new QuadSinkHdt({ outputFormat, iriToPath });
+      expect(sink.generateIndexes).toBe(true);
+      expect(sink.removeSourceFiles).toBe(true);
+      expect(sink.conversionConcurrency).toBe(1);
+      expect(sink.docker).toBeInstanceOf(Docker);
+    });
+
+    it('should assign non-default parameter values when provided', () => {
+      sink = <any> new QuadSinkHdt({
+        outputFormat,
+        iriToPath,
+        generateIndexes: false,
+        removeSourceFiles: false,
+        conversionConcurrency: 2,
+      });
+      expect(sink.generateIndexes).toBe(false);
+      expect(sink.removeSourceFiles).toBe(false);
+      expect(sink.conversionConcurrency).toBe(2);
+      expect(sink.docker).toBeInstanceOf(Docker);
+    });
+  });
+
+  describe('getFilePath', () => {
+    it('should keep track of files to convert', () => {
+      const uri = 'http://example.org/1/a';
+      const path = '/path/to/folder1/a.nq';
+      expect(sink.filesToConvert.size).toBe(0);
+      expect(sink.getFilePath(uri)).toBe(path);
+      expect(sink.filesToConvert.size).toBe(1);
+      expect(sink.filesToConvert).toContain(path);
+    });
+  });
+
+  describe('attemptConversionLog', () => {
     beforeEach(() => {
-      spyStdoutWrite = jest.spyOn(process.stdout, 'write');
+      jest.spyOn(process.stdout, 'write');
+      sink.filesToConvert.add('/path/to/folder1/a.nq');
+    });
 
-      sink = new QuadSinkHdt({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        fileExtension: '.ttl',
-      });
-      quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
+    it('should not print anything when logging is off', () => {
+      expect(process.stdout.write).not.toHaveBeenCalled();
+      sink.log = false;
+      sink.attemptConversionLog(0);
+      sink.attemptConversionLog(1);
+      expect(process.stdout.write).not.toHaveBeenCalled();
+    });
 
-      writeStream = {
-        write: jest.fn(),
+    it('should print the current progress when logging is enabled', () => {
+      expect(process.stdout.write).not.toHaveBeenCalled();
+      sink.attemptConversionLog(0);
+      expect(process.stdout.write).toHaveBeenCalledTimes(1);
+      expect(process.stdout.write).toHaveBeenNthCalledWith(1, '\rConverted files: 0/1');
+      sink.attemptConversionLog(1);
+      expect(process.stdout.write).toHaveBeenCalledTimes(2);
+      expect(process.stdout.write).toHaveBeenNthCalledWith(2, '\rConverted files: 1/1\n');
+    });
+  });
+
+  describe('pullDockerImage', () => {
+    let pullError: Error | undefined;
+    let followProgressError: Error | undefined;
+
+    beforeEach(() => {
+      pullError = undefined;
+      followProgressError = undefined;
+      sink.docker.pull = <any> jest.fn((_repoTag, _options, callback) => callback(pullError, {}));
+      sink.docker.modem = <any> {
+        followProgress: jest.fn((_stream, onFinished) => onFinished(followProgressError, [])),
       };
-      fileWriter = {
-        getWriteStream: jest.fn(() => writeStream),
-        close: jest.fn(),
-      };
-      (<any>sink).fileWriter = fileWriter;
     });
 
-    it('should write a quad to an IRI available in the mapping', async() => {
-      await sink.push('http://example.org/1/file', quad);
-      expect(fileWriter.getWriteStream)
-        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
-      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file.ttl' ]));
+    it('should call docker.pull correctly', async() => {
+      expect(sink.docker.pull).not.toHaveBeenCalled();
+      expect(sink.docker.modem.followProgress).not.toHaveBeenCalled();
+      await expect(sink.pullDockerImage()).resolves.not.toThrow();
+      expect(sink.docker.pull).toHaveBeenCalledTimes(1);
+      expect(sink.docker.pull).toHaveBeenCalledWith(hdtcppDockerImage, {}, expect.any(Function));
+      expect(sink.docker.modem.followProgress).toHaveBeenCalledTimes(1);
     });
 
-    it('should escape illegal directory names', async() => {
-      await sink.push('http://example.org/1/file:3000', quad);
-      expect(fileWriter.getWriteStream)
-        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file_3000.ttl', 'application/n-quads');
-      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file_3000.ttl' ]));
+    it('should forward errors from docker.pull', async() => {
+      pullError = new Error('Docker pull failed');
+      expect(sink.docker.pull).not.toHaveBeenCalled();
+      await expect(sink.pullDockerImage()).rejects.toThrow(pullError);
     });
 
-    it('should write a quad to an IRI available in the mapping without extension without fileExtension', async() => {
-      sink = new QuadSinkHdt({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-      });
-      (<any>sink).fileWriter = fileWriter;
-      await sink.push('http://example.org/1/file', quad);
-      expect(fileWriter.getWriteStream)
-        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
-      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set());
+    it('should foward errors from docker.modem.followProgress', async() => {
+      followProgressError = new Error('Docker modem followProgress failed');
+      expect(sink.docker.pull).not.toHaveBeenCalled();
+      expect(sink.docker.modem.followProgress).not.toHaveBeenCalled();
+      await expect(sink.pullDockerImage()).rejects.toThrow(followProgressError);
+      expect(sink.docker.pull).toHaveBeenCalledTimes(1);
+      expect(sink.docker.pull).toHaveBeenCalledWith(hdtcppDockerImage, {}, expect.any(Function));
+      expect(sink.docker.modem.followProgress).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('convertSingleFile', () => {
+    let rdfFilePath: string;
+    let extraFlags: string[];
+    let dockerArgs: () => any[];
+
+    beforeEach(() => {
+      rdfFilePath = '/path/to/folder1/a.nq';
+      extraFlags = [];
+      dockerArgs = () => [
+        hdtcppDockerImage,
+        [ 'rdf2hdt', '-p', ...extraFlags, `${hdtCppMountPath}/${basename(rdfFilePath)}`, `${hdtCppMountPath}/a.hdt` ],
+        expect.any(PassThrough),
+        { HostConfig: { AutoRemove: true, Binds: [ `${dirname(rdfFilePath)}:${hdtCppMountPath}:rw` ]}},
+      ];
+      sink.removeSourceFiles = false;
+      jest.spyOn(sink.docker, 'run').mockResolvedValue([{ StatusCode: 0 }, undefined ]);
     });
 
-    it(`should write a quad to an IRI available in the mapping without
-       extension with a file extension define in the sink`, async() => {
-      jest.spyOn(<any>sink, 'getFilePath').mockReturnValue('/path/to/folder1/file');
-      await sink.push('http://example.org/1/file', quad);
-      expect(fileWriter.getWriteStream)
-        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file', 'application/n-quads');
-      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set());
+    it('should call docker.run correctly', async() => {
+      expect(sink.docker.run).not.toHaveBeenCalled();
+      await expect(sink.convertSingleFile(rdfFilePath)).resolves.not.toThrow();
+      expect(sink.docker.run).toHaveBeenCalledTimes(1);
+      expect(sink.docker.run).toHaveBeenCalledWith(...dockerArgs());
     });
 
-    it('should write a quad to an IRI available in the mapping without extension with fileExtension', async() => {
-      sink = new QuadSinkHdt({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        fileExtension: '$.nq',
-      });
-      (<any>sink).fileWriter = fileWriter;
-
-      await sink.push('http://example.org/1/file', quad);
-      expect(fileWriter.getWriteStream)
-        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file$.nq', 'application/n-quads');
-      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file$.nq' ]));
+    it('should call docker.run correctly without file extension', async() => {
+      sink.fileExtension = undefined;
+      rdfFilePath = rdfFilePath.replace('.nq', '');
+      expect(sink.docker.run).not.toHaveBeenCalled();
+      await expect(sink.convertSingleFile(rdfFilePath)).resolves.not.toThrow();
+      expect(sink.docker.run).toHaveBeenCalledTimes(1);
+      expect(sink.docker.run).toHaveBeenCalledWith(...dockerArgs());
     });
 
-    it('should error on an IRI not available in the mapping', async() => {
-      await expect(sink.push('http://example.org/3/file.ttl', quad)).rejects
-        .toThrow(new Error('No IRI mapping found for http://example.org/3/file.ttl'));
-      expect((<any>sink).files).toStrictEqual(new Set());
+    it('should call docker.run correctly with index flag', async() => {
+      sink.generateIndexes = true;
+      extraFlags = [ '-i' ];
+      expect(sink.docker.run).not.toHaveBeenCalled();
+      await expect(sink.convertSingleFile(rdfFilePath)).resolves.not.toThrow();
+      expect(sink.docker.run).toHaveBeenCalledTimes(1);
+      expect(sink.docker.run).toHaveBeenCalledWith(...dockerArgs());
     });
 
-    it('should remove the hash from the IRI', async() => {
-      await sink.push('http://example.org/1/file#me', quad);
-      expect(fileWriter.getWriteStream)
-        .toHaveBeenNthCalledWith(1, '/path/to/folder1/file.ttl', 'application/n-quads');
-      expect(writeStream.write).toHaveBeenNthCalledWith(1, quad);
-      expect((<any>sink).files).toStrictEqual(new Set([ 'path/to/folder1/file.ttl' ]));
+    it('should delete original file when cleanup is true', async() => {
+      sink.removeSourceFiles = true;
+      expect(unlink).not.toHaveBeenCalled();
+      expect(sink.docker.run).not.toHaveBeenCalled();
+      await expect(sink.convertSingleFile(rdfFilePath)).resolves.not.toThrow();
+      expect(sink.docker.run).toHaveBeenCalledTimes(1);
+      expect(unlink).toHaveBeenCalledTimes(1);
+      expect(unlink).toHaveBeenCalledWith(rdfFilePath);
+    });
+
+    it('should throw error when conversion fails', async() => {
+      const conversionOutput = 'Expected output\n';
+      const expectedError = `Failed to convert ${rdfFilePath}:\n${conversionOutput}`;
+      jest.spyOn(sink.docker, 'run').mockImplementation(<any>(async(
+        _image: string,
+        _cmd: string[],
+        outputStream: NodeJS.WritableStream,
+        _createOptions: any,
+      ): Promise<[ { StatusCode: number }, any]> => {
+        outputStream.write(conversionOutput);
+        outputStream.end();
+        return [{ StatusCode: 1 }, undefined ];
+      }));
+      expect(sink.docker.run).not.toHaveBeenCalled();
+      await expect(sink.convertSingleFile(rdfFilePath)).rejects.toThrow(expectedError);
+      expect(sink.docker.run).toHaveBeenCalledTimes(1);
+      expect(sink.docker.run).toHaveBeenCalledWith(...dockerArgs());
+    });
+  });
+
+  describe('convertToHdt', () => {
+    beforeEach(() => {
+      jest.spyOn(sink, 'pullDockerImage').mockResolvedValue(undefined);
+      jest.spyOn(sink, 'convertSingleFile').mockResolvedValue(undefined);
+      jest.spyOn(sink, 'attemptConversionLog').mockImplementation();
+    });
+
+    it('should call convertSingleFile for each registered path', async() => {
+      expect(sink.filesToConvert.size).toBe(0);
+      const paths = [ '/path/to/folder1/a.nq', '/path/to/folder2/b.nq' ];
+      for (const path of paths) {
+        sink.filesToConvert.add(path);
+      }
+      expect(sink.filesToConvert.size).toBe(paths.length);
+      expect(sink.pullDockerImage).not.toHaveBeenCalled();
+      expect(sink.convertSingleFile).not.toHaveBeenCalled();
+      await expect(sink.convertToHdt()).resolves.not.toThrow();
+      expect(sink.pullDockerImage).toHaveBeenCalledTimes(1);
+      expect(sink.convertSingleFile).toHaveBeenCalledTimes(2);
+      for (const path of sink.filesToConvert) {
+        expect(sink.convertSingleFile).toHaveBeenCalledWith(path);
+      }
+    });
+
+    it.each([
+      [ 1, 7 ],
+      [ 2, 5 ],
+      [ 5, 13 ],
+    ])('should properly manage concurrency of %d', async(concurrency, pathCount) => {
+      sink.conversionConcurrency = concurrency;
+      for (let i = 0; i < pathCount; i++) {
+        sink.filesToConvert.add(`/path/to/file${i}.nq`);
+      }
+      await expect(sink.convertToHdt()).resolves.not.toThrow();
+      expect(sink.convertSingleFile).toHaveBeenCalledTimes(pathCount);
+      for (const path of sink.filesToConvert) {
+        expect(sink.convertSingleFile).toHaveBeenCalledWith(path);
+      }
     });
   });
 
   describe('close', () => {
-    beforeEach(() => {
-      spyStdoutWrite = jest.spyOn(process.stdout, 'write');
-
-      sink = new QuadSinkHdt({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        fileExtension: '.ttl',
-      }, 1, true);
-      quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
-
-      writeStream = {
-        write: jest.fn(),
-      };
-      fileWriter = {
-        getWriteStream: jest.fn(() => writeStream),
-        close: jest.fn(),
-      };
-      (<any>sink).fileWriter = fileWriter;
-      (<jest.Mock>fs.stat).mockImplementation((path: string) => {
-        return {
-          isFile() {
-            return path.includes('.');
-          },
-        };
-      });
-      jest.clearAllMocks();
-    });
-
-    it('should produce the HDT file upon closing', async() => {
-      await sink.push('http://example.org/1/file', quad);
-      await sink.push('http://example.org/1/file:3000', quad);
+    it('should call convertToHdt', async() => {
+      jest.spyOn(sink, 'convertToHdt').mockImplementation();
+      expect(sink.convertToHdt).not.toHaveBeenCalled();
       await sink.close();
-
-      const expectedFiles = new Set([
-        'path/to/folder1/file.ttl',
-        'path/to/folder1/file_3000.ttl',
-      ]);
-
-      expect((<any>sink).files).toStrictEqual(expectedFiles);
-      expect(fileWriter.close).toHaveBeenNthCalledWith(1);
-      expect(fs.rm).toHaveBeenCalledTimes(2);
-      expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(transformToHdt).toHaveBeenCalledTimes(2);
-      let i = 1;
-      for (const file of expectedFiles) {
-        expect(fs.rm).toHaveBeenNthCalledWith(i, file);
-        expect((<jest.Mock>transformToHdt).mock.calls[i - 1][1]).toEqual(file);
-        i++;
-      }
-    });
-
-    it(`should  produce the HDT file upon closing 
-            and not delete the source file when the flag is activated`, async() => {
-      sink = new QuadSinkHdt({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        fileExtension: '.ttl',
-      }, 5, false);
-      (<any>sink).fileWriter = fileWriter;
-
-      await sink.push('http://example.org/1/file', quad);
-      await sink.push('http://example.org/1/file:3000', quad);
-      await sink.close();
-
-      const expectedFiles = new Set([
-        'path/to/folder1/file.ttl',
-        'path/to/folder1/file_3000.ttl',
-      ]);
-
-      expect((<any>sink).files).toStrictEqual(expectedFiles);
-      expect(fileWriter.close).toHaveBeenNthCalledWith(1);
-      expect(fs.rm).toHaveBeenCalledTimes(0);
-      expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(transformToHdt).toHaveBeenCalledTimes(2);
-      let i = 1;
-      for (const file of expectedFiles) {
-        expect((<jest.Mock>transformToHdt).mock.calls[i - 1][1]).toEqual(file);
-        i++;
-      }
-    });
-  });
-
-  describe('logger', () => {
-    beforeAll(async() => {
-      const docker: Docker = new Docker();
-      await pullHdtCppDockerImage(docker);
-    }, 120 * 1_000);
-    beforeEach(() => {
-      jest.resetAllMocks();
-      spyStdoutWrite = jest.spyOn(process.stdout, 'write');
-
-      sink = new QuadSinkHdt({
-        outputFormat: 'application/n-quads',
-        iriToPath: {
-          'http://example.org/1/': '/path/to/folder1/',
-          'http://example.org/2/': '/path/to/folder2/',
-        },
-        fileExtension: '.ttl',
-        log: true,
-      }, 1, true);
-      quad = DF.quad(DF.namedNode('ex:s'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
-
-      writeStream = {
-        write: jest.fn(),
-      };
-      fileWriter = {
-        getWriteStream: jest.fn(() => writeStream),
-        close: jest.fn(),
-      };
-      (<any>sink).fileWriter = fileWriter;
-      (<jest.Mock>fs.stat).mockImplementation((path: string) => {
-        return {
-          isFile() {
-            return path.includes('.');
-          },
-        };
-      });
-      jest.clearAllMocks();
-    });
-
-    it('should log when a pool is executed', async() => {
-      await sink.push('http://example.org/1/file', quad);
-      await sink.push('http://example.org/1/file:3000', quad);
-
-      await sink.close();
-
-      const expectedFiles = new Set([
-        'path/to/folder1/file.ttl',
-        'path/to/folder1/file_3000.ttl',
-      ]);
-
-      expect((<any>sink).files).toStrictEqual(expectedFiles);
-      expect(fileWriter.close).toHaveBeenNthCalledWith(1);
-      expect(fs.rm).toHaveBeenCalledTimes(2);
-      expect(pullHdtCppDockerImage).toHaveBeenCalledTimes(1);
-      expect(transformToHdt).toHaveBeenCalledTimes(2);
-      let i = 1;
-      for (const file of expectedFiles) {
-        expect(fs.rm).toHaveBeenNthCalledWith(i, file);
-        expect((<jest.Mock>transformToHdt).mock.calls[i - 1][1]).toEqual(file);
-        i++;
-      }
-
-      expect(spyStdoutWrite).toHaveBeenCalledTimes(6);
-
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(3, `\rfiles transformed to HDT:0 out of 2`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(4, `\rfiles transformed to HDT:1 out of 2`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(5, `\rfiles transformed to HDT:2 out of 2`);
-      expect(spyStdoutWrite).toHaveBeenNthCalledWith(6, `\n`);
+      expect(sink.convertToHdt).toHaveBeenCalledTimes(1);
     });
   });
 });
