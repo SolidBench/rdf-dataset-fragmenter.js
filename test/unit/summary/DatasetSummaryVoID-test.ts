@@ -37,7 +37,11 @@ describe('DatasetSummaryVoID', () => {
     for (const quad of quads) {
       collector.register(quad);
     }
-    expect(collector.serialize().quads).toBeRdfIsomorphic([
+
+    const serialized = await collector.serialize();
+    expect(serialized).toHaveLength(1);
+
+    expect(serialized[0].quads).toBeRdfIsomorphic([
       DF.quad(
         dataset,
         DatasetSummaryVoID.RDF_TYPE,
@@ -167,7 +171,9 @@ describe('DatasetSummaryVoID', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.serialize().quads).toBeRdfIsomorphic([]);
+    const serialized = await collector.serialize();
+    expect(serialized).toHaveLength(1);
+    expect(serialized[0].quads).toBeRdfIsomorphic([]);
   });
 
   it('should always produce rdf:type as the first quad', async() => {
@@ -175,7 +181,11 @@ describe('DatasetSummaryVoID', () => {
       collector.register(quad);
     }
     const typedSubjects = new Set<string>();
-    for (const quad of collector.serialize().quads) {
+
+    const serialized = await collector.serialize();
+    expect(serialized).toHaveLength(1);
+
+    for (const quad of serialized[0].quads) {
       if (!typedSubjects.has(quad.subject.value)) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(quad.predicate.value).toEqual(DatasetSummaryVoID.RDF_TYPE.value);

@@ -29,7 +29,10 @@ describe('DatasetSummaryCollectorBloom', () => {
     for (const quad of quads) {
       collector.register(quad);
     }
-    const filters = collector.serialize().quads.filter(quad =>
+
+    await expect(collector.serialize()).resolves.toHaveLength(1);
+
+    const filters = (await collector.serialize())[0].quads.filter(quad =>
       quad.predicate.value === DatasetSummaryBloom.MEM_PROP_BINARYREPRESENTATION.value &&
       quad.object.termType === 'Literal' &&
       quad.object.datatype === DatasetSummaryBloom.XSD_BASE64)
@@ -47,7 +50,9 @@ describe('DatasetSummaryCollectorBloom', () => {
   });
 
   it('should not produce a description without any quads registered', async() => {
-    expect(collector.serialize().quads).toBeRdfIsomorphic([]);
+    const serialized = await collector.serialize();
+    expect(serialized).toHaveLength(1);
+    expect(serialized[0].quads).toBeRdfIsomorphic([]);
   });
 
   it('should always produce rdf:type in the first quad for each subject', async() => {
@@ -55,7 +60,10 @@ describe('DatasetSummaryCollectorBloom', () => {
       collector.register(quad);
     }
     const typedSubjects = new Set<string>();
-    for (const quad of collector.serialize().quads) {
+    const serialized = await collector.serialize();
+    expect(serialized).toHaveLength(1);
+
+    for (const quad of serialized[0].quads) {
       if (!typedSubjects.has(quad.subject.value)) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(quad.predicate.value).toEqual(DatasetSummaryBloom.RDF_TYPE.value);
