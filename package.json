@@ -68,7 +68,6 @@
     "@types/dockerode": "^3.3.29",
     "@types/jest": "^29.0.0",
     "@types/n3": "^1.16.4",
-    "@types/streamify-array": "^1.0.3",
     "arrayify-stream": "^2.0.0",
     "componentsjs-generator": "^4.0.0",
     "eslint": "^8.0.0",
