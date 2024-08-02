@@ -347,7 +347,7 @@ The sub-datasets are defined by the IRI template at the field `datasetPatterns`.
 
 Options:
 
-- `"shapeConfig"`: Define the shape of each datasets.
+- `"shapeConfig"`: Defines the shape of each dataset.
   - `"shapes"`: A list of path to shape templates following the [`ShExC`](https://shex.io/shex-semantics/index.html#shexc) format. If the IRI of the shape is `$` then the IRI will be tied to the current dataset.
   Another shape IRI in the same dataset can be refered by using `{:ShapeName}`. E.g.
 `ldbcvoc:id <{:Comment}> ;` where `Comment` is the `name` of a shape define
@@ -364,8 +364,8 @@ defining a fragmentation in multiple file of the resource type ( define in `data
 - `"datasetResourceFragmentationException"`: Describe the resource type where the fragmentation is not describe in the data model. The keys **must** be the related to the keys of `shapeConfig`.
   - `"name"`: Substring in the IRI (at the subject position) describing the resource.
   - `"fragmentation"`: Define the fragmentation of the resource type. `0` identify a distributed fragmentation (in multiple files) and `1` a fragmentation in one file.
-- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`. If no entry are generated the shape index is not generated in the dataset. the value **should** be between 0 and 100.
-- `"datasetPatterns"`: The IRI template of a dataset. There **should** not have a trailling `/`.
+- `"generationProbability"`: The probability a shape index entry is define with regard to the `randomSeed`. If no entries are generated the shape index is not generated in the dataset. the value **should** be between 0 and 100.
+- `"datasetPatterns"`: The IRI template of a dataset. It **must** not have a trailling `/`.
 
 A sample output file tree and its associated files is displayed below.
 
