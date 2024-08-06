@@ -103,13 +103,11 @@ export class QuadSinkHdt extends QuadSinkFile {
       runningConversions.set(rdfFilePath, this.convertSingleFile(rdfFilePath));
       if (runningConversions.size === this.conversionConcurrency) {
         runningConversions.delete(await Promise.race(runningConversions.values()));
-        convertedFiles++;
-        this.attemptConversionLog(convertedFiles);
+        this.attemptConversionLog(convertedFiles++);
       }
     }
     await Promise.all(runningConversions.values());
-    convertedFiles += runningConversions.size;
-    this.attemptConversionLog(convertedFiles);
+    this.attemptConversionLog(convertedFiles + runningConversions.size);
   }
 
   protected attemptConversionLog(count: number): void {
