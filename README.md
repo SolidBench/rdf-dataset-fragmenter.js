@@ -951,6 +951,41 @@ Options:
 * `"type""`: Regular expression for type IRIs that need to be matched.
 * `"matchFullResource""`: If not only the quad containing the type must be matched, but also all other quads sharing the same subject of that quad.
 
+#### Term Value Matcher
+
+Matches a quad by the provided regex and the specified quad term's value,
+with an optional probability to only match a given share of quads that would otherwise match.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyException",
+    "strategy": {
+      "@type": "FragmentationStrategySubject"
+    },
+    "exceptions": [
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "matcher": {
+          "@type": "QuadMatcherTermValue",
+          "valueRegex": "vocabulary/subject1",
+          "quadTerm": "subject",
+          "probability": 0.5
+        },
+        "strategy": {
+          "@type": "FragmentationStrategyObject"
+        }
+      }
+    ]
+  }
+}
+```
+
+Options:
+* `"valueRegex"`: Regular expression to use on the term value. Without a capturing group in the regex, the entire falue is used for the probability. When there is a capturing group, the match from that group is used for the probability.
+* `"quadTerm"`: The quad term to match, one of `subject`, `predicate`, `object` or `graph`.
+* `"probability"`: The probability that a matching quad actually mnatches.
+
 ### Value modifiers
 
 Different strategies for modifying RDF term values.

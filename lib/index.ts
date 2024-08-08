@@ -11,6 +11,7 @@ export * from './io/QuadSourceFile';
 export * from './quadmatcher/IQuadMatcher';
 export * from './quadmatcher/QuadMatcherPredicate';
 export * from './quadmatcher/QuadMatcherResourceType';
+export * from './quadmatcher/QuadMatcherTermValue';
 export * from './strategy/FragmentationBlankNodeBuffer';
 export * from './strategy/FragmentationStrategyComposite';
 export * from './strategy/FragmentationStrategyDatasetSummary';
