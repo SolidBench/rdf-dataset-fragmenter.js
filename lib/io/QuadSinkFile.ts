@@ -1,3 +1,4 @@
+import { clearLine, cursorTo } from 'node:readline';
 import type { Writable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadSink } from './IQuadSink';
@@ -29,7 +30,9 @@ export class QuadSinkFile implements IQuadSink {
 
   protected attemptLog(newLine = false): void {
     if (this.log && (this.counter % 1_000 === 0 || newLine)) {
-      process.stdout.write(`\rHandled quads: ${this.counter / 1_000}K`);
+      clearLine(process.stdout, 0);
+      cursorTo(process.stdout, 0);
+      process.stdout.write(`Handled quads: ${this.counter / 1_000}K`);
       if (newLine) {
         process.stdout.write(`\n`);
       }

@@ -1,3 +1,4 @@
+import { clearLine, cursorTo } from 'node:readline';
 import type { Writable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
@@ -8,6 +9,7 @@ import { QuadSinkFile } from '../../../lib/io/QuadSinkFile';
 const DF = new DataFactory();
 
 jest.mock('../../../lib/io/ParallelFileWriter');
+jest.mock('node:readline');
 
 interface IQuadSinkFile extends IQuadSink {
   outputFormat: string;
@@ -72,21 +74,35 @@ describe('QuadSinkFile', () => {
 
     it('should properly log at intervals of 1000 when logging is on', () => {
       sink.log = true;
+      expect(clearLine).not.toHaveBeenCalled();
+      expect(cursorTo).not.toHaveBeenCalled();
       expect(process.stdout.write).not.toHaveBeenCalled();
       sink.attemptLog(false);
+      expect(clearLine).toHaveBeenCalledTimes(1);
+      expect(clearLine).toHaveBeenNthCalledWith(1, process.stdout, 0);
+      expect(cursorTo).toHaveBeenCalledTimes(1);
+      expect(cursorTo).toHaveBeenNthCalledWith(1, process.stdout, 0);
       expect(process.stdout.write).toHaveBeenCalledTimes(1);
-      expect(process.stdout.write).toHaveBeenNthCalledWith(1, '\rHandled quads: 0K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(1, 'Handled quads: 0K');
       sink.counter = 500;
       sink.attemptLog(false);
       expect(process.stdout.write).toHaveBeenCalledTimes(1);
       sink.counter = 1_000;
       sink.attemptLog(false);
+      expect(clearLine).toHaveBeenCalledTimes(2);
+      expect(clearLine).toHaveBeenNthCalledWith(2, process.stdout, 0);
+      expect(cursorTo).toHaveBeenCalledTimes(2);
+      expect(cursorTo).toHaveBeenNthCalledWith(2, process.stdout, 0);
       expect(process.stdout.write).toHaveBeenCalledTimes(2);
-      expect(process.stdout.write).toHaveBeenNthCalledWith(2, '\rHandled quads: 1K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(2, 'Handled quads: 1K');
       sink.counter = 2_001;
       sink.attemptLog(true);
+      expect(clearLine).toHaveBeenCalledTimes(3);
+      expect(clearLine).toHaveBeenNthCalledWith(3, process.stdout, 0);
+      expect(cursorTo).toHaveBeenCalledTimes(3);
+      expect(cursorTo).toHaveBeenNthCalledWith(3, process.stdout, 0);
       expect(process.stdout.write).toHaveBeenCalledTimes(4);
-      expect(process.stdout.write).toHaveBeenNthCalledWith(3, '\rHandled quads: 2.001K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(3, 'Handled quads: 2.001K');
       expect(process.stdout.write).toHaveBeenNthCalledWith(4, '\n');
     });
   });
