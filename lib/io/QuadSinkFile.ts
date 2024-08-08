@@ -32,7 +32,7 @@ export class QuadSinkFile implements IQuadSink {
     if (this.log && (this.counter % 1_000 === 0 || newLine)) {
       clearLine(process.stdout, 0);
       cursorTo(process.stdout, 0);
-      process.stdout.write(`Handled quads: ${this.counter / 1_000}K`);
+      process.stdout.write(`\rHandled quads: ${this.counter / 1_000}K`);
       if (newLine) {
         process.stdout.write(`\n`);
       }

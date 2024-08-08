@@ -83,7 +83,7 @@ describe('QuadSinkFile', () => {
       expect(cursorTo).toHaveBeenCalledTimes(1);
       expect(cursorTo).toHaveBeenNthCalledWith(1, process.stdout, 0);
       expect(process.stdout.write).toHaveBeenCalledTimes(1);
-      expect(process.stdout.write).toHaveBeenNthCalledWith(1, 'Handled quads: 0K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(1, '\rHandled quads: 0K');
       sink.counter = 500;
       sink.attemptLog(false);
       expect(process.stdout.write).toHaveBeenCalledTimes(1);
@@ -94,7 +94,7 @@ describe('QuadSinkFile', () => {
       expect(cursorTo).toHaveBeenCalledTimes(2);
       expect(cursorTo).toHaveBeenNthCalledWith(2, process.stdout, 0);
       expect(process.stdout.write).toHaveBeenCalledTimes(2);
-      expect(process.stdout.write).toHaveBeenNthCalledWith(2, 'Handled quads: 1K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(2, '\rHandled quads: 1K');
       sink.counter = 2_001;
       sink.attemptLog(true);
       expect(clearLine).toHaveBeenCalledTimes(3);
@@ -102,7 +102,7 @@ describe('QuadSinkFile', () => {
       expect(cursorTo).toHaveBeenCalledTimes(3);
       expect(cursorTo).toHaveBeenNthCalledWith(3, process.stdout, 0);
       expect(process.stdout.write).toHaveBeenCalledTimes(4);
-      expect(process.stdout.write).toHaveBeenNthCalledWith(3, 'Handled quads: 2.001K');
+      expect(process.stdout.write).toHaveBeenNthCalledWith(3, '\rHandled quads: 2.001K');
       expect(process.stdout.write).toHaveBeenNthCalledWith(4, '\n');
     });
   });
