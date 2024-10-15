@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.8.0"></a>
+## [v2.8.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.7.1...v2.8.0) - 2024-10-15
+
+### Added
+* [Add HDT Quad sink](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/b50d42ef4aa91dcd0fc3ba08d49f41f27993e3a5)
+
+### Changed
+* [Use regular expression matching in QuadSinkFile and prioritise longest match](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/c756f424ba06e72e3288c82e324cab65af9ee3bb)
+* [Bump target to ES2021](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/26d5f3ea55116147a75f62a0eef748b506c7e6cf)
+
 <a name="v2.7.1"></a>
 ## [v2.7.1](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.7.0...v2.7.1) - 2024-05-02
 
