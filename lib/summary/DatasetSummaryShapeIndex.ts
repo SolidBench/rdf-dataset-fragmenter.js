@@ -38,6 +38,7 @@ export interface IShapeIndexEntry {
   shapeInfo: {
     name: string;
     directory: string;
+    dependencies: string[];
   };
   iri: string;
   ressourceFragmentation: ResourceFragmentation;
@@ -56,6 +57,10 @@ export interface IShapeEntry {
    * @description name of the targeted shape in the schema
    */
   name: string;
+  /**
+   * @description key in a shape map of the dependent shapes
+   */
+  dependencies?: string[];
 }
 
 export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
@@ -206,6 +211,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
         shapeInfo: {
           name: shapeEntry.name,
           directory: shapeEntry.directory,
+          dependencies: shapeEntry.dependencies ?? [],
         },
         ressourceFragmentation: fragmentation,
         iri,
@@ -229,6 +235,33 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     ];
   }
 
+  public async serializeShapeDependencies(dependencies: string[]): Promise<IDatasetSummaryOutput[]> {
+    const operationGenerationShapes: Promise<IDatasetSummaryOutput>[] = [];
+    const recursiveOperations: Promise<IDatasetSummaryOutput[]>[] = [];
+
+    for (const dependency of dependencies) {
+      const shapeEntry = this.shapeMap[dependency];
+      const [ randomIndex, newGenerator ] =
+        prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
+      this.randomGenerator = newGenerator;
+      // Choose the a shape from the shape been using with an even probability
+      const shape = shapeEntry.shapes[randomIndex];
+      operationGenerationShapes.push(
+        this.serializeShape(shape, this.generateShapeIri({ directory: shapeEntry.directory, name: shapeEntry.name })),
+      );
+      recursiveOperations.push(this.serializeShapeDependencies(shapeEntry.dependencies ?? []));
+    }
+
+    const generatedShapeFromRecusion = await Promise.all(recursiveOperations);
+    const generatedShapes = await Promise.all(operationGenerationShapes);
+    let shapeOutputs: IDatasetSummaryOutput[] = generatedShapes;
+
+    for (const summaryOutput of generatedShapeFromRecusion) {
+      shapeOutputs = [ ...shapeOutputs, ...summaryOutput ];
+    }
+    return shapeOutputs;
+  }
+
   /**
    * Serialized the shape index entries and their associated shapes
    * @returns {[IDatasetSummaryOutput, IDatasetSummaryOutput[]]} -
@@ -239,7 +272,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
       iri: this.shapeIndexIri,
       quads: [],
     };
-    const shapeOutputs: IDatasetSummaryOutput[] = [];
+    let shapeOutputs: IDatasetSummaryOutput[] = [];
 
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
     const entryToDelete = [];
@@ -268,7 +301,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
           DF.namedNode(entry.iri),
         );
         shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
-
+        shapeOutputs = [ ...shapeOutputs, ...(await this.serializeShapeDependencies(entry.shapeInfo.dependencies)) ];
         output.quads.push(entryTypeDefinition, bindByShape, target);
       } else {
         entryToDelete.push(key);
