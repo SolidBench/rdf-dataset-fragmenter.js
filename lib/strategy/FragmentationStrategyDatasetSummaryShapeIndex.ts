@@ -145,9 +145,8 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
         shapes.push(readFileSync(shape).toString());
       }
       shapeMap[dataType] = {
+        ...shapeEntry,
         shapes,
-        directory: (shapeEntry).directory,
-        name: (shapeEntry).name,
       };
     }
     return shapeMap;
