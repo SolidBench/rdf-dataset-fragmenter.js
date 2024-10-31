@@ -88,6 +88,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Comment',
             directory: 'comments',
+            dependencies: [],
           },
           iri: `${dataset.value}/comments`,
         }],
@@ -116,6 +117,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Post',
             directory: 'posts',
+            dependencies: [],
           },
           iri: `${dataset.value}/posts/`,
         }],
@@ -178,6 +180,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Profile',
             directory: 'profile',
+            dependencies: [],
           },
           iri: `${dataset.value}/profile/`,
         }],
@@ -206,6 +209,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Profile',
             directory: 'profile',
+            dependencies: [],
           },
           iri: `${dataset.value}/profile/`,
         }],
@@ -247,6 +251,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Comment',
             directory: 'comments',
+            dependencies: [],
           },
           iri: `${dataset.value}/comments`,
         }],
@@ -268,6 +273,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Post',
             directory: 'posts',
+            dependencies: [],
           },
           iri: `${dataset.value}/posts/`,
         }],
@@ -277,6 +283,7 @@ describe('DatasetSummaryShapeIndex', () => {
           shapeInfo: {
             name: 'Comment',
             directory: 'comments',
+            dependencies: [],
           },
           iri: `${dataset.value}/comments`,
         }],
@@ -489,6 +496,150 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       const output: IDatasetSummaryOutput = await collector.serializeShape(template, collector.generateShapeIri(entry));
       expect(output.iri).toBe(collector.generateShapeIri(entry));
       expect(output.quads.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('serializeShapeDependencies', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
+      jest.spyOn(prand, 'uniformIntDistribution')
+        .mockImplementation(() => {
+          return <any>[ 0, this ];
+        });
+    });
+
+    it('should produce nothing given no dependencies', async() => {
+      const collector = new DatasetSummaryShapeIndex({
+        dataset: dataset.value,
+        iriFragmentationOneFile,
+        iriFragmentationMultipleFiles,
+        datasetResourceFragmentationPredicate: datasetObjectFragmentationPredicate,
+        shapeMap,
+        contentTypesOfDatasets,
+        randomSeed,
+        datasetResourceFragmentationException: datasetObjectExeption,
+      });
+
+      await expect(collector.serializeShapeDependencies([])).resolves.toStrictEqual([]);
+    });
+
+    it('should produce dependent shape given dependencies', async() => {
+      const shapeMap: Record<string, IShapeEntry> = {
+        comments: {
+          shapes: [ 'commentsA', 'commentsB', 'commentsC' ],
+          directory: 'comments',
+          name: 'Comment',
+        },
+        posts: {
+          shapes: [ 'postA', 'postB', 'postC' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+        card: {
+          shapes: [ 'profile' ],
+          directory: 'profile',
+          name: 'Profile',
+          dependencies: [ 'likes', 'knows' ],
+        },
+        noise: {
+          shapes: [ 'noise' ],
+          directory: 'noise',
+          name: 'noise',
+        },
+        likes: {
+          shapes: [ 'likes' ],
+          directory: 'likes',
+          name: 'likes',
+        },
+        knows: {
+          shapes: [ 'knows' ],
+          directory: 'knows',
+          name: 'knows',
+        },
+      };
+      const collector = new DatasetSummaryShapeIndex({
+        dataset: dataset.value,
+        iriFragmentationOneFile,
+        iriFragmentationMultipleFiles,
+        datasetResourceFragmentationPredicate: datasetObjectFragmentationPredicate,
+        shapeMap,
+        contentTypesOfDatasets,
+        randomSeed,
+        datasetResourceFragmentationException: datasetObjectExeption,
+      });
+
+      jest.spyOn(collector, 'serializeShape').mockResolvedValue({
+        iri: 'foo',
+        quads: [],
+      });
+
+      await collector.serializeShapeDependencies([ 'likes', 'knows' ]);
+      expect(collector.serializeShape).toHaveBeenCalledTimes(2);
+      expect(collector.serializeShape).toHaveBeenNthCalledWith(1, 'likes', 'http://example.be#007/likes_shape#likes');
+      expect(collector.serializeShape).toHaveBeenNthCalledWith(2, 'knows', 'http://example.be#007/knows_shape#knows');
+    });
+
+    it('should produce dependent shape given nested dependencies', async() => {
+      const shapeMap: Record<string, IShapeEntry> = {
+        comments: {
+          shapes: [ 'commentsA', 'commentsB', 'commentsC' ],
+          directory: 'comments',
+          name: 'Comment',
+        },
+        posts: {
+          shapes: [ 'postA', 'postB', 'postC' ],
+          directory: 'posts',
+          name: 'Post',
+        },
+        card: {
+          shapes: [ 'profile' ],
+          directory: 'profile',
+          name: 'Profile',
+          dependencies: [ 'likes', 'knows' ],
+        },
+        noise: {
+          shapes: [ 'noise' ],
+          directory: 'noise',
+          name: 'noise',
+        },
+        likes: {
+          shapes: [ 'likes' ],
+          directory: 'likes',
+          name: 'likes',
+          dependencies: [ 'foo' ],
+        },
+        knows: {
+          shapes: [ 'knows' ],
+          directory: 'knows',
+          name: 'knows',
+        },
+        foo: {
+          shapes: [ 'fooShape' ],
+          directory: 'foo',
+          name: 'foo',
+        },
+      };
+      const collector = new DatasetSummaryShapeIndex({
+        dataset: dataset.value,
+        iriFragmentationOneFile,
+        iriFragmentationMultipleFiles,
+        datasetResourceFragmentationPredicate: datasetObjectFragmentationPredicate,
+        shapeMap,
+        contentTypesOfDatasets,
+        randomSeed,
+        datasetResourceFragmentationException: datasetObjectExeption,
+      });
+
+      jest.spyOn(collector, 'serializeShape').mockResolvedValue({
+        iri: 'foo',
+        quads: [],
+      });
+
+      await collector.serializeShapeDependencies([ 'likes', 'knows' ]);
+      expect(collector.serializeShape).toHaveBeenCalledTimes(3);
+      expect(collector.serializeShape).toHaveBeenNthCalledWith(1, 'likes', 'http://example.be#007/likes_shape#likes');
+      expect(collector.serializeShape).toHaveBeenNthCalledWith(2, 'fooShape', 'http://example.be#007/foo_shape#foo');
+      expect(collector.serializeShape).toHaveBeenNthCalledWith(3, 'knows', 'http://example.be#007/knows_shape#knows');
     });
   });
 
@@ -713,9 +864,13 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
 
   describe('serializeShapeIndexEntries', () => {
     let collector: any;
+    let shapeMapWithRealShape: any;
+    let commentShape: any;
+    let postShape: any;
+    let profileShape: any;
 
     beforeEach(() => {
-      const commentShape = `
+      commentShape = `
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
 PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
@@ -738,7 +893,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
     ldbcvoc:hasCreator @<{:Profile}> ;
 }`;
 
-      const postShape = `
+      postShape = `
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
 PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
@@ -758,7 +913,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
     ldbcvoc:isLocatedIn IRI ?;
 }`;
 
-      const profileShape = `
+      profileShape = `
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX ldbcvoc: <http://localhost:3000/www.ldbc.eu/ldbc_socialnet/1.0/vocabulary/>
 PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
@@ -782,7 +937,7 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
     ldbcvoc:likes IRI *;
 }
 `;
-      const shapeMapWithRealShape: Record<string, IShapeEntry> = {
+      shapeMapWithRealShape = {
         comments: {
           shapes: [ commentShape ],
           directory: 'comments',
@@ -844,6 +999,102 @@ PREFIX schema: <http://www.w3.org/2000/01/rdf-schema#>
       }));
 
       expect(shapes[0].quads.length).toBeGreaterThan(1);
+
+      expect(entry.iri).toBe(collector.shapeIndexIri);
+      const currentEntry = DF.blankNode();
+      const entryTypeDefinition = DF.quad(
+        DF.namedNode(collector.shapeIndexIri),
+        DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,
+        currentEntry,
+      );
+      const bindByShape = DF.quad(
+        currentEntry,
+        DatasetSummaryShapeIndex.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
+        DF.namedNode(collector.generateShapeIri({
+          directory: 'comments',
+          name: 'Comment',
+        })),
+      );
+
+      const target = DF.quad(
+        currentEntry,
+        DatasetSummaryShapeIndex.SOLID_INSTANCE_NODE,
+        DF.namedNode(`${collector.dataset}/comments`),
+      );
+
+      expect(entry.quads).toBeRdfIsomorphic(
+        [
+          entryTypeDefinition,
+          bindByShape,
+          target,
+        ],
+      );
+    });
+
+    it('should generate an entry with a shape with dependencies', async() => {
+      const shapeMap: Record<string, IShapeEntry> = {
+        ...shapeMapWithRealShape,
+        likes: {
+          shapes: [ profileShape ],
+          directory: 'likes',
+          name: 'likes',
+        },
+        knows: {
+          shapes: [ profileShape ],
+          directory: 'knows',
+          name: 'knows',
+        },
+      };
+      shapeMap.comments.dependencies = [ 'likes', 'knows' ];
+
+      collector = new DatasetSummaryShapeIndex({
+        dataset: dataset.value,
+        iriFragmentationOneFile,
+        iriFragmentationMultipleFiles,
+        datasetResourceFragmentationPredicate: datasetObjectFragmentationPredicate,
+        shapeMap,
+        contentTypesOfDatasets,
+        randomSeed,
+        datasetResourceFragmentationException: datasetObjectExeption,
+      });
+
+      jest.spyOn(prand, 'uniformIntDistribution')
+        .mockImplementation(() => {
+          return <any>[ 0, this ];
+        });
+
+      const aTriple = DF.quad(
+        DF.namedNode('http://example.be#007'),
+        DF.namedNode('http://localhost:3000/internal/commentsFragmentation'),
+        DF.namedNode('http://localhost:3000/internal/FragmentationOneFile'),
+      );
+
+      collector.register(aTriple);
+
+      const [ entry, shapes ] = await collector.serializeShapeIndexEntries();
+
+      expect(shapes).toHaveLength(3);
+
+      expect(shapes[0].iri).toBe(collector.generateShapeIri({
+        directory: 'comments',
+        name: 'Comment',
+      }));
+
+      expect(shapes[0].quads.length).toBeGreaterThan(1);
+
+      expect(shapes[1].iri).toBe(collector.generateShapeIri({
+        directory: 'likes',
+        name: 'likes',
+      }));
+
+      expect(shapes[1].quads.length).toBeGreaterThan(1);
+
+      expect(shapes[2].iri).toBe(collector.generateShapeIri({
+        directory: 'knows',
+        name: 'knows',
+      }));
+
+      expect(shapes[2].quads.length).toBeGreaterThan(1);
 
       expect(entry.iri).toBe(collector.shapeIndexIri);
       const currentEntry = DF.blankNode();

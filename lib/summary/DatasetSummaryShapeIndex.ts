@@ -235,6 +235,12 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     ];
   }
 
+  /**
+   * Serialize the dependencies of a shape recursively
+   * @param {string[]} dependencies - Dependencies of a shape
+   * @returns {[IDatasetSummaryOutput, IDatasetSummaryOutput[]]} -
+   * The serialized shapes
+   */
   public async serializeShapeDependencies(dependencies: string[]): Promise<IDatasetSummaryOutput[]> {
     const operationGenerationShapes: Promise<IDatasetSummaryOutput>[] = [];
     const recursiveOperations: Promise<IDatasetSummaryOutput[]>[] = [];
