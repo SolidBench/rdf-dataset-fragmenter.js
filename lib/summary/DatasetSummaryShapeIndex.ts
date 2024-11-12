@@ -154,6 +154,8 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    */
   private readonly generationProbability: number;
 
+  private readonly doNotRegister: boolean;
+
   public constructor(args: IDatasetSummaryShapeIndex) {
     super(args);
     this.iriFragmentationMultipleFiles = args.iriFragmentationMultipleFiles;
@@ -165,9 +167,23 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.randomGenerator = prand.xoroshiro128plus(args.randomSeed);
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
     this.generationProbability = args.generationProbability ?? 100;
+
+    const [entryGenerationValue, newGenerator] =
+      prand.uniformIntDistribution(0, 100, this.randomGenerator);
+    this.randomGenerator = newGenerator;
+    // Add the entry to the shape index based on the generation probability
+    if (entryGenerationValue < this.generationProbability) {
+      this.doNotRegister = false;
+    } else {
+      this.doNotRegister = true;
+    }
+
   }
 
   public register(quad: RDF.Quad): void {
+    if (this.doNotRegister) {
+      return;
+    }
     // Register an entry that is described by the data model
     const dataModelObject = this.datasetResourceFragmentationPredicate[quad.predicate.value];
     if (dataModelObject && quad.subject.value.includes(this.dataset)) {
@@ -228,18 +244,10 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     const shapeIndex = this.serializeShapeIndexInstance();
     const shapeIndexCompleteness = this.serializeCompletenessOfShapeIndex();
     shapeIndex.quads = [...shapeIndex.quads, ...shapeIndexEntry.quads, ...shapeIndexCompleteness.quads];
-
-    const [entryGenerationValue, newGenerator] =
-      prand.uniformIntDistribution(0, 100, this.randomGenerator);
-    this.randomGenerator = newGenerator;
-    // Add the entry to the shape index based on the generation probability
-    if (entryGenerationValue < this.generationProbability) {
-      return [
-        shapeIndex,
-        ...shapes,
-      ];
-    }
-    return [];
+    return [
+      shapeIndex,
+      ...shapes,
+    ];
   }
 
   /**
