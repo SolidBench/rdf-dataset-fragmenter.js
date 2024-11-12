@@ -336,7 +336,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
           prand.uniformIntDistribution(0, 100, this.randomGenerator);
         this.randomGenerator = newGenerator;
         // given a probability give use an open shape
-        if (entryGenerationValue >= this.generationProbability) {
+        if (entryGenerationValue < this.generationProbability) {
           shape = openShape;
           this.hasOpenShapes = true;
         }
