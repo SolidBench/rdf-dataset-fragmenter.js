@@ -49,6 +49,8 @@ export interface IFragmentationStrategyDatasetSummaryShapeIndexOptions
    * Should be between 0 and 100.
    */
   generationProbability?: number;
+
+  probabilisticGenerationOnEntries?: boolean;
 }
 
 export class FragmentationStrategyDatasetSummaryShapeIndex
@@ -94,6 +96,8 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
    */
   private readonly generationProbability?: number;
 
+  private readonly probabilisticGenerationOnEntries?: boolean;
+
   public constructor(options: IFragmentationStrategyDatasetSummaryShapeIndexOptions) {
     super(options);
 
@@ -104,6 +108,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
     this.datasetObjectFragmentationPredicate = options.datasetResourceFragmentationPredicate;
     this.datasetResourceFragmentationException = options.datasetResourceFragmentationException;
     this.generationProbability = options.generationProbability;
+    this.probabilisticGenerationOnEntries = options.probabilisticGenerationOnEntries;
 
     if (options.randomSeed) {
       this.randomSeed = options.randomSeed;
@@ -124,6 +129,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
       contentTypesOfDatasets: this.resourceTypesOfDatasets,
       datasetResourceFragmentationException: this.datasetResourceFragmentationException,
       generationProbability: this.generationProbability,
+      probabilisticGenerationOnEntries: this.probabilisticGenerationOnEntries
     });
     this.randomSeed += 1;
     return summary;
@@ -136,7 +142,7 @@ export class FragmentationStrategyDatasetSummaryShapeIndex
    */
   private generateShapeMap(shapeConfig: Record<string, IShapeEntry>): Record<string, IShapeEntry> {
     const shapeMap: Record<string, IShapeEntry> = {};
-    for (const [ dataType, shapeEntry ] of Object.entries(shapeConfig)) {
+    for (const [dataType, shapeEntry] of Object.entries(shapeConfig)) {
       if (shapeEntry.shapes.length === 0) {
         throw new Error('every resource type defined should have at least one entry');
       }

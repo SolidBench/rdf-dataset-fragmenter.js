@@ -7,6 +7,11 @@ import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArg
 /* eslint-disable-next-line import/extensions */
 import * as SHEX_CONTEXT from './shex-context.json';
 
+const openShape = `
+<$> {
+  a IRI? ;
+}
+`
 /* eslint-disable ts/naming-convention */
 export enum ResourceFragmentation {
   /**
@@ -100,10 +105,12 @@ export interface IDatasetSummaryShapeIndex extends IDatasetSummaryArgs {
    */
   datasetResourceFragmentationException: Record<string, IUndescribedDataModel>;
   /**
-   * Probability to generate a shape index entry.
+   * Probability to generate a shape index.
    * Should be between 0 and 100.
    */
   generationProbability?: number;
+
+  probabilisticGenerationOnEntries?: boolean;
 }
 
 export class DatasetSummaryShapeIndex extends DatasetSummary {
@@ -156,6 +163,10 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
   private readonly doNotRegister: boolean;
 
+  private readonly probabilisticGenerationOnEntries: boolean;
+
+  private hasOpenShapes: boolean = false;
+
   public constructor(args: IDatasetSummaryShapeIndex) {
     super(args);
     this.iriFragmentationMultipleFiles = args.iriFragmentationMultipleFiles;
@@ -168,16 +179,20 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     this.shapeIndexIri = `${this.dataset}/${DatasetSummaryShapeIndex.SHAPE_INDEX_FILE_NAME}`;
     this.generationProbability = args.generationProbability ?? 100;
 
-    const [entryGenerationValue, newGenerator] =
-      prand.uniformIntDistribution(0, 100, this.randomGenerator);
-    this.randomGenerator = newGenerator;
-    // Add the entry to the shape index based on the generation probability
-    if (entryGenerationValue < this.generationProbability) {
-      this.doNotRegister = false;
+    this.probabilisticGenerationOnEntries = args.probabilisticGenerationOnEntries ?? false;
+    if (!this.probabilisticGenerationOnEntries) {
+      const [entryGenerationValue, newGenerator] =
+        prand.uniformIntDistribution(0, 100, this.randomGenerator);
+      this.randomGenerator = newGenerator;
+      // Add the entry to the shape index based on the generation probability
+      if (entryGenerationValue < this.generationProbability) {
+        this.doNotRegister = false;
+      } else {
+        this.doNotRegister = true;
+      }
     } else {
-      this.doNotRegister = true;
+      this.doNotRegister = false;
     }
-
   }
 
   public register(quad: RDF.Quad): void {
@@ -315,7 +330,18 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
           DatasetSummaryShapeIndex.SOLID_INSTANCE_CONTAINER_NODE,
         DF.namedNode(entry.iri),
       );
-      shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
+      let shape = entry.shape;
+      if (this.probabilisticGenerationOnEntries) {
+        const [entryGenerationValue, newGenerator] =
+          prand.uniformIntDistribution(0, 100, this.randomGenerator);
+        this.randomGenerator = newGenerator;
+        // given a probability give use an open shape
+        if (entryGenerationValue >= this.generationProbability) {
+          shape = openShape;
+          this.hasOpenShapes = true;
+        }
+      }
+      shapeOutputs.push(await this.serializeShape(shape, this.generateShapeIri(entry.shapeInfo)));
       shapeOutputs = [...shapeOutputs, ...(await this.serializeShapeDependencies(entry.shapeInfo.dependencies))];
       output.quads.push(entryTypeDefinition, bindByShape, target);
 
@@ -350,32 +376,23 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
    * Serialize the information indicating if the shape index is complete
    */
   public serializeCompletenessOfShapeIndex(): IDatasetSummaryOutput {
-    // We check if all the resource has been handled
-    if (this.registeredEntries.size !== this.resourceTypesOfDatasets.size) {
+    if (!this.hasOpenShapes) {
+      // All the resource has been handled so we indicate it with a triple
+      const isComplete = DF.quad(
+        DF.namedNode(this.shapeIndexIri),
+        DatasetSummaryShapeIndex.SHAPE_INDEX_IS_COMPLETE_NODE,
+        DatasetSummaryShapeIndex.RDF_TRUE,
+      );
+
       return {
         iri: this.shapeIndexIri,
-        quads: [],
+        quads: [isComplete],
       };
     }
-    for (const val of this.registeredEntries.keys()) {
-      if (!this.resourceTypesOfDatasets.has(val)) {
-        return {
-          iri: this.shapeIndexIri,
-          quads: [],
-        };
-      }
-    }
-    // All the resource has been handled so we indicate it with a triple
-    const isComplete = DF.quad(
-      DF.namedNode(this.shapeIndexIri),
-      DatasetSummaryShapeIndex.SHAPE_INDEX_IS_COMPLETE_NODE,
-      DatasetSummaryShapeIndex.RDF_TRUE,
-    );
-
     return {
       iri: this.shapeIndexIri,
-      quads: [isComplete],
-    };
+      quads: [],
+    }
   }
 
   /**
