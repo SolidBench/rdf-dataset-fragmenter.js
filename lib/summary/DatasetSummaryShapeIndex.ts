@@ -178,7 +178,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     }
 
     // Register an entry undescribed by the data model
-    for (const [ pathElement, { name, fragmentation }] of Object.entries(this.datasetResourceFragmentationException)) {
+    for (const [pathElement, { name, fragmentation }] of Object.entries(this.datasetResourceFragmentationException)) {
       if (quad.subject.value.includes(pathElement) &&
         quad.subject.value.includes(this.dataset) &&
         !this.handledUndescribedResources.has(name)) {
@@ -197,7 +197,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   public registerShapeIndexEntry(dataModelResource: string, fragmentation: ResourceFragmentation): void {
     const shapeEntry = this.shapeMap[dataModelResource];
     if (shapeEntry) {
-      const [ randomIndex, newGenerator ] =
+      const [randomIndex, newGenerator] =
         prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
       this.randomGenerator = newGenerator;
       // Choose the a shape from the shape been using with an even probability
@@ -221,18 +221,25 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
   }
 
   public async serialize(): Promise<IDatasetSummaryOutput[]> {
-    const [ shapeIndexEntry, shapes ] = await this.serializeShapeIndexEntries();
+    const [shapeIndexEntry, shapes] = await this.serializeShapeIndexEntries();
     if (shapeIndexEntry.quads.length === 0) {
       return [];
     }
     const shapeIndex = this.serializeShapeIndexInstance();
     const shapeIndexCompleteness = this.serializeCompletenessOfShapeIndex();
-    shapeIndex.quads = [ ...shapeIndex.quads, ...shapeIndexEntry.quads, ...shapeIndexCompleteness.quads ];
+    shapeIndex.quads = [...shapeIndex.quads, ...shapeIndexEntry.quads, ...shapeIndexCompleteness.quads];
 
-    return [
-      shapeIndex,
-      ...shapes,
-    ];
+    const [entryGenerationValue, newGenerator] =
+      prand.uniformIntDistribution(0, 100, this.randomGenerator);
+    this.randomGenerator = newGenerator;
+    // Add the entry to the shape index based on the generation probability
+    if (entryGenerationValue < this.generationProbability) {
+      return [
+        shapeIndex,
+        ...shapes,
+      ];
+    }
+    return [];
   }
 
   /**
@@ -247,7 +254,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     for (const dependency of dependencies) {
       const shapeEntry = this.shapeMap[dependency];
-      const [ randomIndex, newGenerator ] =
+      const [randomIndex, newGenerator] =
         prand.uniformIntDistribution(0, shapeEntry.shapes.length - 1, this.randomGenerator);
       this.randomGenerator = newGenerator;
       // Choose the a shape from the shape been using with an even probability
@@ -263,7 +270,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     let shapeOutputs: IDatasetSummaryOutput[] = generatedShapes;
 
     for (const summaryOutput of generatedShapeFromRecusion) {
-      shapeOutputs = [ ...shapeOutputs, ...summaryOutput ];
+      shapeOutputs = [...shapeOutputs, ...summaryOutput];
     }
     return shapeOutputs;
   }
@@ -281,42 +288,31 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
     let shapeOutputs: IDatasetSummaryOutput[] = [];
 
     const shapeIndexNode = DF.namedNode(this.shapeIndexIri);
-    const entryToDelete = [];
-    for (const [ key, entry ] of this.registeredEntries) {
-      const [ entryGenerationValue, newGenerator ] =
-        prand.uniformIntDistribution(0, 100, this.randomGenerator);
-      this.randomGenerator = newGenerator;
-      // Add the entry to the shape index based on the generation probability
-      if (entryGenerationValue < this.generationProbability) {
-        const currentEntry = DF.blankNode(entry.shapeInfo.name);
-        const entryTypeDefinition = DF.quad(
-          shapeIndexNode,
-          DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,
-          currentEntry,
-        );
-        const bindByShape = DF.quad(
-          currentEntry,
-          DatasetSummaryShapeIndex.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
-          DF.namedNode(this.generateShapeIri(entry.shapeInfo)),
-        );
-        const target = DF.quad(
-          currentEntry,
-          entry.ressourceFragmentation === ResourceFragmentation.SINGLE ?
-            DatasetSummaryShapeIndex.SOLID_INSTANCE_NODE :
-            DatasetSummaryShapeIndex.SOLID_INSTANCE_CONTAINER_NODE,
-          DF.namedNode(entry.iri),
-        );
-        shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
-        shapeOutputs = [ ...shapeOutputs, ...(await this.serializeShapeDependencies(entry.shapeInfo.dependencies)) ];
-        output.quads.push(entryTypeDefinition, bindByShape, target);
-      } else {
-        entryToDelete.push(key);
-      }
+    for (const [key, entry] of this.registeredEntries) {
+      const currentEntry = DF.blankNode(entry.shapeInfo.name);
+      const entryTypeDefinition = DF.quad(
+        shapeIndexNode,
+        DatasetSummaryShapeIndex.SHAPE_INDEX_ENTRY_NODE,
+        currentEntry,
+      );
+      const bindByShape = DF.quad(
+        currentEntry,
+        DatasetSummaryShapeIndex.SHAPE_INDEX_BIND_BY_SHAPE_NODE,
+        DF.namedNode(this.generateShapeIri(entry.shapeInfo)),
+      );
+      const target = DF.quad(
+        currentEntry,
+        entry.ressourceFragmentation === ResourceFragmentation.SINGLE ?
+          DatasetSummaryShapeIndex.SOLID_INSTANCE_NODE :
+          DatasetSummaryShapeIndex.SOLID_INSTANCE_CONTAINER_NODE,
+        DF.namedNode(entry.iri),
+      );
+      shapeOutputs.push(await this.serializeShape(entry.shape, this.generateShapeIri(entry.shapeInfo)));
+      shapeOutputs = [...shapeOutputs, ...(await this.serializeShapeDependencies(entry.shapeInfo.dependencies))];
+      output.quads.push(entryTypeDefinition, bindByShape, target);
+
     }
-    for (const entry of entryToDelete) {
-      this.registeredEntries.delete(entry);
-    }
-    return [ output, shapeOutputs ];
+    return [output, shapeOutputs];
   }
 
   /**
@@ -338,7 +334,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     return {
       iri: this.shapeIndexIri,
-      quads: [ typeDefinition, domain ],
+      quads: [typeDefinition, domain],
     };
   }
 
@@ -370,7 +366,7 @@ export class DatasetSummaryShapeIndex extends DatasetSummary {
 
     return {
       iri: this.shapeIndexIri,
-      quads: [ isComplete ],
+      quads: [isComplete],
     };
   }
 
