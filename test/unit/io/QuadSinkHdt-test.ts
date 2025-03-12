@@ -1,7 +1,7 @@
 import { unlink } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 import { PassThrough } from 'node:stream';
-import * as Docker from 'dockerode';
+import Dockerode from 'dockerode';
 import type { IQuadSink } from '../../../lib/io/IQuadSink';
 import { QuadSinkHdt } from '../../../lib/io/QuadSinkHdt';
 
@@ -15,7 +15,7 @@ interface IQuadSinkHdt extends IQuadSink {
   removeSourceFiles: boolean;
   conversionConcurrency: number;
   fileExtension: string | undefined;
-  docker: Docker;
+  docker: Dockerode;
   filesToConvert: Set<string>;
   getFilePath: (iri: string) => string;
   pullDockerImage: () => Promise<void>;
@@ -77,7 +77,7 @@ describe('QuadSinkHdt', () => {
       expect(sink.generateIndexes).toBe(true);
       expect(sink.removeSourceFiles).toBe(true);
       expect(sink.conversionConcurrency).toBe(1);
-      expect(sink.docker).toBeInstanceOf(Docker);
+      expect(sink.docker).toBeInstanceOf(Dockerode);
     });
 
     it('should assign non-default parameter values when provided', () => {
@@ -91,7 +91,7 @@ describe('QuadSinkHdt', () => {
       expect(sink.generateIndexes).toBe(false);
       expect(sink.removeSourceFiles).toBe(false);
       expect(sink.conversionConcurrency).toBe(2);
-      expect(sink.docker).toBeInstanceOf(Docker);
+      expect(sink.docker).toBeInstanceOf(Dockerode);
     });
   });
 

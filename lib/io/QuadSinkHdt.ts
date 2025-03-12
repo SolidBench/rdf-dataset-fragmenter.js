@@ -1,8 +1,9 @@
 import { unlink } from 'node:fs/promises';
 import { basename, resolve, dirname } from 'node:path';
 import { PassThrough } from 'node:stream';
-import * as Docker from 'dockerode';
-import * as streamToString from 'stream-to-string';
+import Dockerode from 'dockerode';
+import type * as Docker from 'dockerode';
+import streamToString from 'stream-to-string';
 import { QuadSinkFile, type IQuadSinkFileOptions } from './QuadSinkFile';
 
 const HDTCPP_MOUNT_PATH = '/tmp/convert';
@@ -30,7 +31,7 @@ export class QuadSinkHdt extends QuadSinkFile {
     this.generateIndexes = options.generateIndexes ?? true;
     this.removeSourceFiles = options.removeSourceFiles ?? true;
     this.conversionConcurrency = options.conversionConcurrency ?? 1;
-    this.docker = new Docker();
+    this.docker = <Docker> new Dockerode();
     this.filesToConvert = new Set();
   }
 
