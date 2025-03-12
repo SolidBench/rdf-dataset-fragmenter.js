@@ -1,5 +1,5 @@
 import { DataFactory } from 'rdf-data-factory';
-import { QuadMatcherPredicate } from '../../../lib/quadmatcher/QuadMatcherPredicate';
+import { QuadMatcherTermValue } from '../../../lib/quadmatcher/QuadMatcherTermValue';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
 import { QuadTransformerAppendQuadLink } from '../../../lib/transform/QuadTransformerAppendQuadLink';
 
@@ -10,7 +10,7 @@ describe('QuadTransformerAppendQuadLink', () => {
 
   beforeEach(() => {
     transformer = new QuadTransformerAppendQuadLink(
-      new QuadMatcherPredicate('p1$'),
+      new QuadMatcherTermValue('predicate', 'p1$'),
       'subject',
       'ex:myp',
       'posts',
@@ -72,7 +72,7 @@ describe('QuadTransformerAppendQuadLink', () => {
 
     it('should modify applicable terms for a different identifier', async() => {
       transformer = new QuadTransformerAppendQuadLink(
-        new QuadMatcherPredicate('p1$'),
+        new QuadMatcherTermValue('predicate', 'p1$'),
         'object',
         'ex:myp',
         'posts',
@@ -98,7 +98,7 @@ describe('QuadTransformerAppendQuadLink', () => {
 
     it('should emit link types', async() => {
       transformer = new QuadTransformerAppendQuadLink(
-        new QuadMatcherPredicate('p1$'),
+        new QuadMatcherTermValue('predicate', 'p1$'),
         'subject',
         'ex:myp',
         'posts',
@@ -129,7 +129,7 @@ describe('QuadTransformerAppendQuadLink', () => {
 
     it('should handle reverse links', async() => {
       transformer = new QuadTransformerAppendQuadLink(
-        new QuadMatcherPredicate('p1$'),
+        new QuadMatcherTermValue('predicate', 'p1$'),
         'subject',
         'ex:myp',
         'posts',
@@ -156,7 +156,7 @@ describe('QuadTransformerAppendQuadLink', () => {
 
     it('should remove trailing slashes from the target', async() => {
       transformer = new QuadTransformerAppendQuadLink(
-        new QuadMatcherPredicate('p1$'),
+        new QuadMatcherTermValue('predicate', 'p1$'),
         'subject',
         'ex:myp',
         '..',

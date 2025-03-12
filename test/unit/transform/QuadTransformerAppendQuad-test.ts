@@ -1,5 +1,5 @@
 import { DataFactory } from 'rdf-data-factory';
-import { QuadMatcherPredicate } from '../../../lib/quadmatcher/QuadMatcherPredicate';
+import { QuadMatcherTermValue } from '../../../lib/quadmatcher/QuadMatcherTermValue';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
 import { QuadTransformerAppendQuad } from '../../../lib/transform/QuadTransformerAppendQuad';
 import { TermTemplateQuadComponent } from '../../../lib/transform/termtemplate/TermTemplateQuadComponent';
@@ -12,7 +12,7 @@ describe('QuadTransformerAppendQuad', () => {
 
   beforeEach(() => {
     transformer = new QuadTransformerAppendQuad(
-      new QuadMatcherPredicate('p1$'),
+      new QuadMatcherTermValue('predicate', 'p1$'),
       new TermTemplateQuadComponent('object'),
       new TermTemplateStaticNamedNode('ex:p2'),
       new TermTemplateQuadComponent('subject'),
