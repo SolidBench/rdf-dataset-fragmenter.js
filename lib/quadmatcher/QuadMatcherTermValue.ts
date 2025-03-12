@@ -1,4 +1,4 @@
-import { hash } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
 import type { IQuadMatcher } from './IQuadMatcher';
 
@@ -20,7 +20,7 @@ export class QuadMatcherTermValue implements IQuadMatcher {
     const termValue = quad[this.term].value;
     const termMatch = this.regex.exec(termValue);
     if (termMatch) {
-      const hashDigest = hash('sha256', termMatch.at(1) ?? termValue, 'hex');
+      const hashDigest = createHash('sha256').update(termMatch.at(1) ?? termValue).digest('hex');
       const hashValue = Number.parseInt(hashDigest, 16) / (2 ** 256);
       return hashValue <= this.probability;
     }
