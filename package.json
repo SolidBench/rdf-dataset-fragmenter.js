@@ -41,6 +41,7 @@
     "build:ts": "tsc",
     "validate": "yarn list",
     "prepare": "husky",
+    "prepack": "yarn run build",
     "version": "manual-git-changelog onversion"
   },
   "dependencies": {
