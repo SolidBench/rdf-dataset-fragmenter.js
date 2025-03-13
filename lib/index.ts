@@ -9,7 +9,7 @@ export * from './io/QuadSinkHdt';
 export * from './io/QuadSourceComposite';
 export * from './io/QuadSourceFile';
 export * from './quadmatcher/IQuadMatcher';
-export * from './quadmatcher/QuadMatcherTermValue';
+export * from './quadmatcher/QuadMatcherComponentValue';
 export * from './quadmatcher/QuadMatcherResourceType';
 export * from './strategy/FragmentationBlankNodeBuffer';
 export * from './strategy/FragmentationStrategyComposite';

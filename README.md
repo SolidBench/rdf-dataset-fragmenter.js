@@ -204,9 +204,9 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
       {
         "@type": "FragmentationStrategyExceptionEntry",
         "matcher": {
-          "@type": "QuadMatcherTermValue",
-          "term": "predicate",
-          "regex": "vocabulary/predicate1"
+          "@type": "QuadMatcherComponentValue",
+          "component": "predicate",
+          "valueRegex": "vocabulary/predicate1"
         },
         "strategy": {
           "@type": "FragmentationStrategyObject"
@@ -215,9 +215,9 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
       {
         "@type": "FragmentationStrategyExceptionEntry",
         "matcher": {
-          "@type": "QuadMatcherTermValue",
-          "term": "predicate",
-          "regex": "vocabulary/predicate2"
+          "@type": "QuadMatcherComponentValue",
+          "component": "predicate",
+          "valueRegex": "vocabulary/predicate2"
         },
         "strategy": {
           "@type": "FragmentationStrategyObject"
@@ -640,9 +640,9 @@ The example below will effectively add a reverse of quads with the `containerOf`
     {
       "@type": "QuadTransformerAppendQuad",
       "matcher": {
-        "@type": "QuadMatcherTermValue",
-        "term": "predicate",
-        "regex": "vocabulary/containerOf$"
+        "@type": "QuadMatcherComponentValue",
+        "component": "predicate",
+        "valueRegex": "vocabulary/containerOf$"
       },
       "subject": {
         "@type": "TermTemplateQuadComponent",
@@ -684,9 +684,9 @@ A quad transformer that appends a link to matching quads (e.g. match by quad pre
     {
       "@type": "QuadTransformerAppendQuadLink",
       "matcher": {
-        "@type": "QuadMatcherTermValue",
-        "term": "predicate",
-        "regex": "vocabulary/hasCreator$"
+        "@type": "QuadMatcherComponentValue",
+        "component": "predicate",
+        "valueRegex": "vocabulary/hasCreator$"
       },
       "predicate": "http://example.org/postsIndex",
       "link": "/posts"
@@ -891,9 +891,9 @@ Options:
 Different strategies for matching quads.
 These matchers can for example be used for `QuadTransformerAppendQuadLink` or `FragmentationStrategyExceptionEntry`.
 
-#### Term Value Matcher
+#### Component Value Matcher
 
-Matches a quad by the provided regex and the specified quad term's value,
+Matches a quad by the provided regex and the specified quad component's value,
 with an optional probability to only match a given share of quads that would otherwise match.
 
 ```json
@@ -907,9 +907,9 @@ with an optional probability to only match a given share of quads that would oth
       {
         "@type": "FragmentationStrategyExceptionEntry",
         "matcher": {
-          "@type": "QuadMatcherTermValue",
-          "regex": "vocabulary/subject1",
-          "term": "subject",
+          "@type": "QuadMatcherComponentValue",
+          "valueRegex": "vocabulary/subject1",
+          "component": "subject",
           "probability": 0.5
         },
         "strategy": {
@@ -922,8 +922,8 @@ with an optional probability to only match a given share of quads that would oth
 ```
 
 Options:
-* `"regex"`: Regular expression to use on the term value. Without a capturing group in the regex, the entire falue is used for the probability. When there is a capturing group, the match from that group is used for the probability.
-* `"term"`: The quad term to match, one of `subject`, `predicate`, `object` or `graph`.
+* `"valueRegex"`: Regular expression to use on the term value. Without a capturing group in the regex, the entire falue is used for the probability. When there is a capturing group, the match from that group is used for the probability.
+* `"component"`: The quad component to match, one of `subject`, `predicate`, `object` or `graph`.
 * `"probability"`: The probability that a matching quad actually matches.
 
 #### Resource Type Matcher
