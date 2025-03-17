@@ -28,24 +28,23 @@ export class TermTemplateQuadComponent implements ITermTemplate {
   }
 
   public getTerm(quad: RDF.Quad): RDF.Term {
-    let componentTerm = quad[this.term];
+    const componentTerm = quad[this.term];
 
-    // Replace the value if instructed to - the component term needs to be cloned, in case it is
-    // used elsewhere outside this function, as simply replacing the value replaces it in the input quad.
-    if (this.regex !== undefined && this.replacement !== undefined && this.regex.test(componentTerm.value)) {
-      componentTerm = structuredClone(componentTerm);
-      componentTerm.value = componentTerm.value.replace(this.regex, this.replacement);
+    if (this.type !== undefined) {
+      const value = this.regex !== undefined && this.replacement !== undefined && this.regex.test(componentTerm.value) ?
+        componentTerm.value.replace(this.regex, this.replacement) :
+        componentTerm.value;
+
+      switch (this.type) {
+        case 'BlankNode':
+          return DF.blankNode(value);
+        case 'Literal':
+          return DF.literal(value);
+        case 'NamedNode':
+          return DF.namedNode(value);
+      }
     }
 
-    switch (this.type) {
-      case 'BlankNode':
-        return DF.blankNode(componentTerm.value);
-      case 'Literal':
-        return DF.literal(componentTerm.value);
-      case 'NamedNode':
-        return DF.namedNode(componentTerm.value);
-      default:
-        return componentTerm;
-    }
+    return componentTerm;
   }
 }
