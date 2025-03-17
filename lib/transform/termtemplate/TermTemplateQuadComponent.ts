@@ -1,5 +1,10 @@
 import type * as RDF from '@rdfjs/types';
+import { DataFactory } from 'rdf-data-factory';
 import type { ITermTemplate } from './ITermTemplate';
+
+export type TermTemplateTermType = 'Literal' | 'BlankNode' | 'NamedNode';
+
+const DF = new DataFactory();
 
 /**
  * A term template that returns a given quad's component.
@@ -8,20 +13,39 @@ export class TermTemplateQuadComponent implements ITermTemplate {
   private readonly term: RDF.QuadTermName;
   private readonly regex?: RegExp;
   private readonly replacement?: string;
+  private readonly type?: TermTemplateTermType;
 
-  public constructor(component: RDF.QuadTermName, valueRegex?: string, valueReplacement?: string) {
+  public constructor(
+    component: RDF.QuadTermName,
+    termType?: TermTemplateTermType,
+    valueRegex?: string,
+    valueReplacement?: string,
+  ) {
     this.term = component;
-    if (valueRegex !== undefined && valueReplacement !== undefined) {
-      this.regex = new RegExp(valueRegex, 'u');
-      this.replacement = valueReplacement;
-    }
+    this.type = termType;
+    this.regex = valueRegex ? new RegExp(valueRegex, 'u') : undefined;
+    this.replacement = valueReplacement;
   }
 
   public getTerm(quad: RDF.Quad): RDF.Term {
-    const componentTerm = quad[this.term];
-    if (this.regex !== undefined && this.replacement !== undefined) {
+    let componentTerm = quad[this.term];
+
+    // Replace the value if instructed to - the component term needs to be cloned, in case it is
+    // used elsewhere outside this function, as simply replacing the value replaces it in the input quad.
+    if (this.regex !== undefined && this.replacement !== undefined && this.regex.test(componentTerm.value)) {
+      componentTerm = structuredClone(componentTerm);
       componentTerm.value = componentTerm.value.replace(this.regex, this.replacement);
     }
-    return componentTerm;
+
+    switch (this.type) {
+      case 'BlankNode':
+        return DF.blankNode(componentTerm.value);
+      case 'Literal':
+        return DF.literal(componentTerm.value);
+      case 'NamedNode':
+        return DF.namedNode(componentTerm.value);
+      default:
+        return componentTerm;
+    }
   }
 }

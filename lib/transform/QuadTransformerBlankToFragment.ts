@@ -8,7 +8,7 @@ const DF = new DataFactory();
  * A quad transformer that maps BlankNodes to fragments on the subject URI,
  * based on the first subject that blank node appears with as an object.
  */
-export class QuadTransformerBlankToSubjectFragment implements IQuadTransformer {
+export class QuadTransformerBlankToFragment implements IQuadTransformer {
   private readonly mappings: Record<string, RDF.NamedNode>;
 
   public constructor() {
