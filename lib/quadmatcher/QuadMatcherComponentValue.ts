@@ -10,15 +10,10 @@ export class QuadMatcherComponentValue implements IQuadMatcher {
   private readonly valueRegex: RegExp;
   private readonly probability: number;
 
-  /**
-   * @param {RDF.QuadTermName} component The quad component to execute regex on.
-   * @param {string} valueRegex The regex used on the component value.
-   * @param {number | undefined} probability Optional probability to register a match.
-   */
-  public constructor(component: RDF.QuadTermName, valueRegex: string, probability?: number) {
-    this.component = component;
-    this.valueRegex = new RegExp(valueRegex, 'u');
-    this.probability = probability ?? 1;
+  public constructor(options: IQuadMatcherComponentValueOptions) {
+    this.component = options.component;
+    this.valueRegex = new RegExp(options.valueRegex, 'u');
+    this.probability = options.probability;
   }
 
   public matches(quad: RDF.Quad): boolean {
@@ -31,4 +26,21 @@ export class QuadMatcherComponentValue implements IQuadMatcher {
     }
     return false;
   }
+}
+
+export interface IQuadMatcherComponentValueOptions {
+  /**
+   * The quad component to execute regex on.
+   */
+  component: RDF.QuadTermName;
+  /**
+   * The regex used on the component value.
+   */
+  valueRegex: string;
+  /**
+   * Optional probability to register a match.
+   * @range {float}
+   * @default {1.0}
+   */
+  probability: number;
 }
