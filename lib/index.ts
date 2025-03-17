@@ -40,6 +40,7 @@ export * from './transform/QuadTransformerAppendResourceLink';
 export * from './transform/QuadTransformerAppendResourceScl';
 export * from './transform/QuadTransformerAppendResourceSolidTypeIndex';
 export * from './transform/QuadTransformerBlankToNamed';
+export * from './transform/QuadTransformerBlankToSubjectFragment';
 export * from './transform/QuadTransformerClone';
 export * from './transform/QuadTransformerCompositeSequential';
 export * from './transform/QuadTransformerCompositeVaryingResource';
