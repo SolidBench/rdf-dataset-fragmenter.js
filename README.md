@@ -1049,9 +1049,9 @@ Options:
 
 A term template that returns a given quad's component,
 after performing regex-based substitution of the value
-and convertint it to the specificed term type.
+and converting it to the specificed term type.
 
-The example below refers to the object of a quad.
+The example below converts the object of a quad to a literal.
 
 ```json
 {
