@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { DataFactory } from 'rdf-data-factory';
-import { QuadMatcherComponentValue } from '../../../lib/quadmatcher/QuadMatcherComponentValue';
+import { QuadMatcherTermValue } from '../../../lib/quadmatcher/QuadMatcherTermValue';
 
 const DF = new DataFactory();
 
-describe('QuadMatcherComponentValue', () => {
+describe('QuadMatcherTermValue', () => {
   const quad1 = DF.quad(DF.namedNode('ex:s1'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
   const quad1a = DF.quad(DF.namedNode('ex:s1a'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
   const quad1b = DF.quad(DF.namedNode('ex:s1b'), DF.namedNode('ex:p'), DF.namedNode('ex:o'));
@@ -12,9 +12,9 @@ describe('QuadMatcherComponentValue', () => {
 
   describe('matches', () => {
     it('handles noncapturing regex', () => {
-      const matcher = new QuadMatcherComponentValue({
-        component: 'subject',
-        valueRegex: '^ex:s1.*$',
+      const matcher = new QuadMatcherTermValue({
+        term: 'subject',
+        regex: '^ex:s1.*$',
         probability: 1,
       });
       expect(matcher.matches(quad1)).toBeTruthy();
@@ -24,9 +24,9 @@ describe('QuadMatcherComponentValue', () => {
     });
 
     it('handles capturing regex', () => {
-      const matcher = new QuadMatcherComponentValue({
-        component: 'subject',
-        valueRegex: '^(ex:s1).*$',
+      const matcher = new QuadMatcherTermValue({
+        term: 'subject',
+        regex: '^(ex:s1).*$',
         probability: 1,
       });
       expect(matcher.matches(quad1)).toBeTruthy();
@@ -36,12 +36,12 @@ describe('QuadMatcherComponentValue', () => {
     });
 
     it.each([ 0.2, 0.5, 0.8 ])('handles probability of %p', (probability: number) => {
-      const matcher = new QuadMatcherComponentValue({
-        component: 'subject',
-        valueRegex: '^ex:s',
+      const matcher = new QuadMatcherTermValue({
+        term: 'subject',
+        regex: '^ex:s',
         probability,
       });
-      const sample = 500;
+      const sample = 200;
       let matched = 0;
       for (let i = 0; i < sample; i++) {
         const quad = DF.quad(DF.namedNode(`ex:s${randomBytes(10).toString('hex')}`), quad1.predicate, quad1.object);

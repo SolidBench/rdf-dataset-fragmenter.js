@@ -21,9 +21,7 @@ export class QuadTransformerBlankToFragment implements IQuadTransformer {
       quad.object.termType === 'BlankNode' &&
       this.mappings[quad.object.value] === undefined
     ) {
-      const subjectBase = quad.subject.value.split('#')[0];
-      const blankFragment = quad.object.value.split(':')[0];
-      const target = DF.namedNode(`${subjectBase}#${blankFragment}`);
+      const target = DF.namedNode(`${quad.subject.value.split('#')[0]}#${quad.object.value}`);
       this.mappings[quad.object.value] = target;
       return [ DF.quad(quad.subject, quad.predicate, target, quad.graph) ];
     }

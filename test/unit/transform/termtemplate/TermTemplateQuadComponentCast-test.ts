@@ -1,12 +1,12 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import type { ITermTemplate } from '../../../../lib/transform/termtemplate/ITermTemplate';
-import type { TermTemplateTermType } from '../../../../lib/transform/termtemplate/TermTemplateQuadComponent';
-import { TermTemplateQuadComponent } from '../../../../lib/transform/termtemplate/TermTemplateQuadComponent';
+import type { TermTemplateTermType } from '../../../../lib/transform/termtemplate/TermTemplateQuadComponentCast';
+import { TermTemplateQuadComponentCast } from '../../../../lib/transform/termtemplate/TermTemplateQuadComponentCast';
 
 const DF = new DataFactory();
 
-describe('TermTemplateQuadComponent', () => {
+describe('TermTemplateQuadComponentCast', () => {
   const quad: RDF.Quad = DF.quad(
     DF.namedNode('ex:s'),
     DF.namedNode('ex:p'),
@@ -27,18 +27,33 @@ describe('TermTemplateQuadComponent', () => {
         [ <TermTemplateTermType>'NamedNode', DF.namedNode(quad[component].value) ],
         [ undefined, quad[component] ],
       ])('should return term value as %s', (type, expected) => {
-        const template: ITermTemplate = new TermTemplateQuadComponent(component, type);
+        const template: ITermTemplate = new TermTemplateQuadComponentCast({
+          component,
+          regex: '^(.*)$',
+          replacement: '$1',
+          type,
+        });
         expect(template.getTerm(quad)).toEqual(expected);
       });
     });
 
     it('should replace matching value', () => {
-      const template: ITermTemplate = new TermTemplateQuadComponent('subject', 'Literal', '^ex:(.+)$', '$1');
+      const template: ITermTemplate = new TermTemplateQuadComponentCast({
+        component: 'subject',
+        regex: '^ex:(.+)$',
+        replacement: '$1',
+        type: 'Literal',
+      });
       expect(template.getTerm(quad)).toEqual(DF.literal('s'));
     });
 
     it('should not replace non-matching value', () => {
-      const template: ITermTemplate = new TermTemplateQuadComponent('subject', 'Literal', '^ex2:(.+)$', '$1');
+      const template: ITermTemplate = new TermTemplateQuadComponentCast({
+        component: 'subject',
+        type: 'Literal',
+        regex: '^ex2:(.+)$',
+        replacement: '$1',
+      });
       expect(template.getTerm(quad)).toEqual(DF.literal('ex:s'));
     });
   });

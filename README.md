@@ -204,9 +204,8 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
       {
         "@type": "FragmentationStrategyExceptionEntry",
         "matcher": {
-          "@type": "QuadMatcherComponentValue",
-          "component": "predicate",
-          "valueRegex": "vocabulary/predicate1"
+          "@type": "QuadMatcherPredicate",
+          "predicateRegex": "vocabulary/predicate1"
         },
         "strategy": {
           "@type": "FragmentationStrategyObject"
@@ -215,9 +214,8 @@ except for predicate1 and predicate2 that will be delegated to the object-based 
       {
         "@type": "FragmentationStrategyExceptionEntry",
         "matcher": {
-          "@type": "QuadMatcherComponentValue",
-          "component": "predicate",
-          "valueRegex": "vocabulary/predicate2"
+          "@type": "QuadMatcherPredicate",
+          "predicateRegex": "vocabulary/predicate2"
         },
         "strategy": {
           "@type": "FragmentationStrategyObject"
@@ -572,6 +570,35 @@ Options:
 * `"searchRegex"`: The regex to search for.
 * `"replacementString"`: The string to replace.
 
+#### Remap BlankNode Object to NamedNode Subject Fragment Transformer
+
+A quad transformer that remaps BlankNodes in object position to fragments on the first subject position NamedNodes they appear with.
+This mapper assumes that each object blank node appears with a subject named node.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerBlankToFragment"
+    }
+  ]
+}
+```
+
+For example, for the following triples:
+
+```turtle
+<ex:s> <ex:p1> _:blank .
+_:blank <ex:p2> "o" .
+```
+
+The transformer would output the following:
+
+```turtle
+<ex:s> <ex:p1> <ex:s#blank> .
+<ex:s#blank> <ex:p2> "o" .
+```
+
 #### Remap Resource Identifier Transformer
 
 A quad transformer that matches all resources of the given type,
@@ -640,9 +667,8 @@ The example below will effectively add a reverse of quads with the `containerOf`
     {
       "@type": "QuadTransformerAppendQuad",
       "matcher": {
-        "@type": "QuadMatcherComponentValue",
-        "component": "predicate",
-        "valueRegex": "vocabulary/containerOf$"
+        "@type": "QuadMatcherPredicate",
+        "predicateRegex": "vocabulary/containerOf$"
       },
       "subject": {
         "@type": "TermTemplateQuadComponent",
@@ -684,9 +710,8 @@ A quad transformer that appends a link to matching quads (e.g. match by quad pre
     {
       "@type": "QuadTransformerAppendQuadLink",
       "matcher": {
-        "@type": "QuadMatcherComponentValue",
-        "component": "predicate",
-        "valueRegex": "vocabulary/hasCreator$"
+        "@type": "QuadMatcherPredicate",
+        "predicateRegex": "vocabulary/hasCreator$"
       },
       "predicate": "http://example.org/postsIndex",
       "link": "/posts"
@@ -891,10 +916,9 @@ Options:
 Different strategies for matching quads.
 These matchers can for example be used for `QuadTransformerAppendQuadLink` or `FragmentationStrategyExceptionEntry`.
 
-#### Component Value Matcher
+#### Predicate Matcher
 
-Matches a quad by the provided regex and the specified quad component's value,
-with an optional probability to only match a given share of quads that would otherwise match.
+Matches a quad by the given predicate regex.
 
 ```json
 {
@@ -907,10 +931,8 @@ with an optional probability to only match a given share of quads that would oth
       {
         "@type": "FragmentationStrategyExceptionEntry",
         "matcher": {
-          "@type": "QuadMatcherComponentValue",
-          "valueRegex": "vocabulary/subject1",
-          "component": "subject",
-          "probability": 0.5
+          "@type": "QuadMatcherPredicate",
+          "predicateRegex": "vocabulary/predicate1"
         },
         "strategy": {
           "@type": "FragmentationStrategyObject"
@@ -921,10 +943,33 @@ with an optional probability to only match a given share of quads that would oth
 }
 ```
 
-Options:
-* `"valueRegex"`: Regular expression to use on the term value. Without a capturing group in the regex, the entire falue is used for the probability. When there is a capturing group, the match from that group is used for the probability.
-* `"component"`: The quad component to match, one of `subject`, `predicate`, `object` or `graph`.
-* `"probability"`: The probability that a matching quad actually matches.
+#### Term Matcher
+
+Matches a quad by the given term using the provided regex.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyException",
+    "strategy": {
+      "@type": "FragmentationStrategySubject"
+    },
+    "exceptions": [
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "matcher": {
+          "@type": "QuadMatcherTermValue",
+          "term": "predicate",
+          "regex": "vocabulary/predicate1"
+        },
+        "strategy": {
+          "@type": "FragmentationStrategyObject"
+        }
+      }
+    ]
+  }
+}
+```
 
 #### Resource Type Matcher
 
@@ -999,6 +1044,30 @@ The example below refers to the object of a quad.
 
 Options:
 * `"component"`: The quad component: `subject`, `predicate`, `object`, or `graph`.
+
+#### Quad Component with Term Type Casting
+
+A term template that returns a given quad's component,
+after performing regex-based substitution of the value
+and convertint it to the specificed term type.
+
+The example below refers to the object of a quad.
+
+```json
+{
+  "@type": "TermTemplateQuadComponentCast",
+  "component": "object",
+  "regex": "^(.*)$",
+  "replacement": "$1",
+  "type": "Literal"
+}
+```
+
+Options:
+* `"component"`: The quad component: `subject`, `predicate`, `object`, or `graph`.
+* `"regex"`: The regular expression to replace in the value.
+* `"replacement"`: The replacement value.
+* `"type"`: The term type to output: `Literal`, `BlankNode` or `NamedNode`.
 
 #### Static Named Node.
 

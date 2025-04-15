@@ -1,5 +1,5 @@
 import { DataFactory } from 'rdf-data-factory';
-import { QuadMatcherTermValue } from '../../../lib/quadmatcher/QuadMatcherTermValue';
+import { QuadMatcherPredicate } from '../../../lib/quadmatcher/QuadMatcherPredicate';
 import type { IQuadTransformer } from '../../../lib/transform/IQuadTransformer';
 import { QuadTransformerAppendQuadLink } from '../../../lib/transform/QuadTransformerAppendQuadLink';
 import {
@@ -930,7 +930,7 @@ describe('QuadTransformerCompositeVaryingResource', () => {
             ),
             new QuadTransformerDistinct(
               new QuadTransformerAppendQuadLink(
-                new QuadMatcherTermValue('predicate', 'vocabulary/hasCreator$'),
+                new QuadMatcherPredicate('vocabulary/hasCreator$'),
                 'object',
                 'http://localhost:3000/internal/postsFragmentation',
                 'http://localhost:3000/internal/FragmentationPerResource',
