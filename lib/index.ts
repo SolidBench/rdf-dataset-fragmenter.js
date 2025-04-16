@@ -29,6 +29,7 @@ export * from './summary/DatasetSummaryBloom';
 export * from './summary/DatasetSummaryVoID';
 export * from './transform/termtemplate/ITermTemplate';
 export * from './transform/termtemplate/TermTemplateQuadComponent';
+export * from './transform/termtemplate/TermTemplateQuadComponentLiteral';
 export * from './transform/termtemplate/TermTemplateStaticNamedNode';
 export * from './transform/value/IValueModifier';
 export * from './transform/value/ValueModifierRegexReplaceGroup';
