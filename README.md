@@ -570,6 +570,35 @@ Options:
 * `"searchRegex"`: The regex to search for.
 * `"replacementString"`: The string to replace.
 
+#### Remap BlankNode Object to NamedNode Subject Fragment Transformer
+
+A quad transformer that remaps BlankNodes in object position to fragments on the first subject position NamedNodes they appear with.
+This mapper assumes that each object blank node appears with a subject named node.
+
+```json
+{
+  "transformers": [
+    {
+      "@type": "QuadTransformerBlankToFragment"
+    }
+  ]
+}
+```
+
+For example, for the following triples:
+
+```turtle
+<ex:s> <ex:p1> _:blank .
+_:blank <ex:p2> "o" .
+```
+
+The transformer would output the following:
+
+```turtle
+<ex:s> <ex:p1> <ex:s#blank> .
+<ex:s#blank> <ex:p2> "o" .
+```
+
 #### Remap Resource Identifier Transformer
 
 A quad transformer that matches all resources of the given type,
