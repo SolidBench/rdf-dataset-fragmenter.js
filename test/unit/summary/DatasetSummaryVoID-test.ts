@@ -1,14 +1,9 @@
-import { createHash } from 'node:crypto';
-import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import { termToString } from 'rdf-string';
 import type { IDatasetSummary } from '../../../lib/summary/DatasetSummary';
 import { DatasetSummaryVoID } from '../../../lib/summary/DatasetSummaryVoID';
 import 'jest-rdf';
 
 const DF = new DataFactory();
-
-const hashTerm = (term: RDF.Term): string => createHash('md5').update(termToString(term)).digest('hex');
 
 describe('DatasetSummaryVoID', () => {
   const dataset = DF.namedNode('http://example.org/');
@@ -23,9 +18,9 @@ describe('DatasetSummaryVoID', () => {
     DF.quad(DF.variable('s'), DF.variable('p'), DF.variable('o')),
   ];
 
-  const propertyPartitionRdfType = DF.namedNode(`${dataset.value}#${hashTerm(DatasetSummaryVoID.RDF_TYPE)}`);
-  const propertyPartitionPredicate = DF.namedNode(`${dataset.value}#${hashTerm(quadPredicate)}`);
-  const classPartition = DF.namedNode(`${dataset.value}#${hashTerm(quadClass)}`);
+  const propertyPartitionRdfType = DF.namedNode(`${dataset.value}#${DatasetSummaryVoID.hashString(DatasetSummaryVoID.RDF_TYPE.value)}`);
+  const propertyPartitionPredicate = DF.namedNode(`${dataset.value}#${DatasetSummaryVoID.hashString(quadPredicate.value)}`);
+  const classPartition = DF.namedNode(`${dataset.value}#${DatasetSummaryVoID.hashString(quadClass.value)}`);
 
   let collector: IDatasetSummary;
 

@@ -11,8 +11,6 @@ const streamifyArray = require('streamify-array');
 
 const DF = new DataFactory();
 
-// Jest.mock('../../../lib/io/ParallelFileWriter');
-
 describe('FragmentationStrategyDatasetSummaryBloom', () => {
   const quadsEmpty: RDF.Quad[] = [];
   const quadsNoBnodes = [
@@ -91,23 +89,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsNoBnodes[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsNoBnodes[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsNoBnodes[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsNoBnodes[0].subject.value,
+            quadsNoBnodes[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsNoBnodes[0].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -115,23 +103,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsNoBnodes[2].subject.value,
         DF.quad(
-          DF.namedNode('ex:s2#fad260fe4a45ad63f49b6b9a47907644'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsNoBnodes[2].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s2#e6dad3e7a620cc688224a5451e8bc628'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsNoBnodes[2].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s2#82c6a02b37b658e2ae41a30d0e0f7a70'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsNoBnodes[2].subject.value,
+            quadsNoBnodes[2].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsNoBnodes[2].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -149,23 +127,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnode[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnode[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnode[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnode[0].subject.value,
+            quadsOwnedBnode[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnode[1].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -178,23 +146,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeReverse[1].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeReverse[1].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeReverse[1].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeReverse[1].subject.value,
+            quadsOwnedBnodeReverse[1].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeReverse[0].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -207,23 +165,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeChained[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeChained[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeChained[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeChained[0].subject.value,
+            quadsOwnedBnodeChained[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeChained[3].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -236,23 +184,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeChainedReverse[3].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeChainedReverse[3].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeChainedReverse[3].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeChainedReverse[3].subject.value,
+            quadsOwnedBnodeChainedReverse[3].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeChainedReverse[0].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -265,23 +203,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodes[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodes[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodes[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodes[0].subject.value,
+            quadsOwnedBnodes[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodes[1].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -289,36 +217,32 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodes[2].subject.value,
         DF.quad(
-          DF.namedNode('ex:s2#fad260fe4a45ad63f49b6b9a47907644'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodes[2].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s2#e6dad3e7a620cc688224a5451e8bc628'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodes[2].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s2#82c6a02b37b658e2ae41a30d0e0f7a70'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodes[2].subject.value,
+            quadsOwnedBnodes[2].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodes[3].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
       );
     });
 
-    it('should handle a stream with owned blank nodes in the same document', async() => {
+    it('should handle a stream with multiple owned blank nodes in the same document', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeMultipleSameDoc ]), sink);
       expect(sink.push).toHaveBeenCalledTimes(43);
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleSameDoc[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeMultipleSameDoc[0].subject.value,
+            quadsOwnedBnodeMultipleSameDoc[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeMultipleSameDoc[1].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -326,52 +250,32 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleSameDoc[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleSameDoc[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#37665dc6c30042a0980b056780c6c354'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleSameDoc[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#e70c38b4544f3df3820457c322876cec'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeMultipleSameDoc[0].subject.value,
+            quadsOwnedBnodeMultipleSameDoc[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeMultipleSameDoc[2].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
       );
     });
 
-    it('should handle a stream with owned blank node in multiple documents', async() => {
+    it('should handle a stream with a blank node owned by multiple documents', async() => {
       await strategy.fragment(streamifyArray([ ...quadsOwnedBnodeMultipleDiffDoc ]), sink);
       expect(sink.push).toHaveBeenCalledTimes(66);
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#1ee9da61777dc6a7b1e94de682488194'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
+            quadsOwnedBnodeMultipleDiffDoc[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeMultipleDiffDoc[2].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -379,23 +283,13 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       expect(sink.push).toHaveBeenCalledWith(
         quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
         DF.quad(
-          DF.namedNode('ex:s2#fad260fe4a45ad63f49b6b9a47907644'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s2#e6dad3e7a620cc688224a5451e8bc628'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s2#82c6a02b37b658e2ae41a30d0e0f7a70'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
+            quadsOwnedBnodeMultipleDiffDoc[1].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsOwnedBnodeMultipleDiffDoc[2].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),
@@ -405,18 +299,16 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
     it('should handle a stream unowned blank node, and ignore it', async() => {
       await strategy.fragment(streamifyArray([ ...quadsUnownedBnode ]), sink);
       expect(sink.push).toHaveBeenCalledTimes(23);
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsNoBnodes[0].subject.value,
+      expect(sink.push).not.toHaveBeenCalledWith(
+        quadsUnownedBnode[0].subject.value,
         DF.quad(
-          DF.namedNode('ex:s1#5670a76463f24908dfcba691d6fe9c79'),
-          DatasetSummaryBloom.RDF_TYPE,
-          DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
-        ),
-      );
-      expect(sink.push).toHaveBeenCalledWith(
-        quadsNoBnodes[0].subject.value,
-        DF.quad(
-          DF.namedNode('ex:s1#86f1470729001d9d1238634dbb3c0b02'),
+          DatasetSummaryBloom.createFragmentIri(
+            quadsUnownedBnode[0].subject.value,
+            quadsUnownedBnode[0].subject.value,
+            DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
+            DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE.value,
+            quadsUnownedBnode[1].object.value,
+          ),
           DatasetSummaryBloom.RDF_TYPE,
           DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER,
         ),

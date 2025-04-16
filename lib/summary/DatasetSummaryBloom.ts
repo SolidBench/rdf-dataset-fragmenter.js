@@ -1,10 +1,11 @@
-import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
 import { Bloem } from 'bloem';
-import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArgs } from './DatasetSummary';
+import * as MurmurHash3 from 'imurmurhash';
+import type { IDatasetSummaryArgs, IDatasetSummaryOutput } from './DatasetSummary';
+import { DF, DatasetSummary } from './DatasetSummary';
 
 export class DatasetSummaryBloom extends DatasetSummary {
-  protected readonly iri: string;
+  protected readonly location: string;
   protected readonly hashBits: number;
   protected readonly hashCount: number;
   protected readonly projectedProperties: Map<string, Bloem>;
@@ -44,7 +45,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
 
   public constructor(args: IDatasetSummaryBloomArgs) {
     super(args);
-    this.iri = args.iri;
+    this.location = args.location;
     this.hashBits = args.hashBits;
     this.hashCount = args.hashCount;
     this.projectedProperties = new Map();
@@ -76,8 +77,8 @@ export class DatasetSummaryBloom extends DatasetSummary {
         [ DatasetSummaryBloom.MEM_PROP_PROJECTEDPROPERTY, this.projectedProperties ],
         [ DatasetSummaryBloom.MEM_PROP_PROJECTEDRESOURCE, this.projectedResources ],
       ]);
-      const hashFunctionIri = this.createFragmentIri(
-        this.iri,
+      const hashFunctionIri = DatasetSummaryBloom.createFragmentIri(
+        this.location,
         this.dataset,
         DatasetSummaryBloom.MEM_CLASS_HASHFUNCTION.value,
       );
@@ -94,8 +95,8 @@ export class DatasetSummaryBloom extends DatasetSummary {
       for (const [ projection, projectionMapping ] of projections) {
         for (const [ projectedValue, filter ] of projectionMapping) {
           const bitfieldBase64 = (<Buffer>(<any>filter).bitfield.toBuffer()).toString('base64');
-          const collectionIri = this.createFragmentIri(
-            this.iri,
+          const collectionIri = DatasetSummaryBloom.createFragmentIri(
+            this.location,
             this.dataset,
             DatasetSummaryBloom.MEM_CLASS_MEMBERCOLLECTION.value,
             projection.value,
@@ -106,8 +107,8 @@ export class DatasetSummaryBloom extends DatasetSummary {
             DF.quad(collectionIri, DatasetSummaryBloom.MEM_PROP_SOURCECOLLECTION, DF.namedNode(this.dataset)),
             DF.quad(collectionIri, projection, DF.namedNode(projectedValue)),
           );
-          const filterIri = this.createFragmentIri(
-            this.iri,
+          const filterIri = DatasetSummaryBloom.createFragmentIri(
+            this.location,
             this.dataset,
             DatasetSummaryBloom.MEM_CLASS_BLOOMFILTER.value,
             projection.value,
@@ -139,7 +140,7 @@ export class DatasetSummaryBloom extends DatasetSummary {
         }
       }
     }
-    return { iri: this.iri, quads: output };
+    return { iri: this.location, quads: output };
   }
 
   protected project(map: Map<string, Bloem>, key: string, value: string): void {
@@ -151,20 +152,24 @@ export class DatasetSummaryBloom extends DatasetSummary {
     filter.add(Buffer.from(value));
   }
 
-  protected createFragmentIri(base: string, ...values: string[]): RDF.NamedNode {
-    const hash = createHash('md5');
+  /**
+   * Create a fragment IRI on the provided base,
+   * using a hex digest of the hashes of all additional values provided.
+   */
+  public static createFragmentIri(base: string, ...values: string[]): RDF.NamedNode {
+    const hash = MurmurHash3();
     for (const value of values) {
-      hash.update(value);
+      hash.hash(value);
     }
-    return DF.namedNode(`${base}#${hash.digest('hex')}`);
+    return DF.namedNode(`${base}#${hash.result().toString(16)}`);
   }
 }
 
 export interface IDatasetSummaryBloomArgs extends IDatasetSummaryArgs {
   /**
-   * The IRI of the dataset summary itself.
+   * The location of the Bloom filter.
    */
-  iri: string;
+  location: string;
   /**
    * Bitsize of the Bloom filter.
    */
