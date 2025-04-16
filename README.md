@@ -988,6 +988,24 @@ The example below refers to the object of a quad.
 Options:
 * `"component"`: The quad component: `subject`, `predicate`, `object`, or `graph`.
 
+#### Quad Component Literal
+
+A term template that returns a literal with the given quad component's value.
+
+The example below refers to the object of a quad.
+
+```json
+{
+  "@type": "TermTemplateQuadComponentLiteral",
+  "component": "object"
+}
+```
+
+Options:
+* `"component"`: The quad component: `subject`, `predicate`, `object`, or `graph`.
+* `"datatype"`: The optional datatype URI to assign to the produced literal.
+* `"language"`: The language tag to assign to the produced literal.
+
 #### Static Named Node.
 
 A term template that always returns a Named Node with the given value.
