@@ -243,7 +243,6 @@ A fragmentation strategy that delegates all quads towards a single path.
 
 Fragmentation strategy that generates partial dataset descriptions
 using the standard [VoID vocabulary](https://www.w3.org/TR/void/).
-The dataset URIs are determined based on quad subject values using regular expressions.
 
 ```json
 {
@@ -256,12 +255,13 @@ The dataset URIs are determined based on quad subject values using regular expre
 }
 ```
 
+Options:
+* `"datasetPatterns"`: The regular expressions used on quad subjects to identify datasets.
+
 #### Bloom Filter Fragmentation Strategy
 
-Fragmentation strategy that generates Bloom filters to capture co-occurrence of resources and properties,
+Fragmentation strategy that generates Bloom filters to capture co-occurrence of resources and properties within a dataset,
 using the custom [membership filter vocabulary](http://semweb.mmlab.be/ns/membership).
-The filters are generated per-dataset, where the dataset URI is determined based on quad subject values using regular expressions.
-After generation, the summaries can be re-mapped to a different document URI.
 
 ```json
 {
@@ -278,6 +278,10 @@ After generation, the summaries can be re-mapped to a different document URI.
   }
 }
 ```
+
+Options:
+* `"datasetPatterns"`: The regular expressions used on quad subjects to identify datasets.
+* `"locationPatterns"`: Regular expressions used to group dataset Bloom filters.
 
 ### Quad Sinks
 

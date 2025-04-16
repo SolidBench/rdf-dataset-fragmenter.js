@@ -22,7 +22,7 @@ describe('DatasetSummaryCollectorBloom', () => {
   let collector: IDatasetSummary;
 
   beforeEach(() => {
-    collector = new DatasetSummaryBloom({ hashBits, hashCount, iri: dataset.value, dataset: dataset.value });
+    collector = new DatasetSummaryBloom({ hashBits, hashCount, dataset: dataset.value, location: dataset.value });
   });
 
   it('should properly register quads', async() => {

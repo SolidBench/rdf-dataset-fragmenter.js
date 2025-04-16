@@ -1,7 +1,8 @@
-import { createHash } from 'node:crypto';
 import type * as RDF from '@rdfjs/types';
+import * as MurmurHash3 from 'imurmurhash';
 import { termToString } from 'rdf-string';
-import { DF, DatasetSummary, type IDatasetSummaryOutput, type IDatasetSummaryArgs } from './DatasetSummary';
+import type { IDatasetSummaryOutput, IDatasetSummaryArgs } from './DatasetSummary';
+import { DF, DatasetSummary } from './DatasetSummary';
 
 export class DatasetSummaryVoID extends DatasetSummary {
   // Entire dataset-related data
@@ -34,7 +35,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
   public static readonly VOID_CLASS_PARTITION = DF.namedNode(`${DatasetSummaryVoID.VOID_PREFIX}classPartition`);
   public static readonly VOID_VOCABULARY = DF.namedNode(`${DatasetSummaryVoID.VOID_PREFIX}vocabulary`);
 
-  private static readonly DATASET_REGEX = /#?(\w+)$/u;
+  private static readonly VOCABULARY_TRIM_REGEX = /#?(\w+)$/u;
   /* eslint-enable ts/naming-convention */
 
   public constructor(args: IDatasetSummaryArgs) {
@@ -71,7 +72,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
             this.entitiesByClass.set(quad.object.value, entitiesByClass);
           }
           entitiesByClass.add(subjectString);
-          this.vocabularies.add(this.vocabularyFromIri(quad.object.value));
+          this.vocabularies.add(DatasetSummaryVoID.vocabularyFromIri(quad.object.value));
         }
       }
     }
@@ -96,7 +97,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
         quad.predicate.value,
         (this.totalQuadsByPredicate.get(quad.predicate.value) ?? 0) + 1,
       );
-      this.vocabularies.add(this.vocabularyFromIri(quad.predicate.value));
+      this.vocabularies.add(DatasetSummaryVoID.vocabularyFromIri(quad.predicate.value));
     }
   }
 
@@ -132,7 +133,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
         output.push(DF.quad(datasetIri, DatasetSummaryVoID.VOID_VOCABULARY, DF.namedNode(vocabulary)));
       }
       for (const [ predicate, count ] of this.totalQuadsByPredicate) {
-        const partitionIri = DF.namedNode(`${this.dataset}#${this.hashString(predicate)}`);
+        const partitionIri = DF.namedNode(`${this.dataset}#${DatasetSummaryVoID.hashString(predicate)}`);
         output.push(
           DF.quad(datasetIri, DatasetSummaryVoID.VOID_PROPERTY_PARTITION, partitionIri),
           DF.quad(partitionIri, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
@@ -158,7 +159,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
         }
       }
       for (const [ rdfclass, entities ] of this.entitiesByClass) {
-        const partitionIri = DF.namedNode(`${this.dataset}#${this.hashString(rdfclass)}`);
+        const partitionIri = DF.namedNode(`${this.dataset}#${DatasetSummaryVoID.hashString(rdfclass)}`);
         output.push(
           DF.quad(datasetIri, DatasetSummaryVoID.VOID_CLASS_PARTITION, partitionIri),
           DF.quad(partitionIri, DatasetSummaryVoID.RDF_TYPE, DatasetSummaryVoID.VOID_DATASET),
@@ -173,8 +174,11 @@ export class DatasetSummaryVoID extends DatasetSummary {
     return { iri: this.dataset, quads: output };
   }
 
-  protected hashString(value: string): string {
-    return createHash('md5', { encoding: 'utf8' }).update(value).end().digest('hex');
+  /**
+   * Return the hex digest of the string hash using MurmurHash3.
+   */
+  public static hashString(value: string): string {
+    return MurmurHash3(value).result().toString(16);
   }
 
   /**
@@ -182,7 +186,7 @@ export class DatasetSummaryVoID extends DatasetSummary {
    * https://www.w3.org/TR/void/#vocabularies
    * @param iri The predicate or class IRI
    */
-  protected vocabularyFromIri(iri: string): string {
-    return iri.replace(DatasetSummaryVoID.DATASET_REGEX, '');
+  public static vocabularyFromIri(iri: string): string {
+    return iri.replace(DatasetSummaryVoID.VOCABULARY_TRIM_REGEX, '');
   }
 }
