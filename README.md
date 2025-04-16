@@ -914,6 +914,39 @@ Matches a quad by the given predicate regex.
 }
 ```
 
+#### Term Matcher
+
+Matches a quad by the given term using the provided regex.
+
+```json
+{
+  "fragmentationStrategy": {
+    "@type": "FragmentationStrategyException",
+    "strategy": {
+      "@type": "FragmentationStrategySubject"
+    },
+    "exceptions": [
+      {
+        "@type": "FragmentationStrategyExceptionEntry",
+        "matcher": {
+          "@type": "QuadMatcherTermValue",
+          "term": "predicate",
+          "regex": "vocabulary/predicate1"
+        },
+        "strategy": {
+          "@type": "FragmentationStrategyObject"
+        }
+      }
+    ]
+  }
+}
+```
+
+Options:
+* `"term""`: The term to examine: `subject`, `predicate`, `object` or `graph`.
+* `"regex""`: The regular expression that the term has to match.
+* `"probability"`: The probability of actually registering the match, defaults to `1.0`.
+
 #### Resource Type Matcher
 
 A quad matcher that matches all resources of the given type.
