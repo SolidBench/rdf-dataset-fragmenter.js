@@ -41,7 +41,7 @@ describe('QuadMatcherTermValue', () => {
         regex: '^ex:s',
         probability,
       });
-      const sample = 400;
+      const sample = 1_000;
       let matched = 0;
       for (let i = 0; i < sample; i++) {
         const quad = DF.quad(DF.namedNode(`ex:s${randomBytes(16).toString('hex')}`), quad1.predicate, quad1.object);
