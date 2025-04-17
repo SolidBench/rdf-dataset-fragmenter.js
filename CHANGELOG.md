@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.9.0"></a>
+## [v2.9.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.8.0...v2.9.0) - 2025-04-17
+
+### Added
+* [Add TermTemplateQuadComponentLiteral](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/6e15d4d587a2895eaa96c11c5b702cc7fdbb464d)
+* [Add QuadTransformerBlankToFragment](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/302fa3ec60dc0c8f581ab95fbbf225cc07d9b149)
+* [Add QuadMatcherTermValue](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/873ce0a7d28d7ca322065c4bf97451f902a64c8a)
+
+### Changed
+* [Clean-up VoID and Bloom filter generation (#49)](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/1c26e23dd9c7748aee9f47bce82ab56b2c7c29be)
+
 <a name="v2.8.0"></a>
 ## [v2.8.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.7.1...v2.8.0) - 2024-10-15
 
