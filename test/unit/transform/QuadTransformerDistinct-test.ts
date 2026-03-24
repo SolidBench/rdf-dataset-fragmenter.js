@@ -127,5 +127,13 @@ describe('QuadTransformerDistinct', () => {
       transformer.end!();
       expect(subtransformer.end).toHaveBeenCalledTimes(1);
     });
+
+    it('does not throw when subtransformer has no end method', async() => {
+      const subtransformer = {
+        transform: jest.fn(),
+      };
+      transformer = new QuadTransformerDistinct(subtransformer);
+      expect(() => transformer.end!()).not.toThrow();
+    });
   });
 });

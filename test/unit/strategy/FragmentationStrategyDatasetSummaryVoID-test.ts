@@ -275,5 +275,13 @@ describe('FragmentationStrategyDatasetSummaryVoID', () => {
       };
       await expect(strategy.fragment(stream, sink)).rejects.toThrow(new Error('Error in stream'));
     });
+
+    it('should ignore quads with subjects that do not match any dataset pattern', async() => {
+      const quadsNoMatch = [
+        DF.quad(DF.namedNode('http://other.example.org/resource'), DF.namedNode('ex:p'), DF.namedNode('ex:o')),
+      ];
+      await strategy.fragment(streamifyArray([ ...quadsNoMatch ]), sink);
+      expect(sink.push).not.toHaveBeenCalled();
+    });
   });
 });

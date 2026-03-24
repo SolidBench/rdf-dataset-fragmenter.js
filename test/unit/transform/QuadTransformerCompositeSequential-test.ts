@@ -59,4 +59,20 @@ describe('QuadTransformerCompositeSequential', () => {
       });
     });
   });
+
+  describe('over a transformer without an end method', () => {
+    beforeEach(() => {
+      transformer = new QuadTransformerCompositeSequential([
+        {
+          transform: jest.fn(quad => [ quad ]),
+        },
+      ]);
+    });
+
+    describe('end', () => {
+      it('should not throw when subtransformer has no end method', async() => {
+        expect(() => transformer.end()).not.toThrow();
+      });
+    });
+  });
 });

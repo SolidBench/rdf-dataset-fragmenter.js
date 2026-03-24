@@ -40,6 +40,20 @@ describe('QuadTransformerBlankToNamed', () => {
           ),
         ]);
       });
+
+      it('should not modify a blank node that does not match the regex', async() => {
+        expect(transformer.transform(DF.quad(
+          DF.blankNode('other000098'),
+          DF.namedNode('ex:p'),
+          DF.literal('o'),
+        ))).toEqual([
+          DF.quad(
+            DF.blankNode('other000098'),
+            DF.namedNode('ex:p'),
+            DF.literal('o'),
+          ),
+        ]);
+      });
     });
   });
 
