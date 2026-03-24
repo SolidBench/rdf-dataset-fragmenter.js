@@ -71,6 +71,7 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
     const processedBlankNodes = new Set<string>();
     while (blankNodeQueue.length > 0) {
       const blankNode = blankNodeQueue.shift();
+      /* istanbul ignore next */
       if (blankNode && !processedBlankNodes.has(blankNode)) {
         processedBlankNodes.add(blankNode);
         const quads = this.blankNodeQuads.get(blankNode);

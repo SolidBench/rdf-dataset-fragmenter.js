@@ -178,4 +178,44 @@ describe('DatasetSummaryVoID', () => {
       }
     }
   });
+
+  it('should handle quads with a non-NamedNode predicate and NamedNode subject', async() => {
+    collector.register(DF.quad(DF.namedNode('ex:s'), <any> DF.variable('p'), DF.namedNode('ex:o')));
+    // The predicate is not a NamedNode, so no property partition is created, but the quad is counted
+    const result = collector.serialize().quads;
+    expect(result).toEqual(expect.arrayContaining([
+      DF.quad(dataset, DatasetSummaryVoID.VOID_TRIPLES, DF.literal('1', DatasetSummaryVoID.XSD_INTEGER)),
+    ]));
+    expect(result.some(q => q.predicate.equals(DatasetSummaryVoID.VOID_PROPERTY_PARTITION))).toBe(false);
+  });
+
+  it('should handle two quads with rdf:type and the same class', async() => {
+    collector.register(DF.quad(DF.namedNode('ex:s1'), DatasetSummaryVoID.RDF_TYPE, quadClass));
+    collector.register(DF.quad(DF.namedNode('ex:s2'), DatasetSummaryVoID.RDF_TYPE, quadClass));
+    const result = collector.serialize().quads;
+    const classPartitionNode = DF.namedNode(`${dataset.value}#${DatasetSummaryVoID.hashString(quadClass.value)}`);
+    expect(result).toEqual(expect.arrayContaining([
+      DF.quad(
+        classPartitionNode,
+        DatasetSummaryVoID.VOID_ENTITIES,
+        DF.literal('2', DatasetSummaryVoID.XSD_INTEGER),
+      ),
+    ]));
+  });
+
+  it('should omit distinct subjects/objects in predicate partition when subject and object are variables', async() => {
+    collector.register(DF.quad(<any> DF.variable('s'), DF.namedNode('ex:p'), <any> DF.variable('o')));
+    const result = collector.serialize().quads;
+    const propertyPartition = DF.namedNode(`${dataset.value}#${DatasetSummaryVoID.hashString('ex:p')}`);
+    // The predicate partition should exist but have no distinctSubjects or distinctObjects
+    expect(result).toEqual(expect.arrayContaining([
+      DF.quad(propertyPartition, DatasetSummaryVoID.VOID_PROPERTY, DF.namedNode('ex:p')),
+    ]));
+    expect(result).not.toEqual(expect.arrayContaining([
+      DF.quad(propertyPartition, DatasetSummaryVoID.VOID_DISTINCT_SUBJECTS, expect.anything()),
+    ]));
+    expect(result).not.toEqual(expect.arrayContaining([
+      DF.quad(propertyPartition, DatasetSummaryVoID.VOID_DISTINCT_OBJECTS, expect.anything()),
+    ]));
+  });
 });
