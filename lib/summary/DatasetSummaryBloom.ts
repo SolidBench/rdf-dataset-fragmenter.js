@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import { Bloem } from 'bloem';
-import * as MurmurHash3 from 'imurmurhash';
+import MurmurHash3 from 'imurmurhash';
 import type { IDatasetSummaryArgs, IDatasetSummaryOutput } from './DatasetSummary';
 import { DF, DatasetSummary } from './DatasetSummary';
 

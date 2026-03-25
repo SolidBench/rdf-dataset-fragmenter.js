@@ -1,9 +1,11 @@
 import { unlink } from 'node:fs/promises';
 import { basename, resolve, dirname } from 'node:path';
 import { PassThrough } from 'node:stream';
-import * as Docker from 'dockerode';
-import * as streamToString from 'stream-to-string';
+import Docker from 'dockerode';
 import { QuadSinkFile, type IQuadSinkFileOptions } from './QuadSinkFile';
+
+// eslint-disable-next-line ts/no-require-imports,ts/no-var-requires,ts/no-unsafe-assignment
+const streamToString = require('stream-to-string');
 
 const HDTCPP_MOUNT_PATH = '/tmp/convert';
 const HDTCPP_DOCKER_IMAGE = 'rdfhdt/hdt-cpp:latest';
@@ -74,7 +76,7 @@ export class QuadSinkHdt extends QuadSinkFile {
       },
     };
     const passThrough = new PassThrough();
-    const passThroughToString = streamToString(passThrough);
+    const passThroughToString: Promise<string> = <Promise<string>> streamToString(passThrough);
     // eslint-disable-next-line ts/naming-convention
     const resultStatus = (<[ { StatusCode: number }, any ]> await this.docker.run(
       HDTCPP_DOCKER_IMAGE,

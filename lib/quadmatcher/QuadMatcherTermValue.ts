@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import * as MurmurHash3 from 'imurmurhash';
+import MurmurHash3 from 'imurmurhash';
 import type { IQuadMatcher } from './IQuadMatcher';
 
 // MurmurHash3 produces 32-bit (unsigned, according to the docs) integer values
