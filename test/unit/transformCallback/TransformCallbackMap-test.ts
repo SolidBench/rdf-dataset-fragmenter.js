@@ -1,9 +1,25 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
+import { join } from 'node:path';
 import { DataFactory } from 'rdf-data-factory';
 import type { IQuadMatcher } from '../../../lib/quadmatcher/IQuadMatcher';
 import { TransformCallbackMap } from '../../../lib/transformCallback/TransformCallbackMap';
 
 const DF = new DataFactory();
+async function expectFileContentEventually(filePath: string, expected: string): Promise<void> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      const content = await fs.promises.readFile(filePath, 'utf8');
+      if (content === expected) {
+        return;
+      }
+    } catch {
+      // Ignored while waiting for file flush.
+    }
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  await expect(fs.promises.readFile(filePath, 'utf8')).resolves.toBe(expected);
+}
 
 describe('TransformCallbackMap', () => {
   let matcher: IQuadMatcher;
@@ -18,13 +34,17 @@ describe('TransformCallbackMap', () => {
     };
     fieldToMap = 'subject';
     columns = [ 'original', 'transformed' ];
-    file = `/tmp/rdf-dataset-fragmenter-tests/map-${Date.now()}-${Math.random()}.csv`;
+    file = join(os.tmpdir(), `rdf-dataset-fragmenter-tests-map-${Date.now()}-${Math.random()}.csv`);
     transformCallbackMap = new TransformCallbackMap(
       [ matcher ],
       fieldToMap,
       columns,
       file,
     );
+  });
+
+  afterEach(async() => {
+    await fs.promises.unlink(file).catch(() => {});
   });
 
   it('should be instantiated correctly', () => {
@@ -41,9 +61,8 @@ describe('TransformCallbackMap', () => {
   it('should initialize stream and write header', async() => {
     await transformCallbackMap.initializeCallback();
     transformCallbackMap.end();
-    await new Promise(resolve => setTimeout(resolve, 20));
 
-    await expect(fs.promises.readFile(file, 'utf8')).resolves.toBe('original,transformed\n');
+    await expectFileContentEventually(file, 'original,transformed\n');
   });
 
   it('should write mapped values for matching transformed quads', async() => {
@@ -67,10 +86,8 @@ describe('TransformCallbackMap', () => {
 
     await transformCallbackMap.run(original, [ transformedMatch, transformedNoMatch ]);
     transformCallbackMap.end();
-    await new Promise(resolve => setTimeout(resolve, 20));
 
-    await expect(fs.promises.readFile(file, 'utf8'))
-      .resolves.toBe('original,transformed\nhttp://example.org/s-original,http://example.org/s-transformed\n');
+    await expectFileContentEventually(file, 'original,transformed\nhttp://example.org/s-original,http://example.org/s-transformed\n');
   });
 
   it('should not write mapped values if no transformed quads match', async() => {
@@ -89,9 +106,8 @@ describe('TransformCallbackMap', () => {
 
     await transformCallbackMap.run(original, [ transformedNoMatch ]);
     transformCallbackMap.end();
-    await new Promise(resolve => setTimeout(resolve, 20));
 
-    await expect(fs.promises.readFile(file, 'utf8')).resolves.toBe('original,transformed\n');
+    await expectFileContentEventually(file, 'original,transformed\n');
   });
 
   it('should not fail ending before initialization', () => {
