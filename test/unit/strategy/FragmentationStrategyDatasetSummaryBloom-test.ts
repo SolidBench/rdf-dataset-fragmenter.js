@@ -322,5 +322,16 @@ describe('FragmentationStrategyDatasetSummaryBloom', () => {
       };
       await expect(strategy.fragment(stream, sink)).rejects.toThrow(new Error('Error in stream'));
     });
+
+    it('should handle a stream when location pattern does not match the dataset', async() => {
+      const strategyNoLocationMatch = new FragmentationStrategyDatasetSummaryBloom({
+        hashBits: 256,
+        hashCount: 4,
+        datasetPatterns: [ '^(ex:[a-z0-9]+)$' ],
+        locationPatterns: [ '^http://.*$' ],
+      });
+      await strategyNoLocationMatch.fragment(streamifyArray([ ...quadsNoBnodes ]), sink);
+      expect(sink.push).toHaveBeenCalledTimes(66);
+    });
   });
 });

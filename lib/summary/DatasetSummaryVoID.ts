@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import * as MurmurHash3 from 'imurmurhash';
+import MurmurHash3 from 'imurmurhash';
 import { termToString } from 'rdf-string';
 import type { IDatasetSummaryOutput, IDatasetSummaryArgs } from './DatasetSummary';
 import { DF, DatasetSummary } from './DatasetSummary';

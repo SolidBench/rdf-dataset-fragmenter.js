@@ -70,23 +70,21 @@ export abstract class FragmentationStrategyDatasetSummary<T extends IDatasetSumm
     const blankNodeQueue = [ ...this.blankNodeDatasets.keys() ];
     const processedBlankNodes = new Set<string>();
     while (blankNodeQueue.length > 0) {
-      const blankNode = blankNodeQueue.shift();
-      if (blankNode && !processedBlankNodes.has(blankNode)) {
-        processedBlankNodes.add(blankNode);
-        const quads = this.blankNodeQuads.get(blankNode);
-        if (quads) {
-          const datasets = this.blankNodeDatasets.get(blankNode)!;
-          for (const quad of quads) {
-            for (const dataset of datasets) {
-              this.summaries.get(dataset)!.register(quad);
-              if (
-                quad.object.termType === 'BlankNode' &&
-                !this.blankNodeDatasets.has(quad.object.value) &&
-                !processedBlankNodes.has(quad.object.value)
-              ) {
-                this.blankNodeDatasets.set(quad.object.value, new Set<string>([ dataset ]));
-                blankNodeQueue.push(quad.object.value);
-              }
+      const blankNode = blankNodeQueue.shift()!;
+      processedBlankNodes.add(blankNode);
+      const quads = this.blankNodeQuads.get(blankNode);
+      if (quads) {
+        const datasets = this.blankNodeDatasets.get(blankNode)!;
+        for (const quad of quads) {
+          for (const dataset of datasets) {
+            this.summaries.get(dataset)!.register(quad);
+            if (
+              quad.object.termType === 'BlankNode' &&
+              !this.blankNodeDatasets.has(quad.object.value) &&
+              !processedBlankNodes.has(quad.object.value)
+            ) {
+              this.blankNodeDatasets.set(quad.object.value, new Set<string>([ dataset ]));
+              blankNodeQueue.push(quad.object.value);
             }
           }
         }

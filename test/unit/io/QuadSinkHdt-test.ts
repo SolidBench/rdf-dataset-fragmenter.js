@@ -1,7 +1,7 @@
 import { unlink } from 'node:fs/promises';
 import { basename, dirname } from 'node:path';
 import { PassThrough } from 'node:stream';
-import * as Docker from 'dockerode';
+import Docker from 'dockerode';
 import type { IQuadSink } from '../../../lib/io/IQuadSink';
 import { QuadSinkHdt } from '../../../lib/io/QuadSinkHdt';
 

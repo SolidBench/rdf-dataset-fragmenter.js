@@ -1,12 +1,13 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "target": "es2021",
+    "target": "es2022",
     "lib": [
-      "es2021",
+      "es2022",
       "dom"
     ],
     "module": "commonjs",
+    "types": ["node", "jest"],
     "strict": true,
     "noImplicitAny": true,
     "declaration": true,

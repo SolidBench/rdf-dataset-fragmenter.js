@@ -46,6 +46,19 @@ describe('QuadTransformerCompositeVaryingResource', () => {
         expect(subTransformer1.end).toHaveBeenCalledTimes(1);
         expect(subTransformer2.end).toHaveBeenCalledTimes(1);
       });
+
+      it('should not throw when subtransformer has no end method', async() => {
+        transformer = new QuadTransformerCompositeVaryingResource(
+          'vocabulary/Post$',
+          'vocabulary/hasCreator$',
+          [
+            {
+              transform: jest.fn(quad => [ quad ]),
+            },
+          ],
+        );
+        expect(() => transformer.end()).not.toThrow();
+      });
     });
 
     describe('transform', () => {
