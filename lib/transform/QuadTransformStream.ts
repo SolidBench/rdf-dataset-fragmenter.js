@@ -1,7 +1,7 @@
 import type { TransformCallback } from 'node:stream';
 import { Transform } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
-import type { ITransformCallback } from '../transformCallbacks/ITransformCallback';
+import type { ITransformCallback } from '../transformCallback/ITransformCallback';
 import type { IQuadTransformer } from './IQuadTransformer';
 
 /**

@@ -5,7 +5,7 @@ import type { IQuadSource } from './io/IQuadSource';
 import type { IFragmentationStrategy } from './strategy/IFragmentationStrategy';
 import type { IQuadTransformer } from './transform/IQuadTransformer';
 import { QuadTransformStream } from './transform/QuadTransformStream';
-import type { ITransformCallback } from './transformCallbacks/ITransformCallback';
+import type { ITransformCallback } from './transformCallback/ITransformCallback';
 
 /**
  * Fragments quads from a given source into a given sink.
