@@ -1,40 +1,55 @@
 import * as fs from 'node:fs';
-import * as os from 'node:os';
-import { join } from 'node:path';
+import * as mkdirpModule from 'mkdirp';
 import { DataFactory } from 'rdf-data-factory';
 import type { IQuadMatcher } from '../../../lib/quadmatcher/IQuadMatcher';
 import { TransformCallbackMap } from '../../../lib/transformCallback/TransformCallbackMap';
 
 const DF = new DataFactory();
-async function expectFileContentEventually(filePath: string, expected: string): Promise<void> {
-  for (let attempt = 0; attempt < 20; attempt++) {
-    try {
-      const content = await fs.promises.readFile(filePath, 'utf8');
-      if (content === expected) {
-        return;
-      }
-    } catch {
-      // Ignored while waiting for file flush.
-    }
-    await new Promise(resolve => setTimeout(resolve, 10));
-  }
-  await expect(fs.promises.readFile(filePath, 'utf8')).resolves.toBe(expected);
-}
+
+jest.mock<typeof import('node:fs')>('node:fs', () => ({
+  ...jest.requireActual<typeof import('node:fs')>('node:fs'),
+  createWriteStream: jest.fn(),
+}));
 
 describe('TransformCallbackMap', () => {
   let matcher: IQuadMatcher;
   let fieldToMap: 'subject' | 'predicate' | 'object' | 'graph';
   let columns: string[];
   let file: string;
+  let createWriteStreamMock: jest.MockedFunction<typeof fs.createWriteStream>;
+  let mkdirpMock: jest.SpyInstance;
+  let onMock: jest.Mock;
+  let writeMock: jest.Mock;
+  let endMock: jest.Mock;
   let transformCallbackMap: TransformCallbackMap;
 
   beforeEach(() => {
+    onMock = jest.fn();
+    writeMock = jest.fn();
+    endMock = jest.fn();
+    const fileStreamMock: any = {
+      on: onMock,
+      write: writeMock,
+      end: endMock,
+    };
+    onMock.mockImplementation((event: string, listener: (...args: any[]) => void) => {
+      if (event === 'open') {
+        listener();
+      }
+      return fileStreamMock;
+    });
+
+    createWriteStreamMock = <jest.MockedFunction<typeof fs.createWriteStream>> fs.createWriteStream;
+    createWriteStreamMock.mockReturnValue(fileStreamMock);
+    mkdirpMock = jest.spyOn(mkdirpModule, 'mkdirp');
+    mkdirpMock.mockResolvedValue(undefined);
+
     matcher = {
       matches: jest.fn(quad => quad.object.value === 'http://example.org/matched'),
     };
     fieldToMap = 'subject';
     columns = [ 'original', 'transformed' ];
-    file = join(os.tmpdir(), `rdf-dataset-fragmenter-tests-map-${Date.now()}-${Math.random()}.csv`);
+    file = '/mock/output.csv';
     transformCallbackMap = new TransformCallbackMap(
       [ matcher ],
       fieldToMap,
@@ -43,8 +58,8 @@ describe('TransformCallbackMap', () => {
     );
   });
 
-  afterEach(async() => {
-    await fs.promises.unlink(file).catch(() => {});
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be instantiated correctly', () => {
@@ -60,9 +75,9 @@ describe('TransformCallbackMap', () => {
 
   it('should initialize stream and write header', async() => {
     await transformCallbackMap.initializeCallback();
-    transformCallbackMap.end();
-
-    await expectFileContentEventually(file, 'original,transformed\n');
+    expect(mkdirpMock).toHaveBeenCalledWith('/mock');
+    expect(createWriteStreamMock).toHaveBeenCalledWith('/mock/output.csv');
+    expect(writeMock).toHaveBeenCalledWith('original,transformed\n');
   });
 
   it('should write mapped values for matching transformed quads', async() => {
@@ -85,9 +100,7 @@ describe('TransformCallbackMap', () => {
     );
 
     await transformCallbackMap.run(original, [ transformedMatch, transformedNoMatch ]);
-    transformCallbackMap.end();
-
-    await expectFileContentEventually(file, 'original,transformed\nhttp://example.org/s-original,http://example.org/s-transformed\n');
+    expect(writeMock).toHaveBeenCalledWith('http://example.org/s-original,http://example.org/s-transformed\n');
   });
 
   it('should not write mapped values if no transformed quads match', async() => {
@@ -105,9 +118,14 @@ describe('TransformCallbackMap', () => {
     );
 
     await transformCallbackMap.run(original, [ transformedNoMatch ]);
-    transformCallbackMap.end();
+    expect(writeMock).toHaveBeenCalledTimes(1);
+    expect(writeMock).toHaveBeenCalledWith('original,transformed\n');
+  });
 
-    await expectFileContentEventually(file, 'original,transformed\n');
+  it('should end initialized file stream', async() => {
+    await transformCallbackMap.initializeCallback();
+    transformCallbackMap.end();
+    expect(endMock).toHaveBeenCalledTimes(1);
   });
 
   it('should not fail ending before initialization', () => {
