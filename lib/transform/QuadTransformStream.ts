@@ -28,21 +28,43 @@ export class QuadTransformStream extends Transform {
       }
       quads = newQuads;
     }
-    if (this.transformCallback) {
-      for (const callback of this.transformCallback) {
-        // eslint-disable-next-line ts/no-floating-promises
-        callback.run(quad, quads);
-      }
-    }
+    // if (this.transformCallback) {
+    //   for (const callback of this.transformCallback) {
+    //     // eslint-disable-next-line ts/no-floating-promises
+    //     callback.run(quad, quads);
+    //   }
+    // }
     return quads;
   }
 
   // eslint-disable-next-line ts/naming-convention
   public _transform(quad: RDF.Quad, encoding: BufferEncoding, callback: TransformCallback): void {
-    for (const transformedQuad of this.runTransformers(quad)) {
-      this.push(transformedQuad);
+    try {
+      const transformedQuads = this.runTransformers(quad);
+      if (this.transformCallback) {
+        const promises = this.transformCallback.map(
+          cb => cb.run(quad, transformedQuads)
+        );
+        Promise.all(promises)
+          .then(() => {
+            for (const transformedQuad of transformedQuads) {
+              this.push(transformedQuad);
+            }
+            callback(); 
+          })
+          .catch((error) => {
+            callback(error);
+          });
+      } else {
+        for (const transformedQuad of transformedQuads) {
+          this.push(transformedQuad);
+        }
+        callback();
+      }
+    } catch (error) {
+      // Catch any synchronous errors from runTransformers
+      callback(error instanceof Error ? error : new Error(String(error)));
     }
-    callback();
   }
 
   // eslint-disable-next-line ts/naming-convention
