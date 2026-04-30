@@ -28,42 +28,35 @@ export class QuadTransformStream extends Transform {
       }
       quads = newQuads;
     }
-    // if (this.transformCallback) {
-    //   for (const callback of this.transformCallback) {
-    //     // eslint-disable-next-line ts/no-floating-promises
-    //     callback.run(quad, quads);
-    //   }
-    // }
     return quads;
   }
 
   // eslint-disable-next-line ts/naming-convention
   public _transform(quad: RDF.Quad, encoding: BufferEncoding, callback: TransformCallback): void {
-    try {
-      const transformedQuads = this.runTransformers(quad);
-      if (this.transformCallback) {
-        const promises = this.transformCallback.map(
-          cb => cb.run(quad, transformedQuads)
-        );
-        Promise.all(promises)
-          .then(() => {
-            for (const transformedQuad of transformedQuads) {
-              this.push(transformedQuad);
-            }
-            callback(); 
-          })
-          .catch((error) => {
-            callback(error);
-          });
-      } else {
-        for (const transformedQuad of transformedQuads) {
-          this.push(transformedQuad);
-        }
-        callback();
+    const transformedQuads = this.runTransformers(quad);
+    // If we have a transformCallback, we need to gather the
+    // promises run them and only indicate we're done
+    // with the _transform call after they resolve
+    if (this.transformCallback) {
+      const promises = this.transformCallback.map(
+        cb => cb.run(quad, transformedQuads),
+      );
+      Promise.all(promises)
+        .then(() => {
+          for (const transformedQuad of transformedQuads) {
+            this.push(transformedQuad);
+          }
+          callback();
+        })
+        .catch((error: Error | null | undefined) => {
+          const err = error instanceof Error ? error : new Error(String(error));
+          callback(err);
+        });
+    } else {
+      for (const transformedQuad of transformedQuads) {
+        this.push(transformedQuad);
       }
-    } catch (error) {
-      // Catch any synchronous errors from runTransformers
-      callback(error instanceof Error ? error : new Error(String(error)));
+      callback();
     }
   }
 
