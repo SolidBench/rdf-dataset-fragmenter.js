@@ -1108,15 +1108,24 @@ The mapping is written to a CSV file.
   "transformCallback": [
     {
       "@type": "TransformCallbackMap",
+      "file": "out-fragments/transformed-activities.csv",
+      "fieldToMap": "subject",
+      "columns": [
+        "originalSubject",
+        "mappedSubject"
+      ],
       "matchers": [
         {
-          "@type": "QuadMatcherPredicate",
-          "predicateRegex": "vocabulary/id$"
+          "@type": "QuadMatcherResourceType",
+          "typeRegex": "vocabulary/Post$",
+          "matchFullResource": false
+        },
+        {
+          "@type": "QuadMatcherResourceType",
+          "typeRegex": "vocabulary/Comment$",
+          "matchFullResource": false
         }
-      ],
-      "fieldToMap": "subject",
-      "columns": ["originalSubject", "mappedSubject"],
-      "file": "output/subject-mapping.csv"
+      ]
     }
   ]
 }
