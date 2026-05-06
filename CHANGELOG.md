@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v2.10.0"></a>
+## [v2.10.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.9.0...v2.10.0) - 2026-05-06
+
+### Added
+* [Add callback after quad transforms (#53)](https://github.com/SolidBench/rdf-dataset-fragmenter.js/commit/43f8dd1761535d3786262bd7d13be63611ec6396)
+
 <a name="v2.9.0"></a>
 ## [v2.9.0](https://github.com/SolidBench/rdf-dataset-fragmenter.js/compare/v2.8.0...v2.9.0) - 2025-04-17
 
