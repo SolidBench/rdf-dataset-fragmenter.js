@@ -157,5 +157,24 @@ describe('Fragmenter', () => {
       expect(fragmentationStrategy.fragment).toHaveBeenCalledWith(expect.anything(), quadSink);
       expect(quadSink.close).toHaveBeenCalledTimes(1);
     });
+
+    it('should initialize and end transform callbacks', async() => {
+      const callback = {
+        initializeCallback: jest.fn(async() => {}),
+        run: jest.fn(async() => {}),
+        end: jest.fn(),
+      };
+      fragmenter = new Fragmenter({
+        quadSource,
+        fragmentationStrategy,
+        quadSink,
+        transformCallback: [ callback ],
+      });
+
+      await fragmenter.fragment();
+
+      expect(callback.initializeCallback).toHaveBeenCalledTimes(1);
+      expect(callback.end).toHaveBeenCalledTimes(1);
+    });
   });
 });

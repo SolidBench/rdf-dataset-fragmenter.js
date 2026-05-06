@@ -52,5 +52,7 @@ export * from './transform/QuadTransformerRemapResourceIdentifier';
 export * from './transform/QuadTransformerReplaceIri';
 export * from './transform/QuadTransformerSetIriExtension';
 export * from './transform/QuadTransformerTerms';
+export * from './transformCallback/ITransformCallback';
+export * from './transformCallback/TransformCallbackMap';
 export * from './CliRunner';
 export * from './Fragmenter';

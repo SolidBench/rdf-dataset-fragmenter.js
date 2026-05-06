@@ -65,6 +65,7 @@ The important parts in this config file are:
 * `"fragmentationStrategy"`: The strategy that will be employed for fragmentation.
 * `"quadSink"`: The target into which fragmented RDF triples/quads will be written from.
 * `"transformers"`: Optional transformations over the quad stream.
+* `"transformCallback"`: Optional callbacks to execute after each quad transformation, e.g. to record mappings between original and transformed IRIs.
 
 In this example, the config file will read from the `"path/to/dataset.ttl"` file,
 employ subject-based fragmentation, and will write into files in the `"output/"` directory.
@@ -1085,6 +1086,63 @@ A term template that always returns a Named Node with the given value.
 
 Options:
 * `"value"`: The IRI value of the Named Node.
+
+### Transform Callbacks
+
+__Optional__
+
+A transform callback is invoked after each quad has been transformed by the configured transformers.
+It receives both the original quad and the list of transformed quads,
+enabling post-transformation operations such as recording a mapping between original and transformed IRIs to a file.
+
+Transform callbacks are configured via the top-level `"transformCallback"` array in the config file.
+
+#### Map Transform Callback
+
+A transform callback that records a mapping between a field (e.g. `subject`) of the original quad
+and the corresponding field of all transformed quads that match the given matchers.
+The mapping is written to a CSV file.
+
+```json
+{
+  "transformCallback": [
+    {
+      "@type": "TransformCallbackMap",
+      "file": "out-fragments/transformed-activities.csv",
+      "fieldToMap": "subject",
+      "columns": [
+        "originalSubject",
+        "mappedSubject"
+      ],
+      "matchers": [
+        {
+          "@type": "QuadMatcherResourceType",
+          "typeRegex": "vocabulary/Post$",
+          "matchFullResource": false
+        },
+        {
+          "@type": "QuadMatcherResourceType",
+          "typeRegex": "vocabulary/Comment$",
+          "matchFullResource": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+Options:
+* `"matchers"`: A list of quad matchers. Only transformed quads that match at least one matcher will be recorded.
+* `"fieldToMap"`: The quad field to record for both original and transformed quads. One of `subject`, `predicate`, `object`, or `graph`.
+* `"columns"`: The CSV header columns. The first column names the original-quad field, the second names the transformed-quad field.
+* `"file"`: The path of the CSV file to write the mapping to.
+
+Example output of `output/subject-mapping.csv`:
+```
+originalSubject,mappedSubject
+http://www.ldbc.eu/ldbc_socialnet/1.0/data/post00000000618475290624,http://solidbench-server:3000/pods/00000000000000000933/posts#618475290624
+http://www.ldbc.eu/ldbc_socialnet/1.0/data/comm00000000618475290625,http://solidbench-server:3000/pods/00000010995116278291/comments/2011-08-17#618475290625
+```
 
 ## Extend
 

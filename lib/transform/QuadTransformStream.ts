@@ -1,6 +1,7 @@
 import type { TransformCallback } from 'node:stream';
 import { Transform } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
+import type { ITransformCallback } from '../transformCallback/ITransformCallback';
 import type { IQuadTransformer } from './IQuadTransformer';
 
 /**
@@ -8,10 +9,12 @@ import type { IQuadTransformer } from './IQuadTransformer';
  */
 export class QuadTransformStream extends Transform {
   private readonly transformers: IQuadTransformer[];
+  private readonly transformCallback?: ITransformCallback[] | undefined;
 
-  public constructor(transformers: IQuadTransformer[]) {
+  public constructor(transformers: IQuadTransformer[], callback?: ITransformCallback[]) {
     super({ objectMode: true });
     this.transformers = transformers;
+    this.transformCallback = callback;
   }
 
   public runTransformers(quad: RDF.Quad): RDF.Quad[] {
@@ -30,10 +33,31 @@ export class QuadTransformStream extends Transform {
 
   // eslint-disable-next-line ts/naming-convention
   public _transform(quad: RDF.Quad, encoding: BufferEncoding, callback: TransformCallback): void {
-    for (const transformedQuad of this.runTransformers(quad)) {
-      this.push(transformedQuad);
+    const transformedQuads = this.runTransformers(quad);
+    // If we have a transformCallback, we need to gather the
+    // promises run them and only indicate we're done
+    // with the _transform call after they resolve
+    if (this.transformCallback) {
+      const promises = this.transformCallback.map(
+        cb => cb.run(quad, transformedQuads),
+      );
+      Promise.all(promises)
+        .then(() => {
+          for (const transformedQuad of transformedQuads) {
+            this.push(transformedQuad);
+          }
+          callback();
+        })
+        .catch((error: Error | null | undefined) => {
+          const err = error instanceof Error ? error : new Error(String(error));
+          callback(err);
+        });
+    } else {
+      for (const transformedQuad of transformedQuads) {
+        this.push(transformedQuad);
+      }
+      callback();
     }
-    callback();
   }
 
   // eslint-disable-next-line ts/naming-convention
